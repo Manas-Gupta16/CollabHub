@@ -1,5 +1,6 @@
 const bcrypt = require("bcrypt");
 const User = require("../models/User");
+const generateToken = require("../utils/generateToken");
 
 const registerUser = async (userData) => {
     const { name, email, password } = userData;
@@ -28,6 +29,37 @@ const registerUser = async (userData) => {
     return userResponse;
 };
 
+const loginUser = async (userData) => {
+    const { email, password } = userData;
+
+    const user = await User.findOne({ email });
+
+    if (!user) {
+        throw new Error("Invalid credentials");
+    }
+
+    const isPasswordMatch = await bcrypt.compare(
+        password,
+        user.password
+    );
+
+    if (!isPasswordMatch) {
+        throw new Error("Invalid credentials");
+    }
+
+    const token = generateToken(user._id);
+
+    return {
+        token,
+        user: {
+            _id: user._id,
+            name: user.name,
+            email: user.email,
+        },
+    };
+};
+
 module.exports = {
     registerUser,
+    loginUser,
 };
