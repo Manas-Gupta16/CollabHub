@@ -39,7 +39,50 @@ const getMyWorkspaces = async (req, res) => {
     }
 };
 
+const getWorkspaceById = async (req, res) => {
+    try {
+        const workspace =
+            await workspaceService.getWorkspaceById(
+                req.params.id,
+                req.user
+            );
+
+        res.status(200).json({
+            success: true,
+            data: workspace,
+        });
+    } catch (error) {
+        res.status(404).json({
+            success: false,
+            message: error.message,
+        });
+    }
+};
+
+const addMemberToWorkspace = async (req, res) => {
+    try {
+        const workspace =
+            await workspaceService.addMemberToWorkspace(
+                req.params.id,
+                req.body,
+                req.user
+            );
+
+        res.status(200).json({
+            success: true,
+            data: workspace,
+        });
+    } catch (error) {
+        res.status(400).json({
+            success: false,
+            message: error.message,
+        });
+    }
+};
+
 module.exports = {
     createWorkspace,
     getMyWorkspaces,
+    getWorkspaceById,
+    addMemberToWorkspace,
 };
