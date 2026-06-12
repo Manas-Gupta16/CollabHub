@@ -41,7 +41,29 @@ const getWorkspaceTasks = async (req, res) => {
     }
 };
 
+const assignTask = async (req, res) => {
+    try {
+        const task =
+            await taskService.assignTask(
+                req.params.taskId,
+                req.body.assigneeId,
+                req.user
+            );
+
+        res.status(200).json({
+            success: true,
+            data: task,
+        });
+    } catch (error) {
+        res.status(400).json({
+            success: false,
+            message: error.message,
+        });
+    }
+};
+
 module.exports = {
     createTask,
     getWorkspaceTasks,
+    assignTask,
 };
