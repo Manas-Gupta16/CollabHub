@@ -8,9 +8,8 @@ const {
     createTask,
     getWorkspaceTasks,
     assignTask,
+    updateTaskStatus,
 } = require("../controllers/taskController");
-
-
 
 router.post(
     "/workspaces/:workspaceId/tasks",
@@ -28,6 +27,12 @@ router.patch(
     "/tasks/:taskId/assign",
     protect,
     assignTask
+);
+
+router.patch(
+    "/tasks/:taskId/status",
+    protect,
+    updateTaskStatus
 );
 
 module.exports = router;

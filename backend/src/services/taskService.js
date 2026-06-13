@@ -42,7 +42,8 @@ const createTask = async (
 
 const getWorkspaceTasks = async (
     workspaceId,
-    currentUser
+    currentUser,
+    filters
 ) => {
     const workspace = await Workspace.findById(
         workspaceId
@@ -64,9 +65,23 @@ const getWorkspaceTasks = async (
         );
     }
 
-    const tasks = await Task.find({
+    const query = {
         workspace: workspaceId,
-    })
+    };
+
+    if (filters.status) {
+        query.status = filters.status;
+    }
+
+    if (filters.priority) {
+        query.priority = filters.priority;
+    }
+
+    if (filters.assignee) {
+        query.assignee = filters.assignee;
+    }
+
+    const tasks = await Task.find(query)
         .populate(
             "createdBy",
             "name email"
@@ -107,6 +122,15 @@ const assignTask = async (
         );
     }
 
+    if (
+        currentMember.role !== "OWNER" &&
+        currentMember.role !== "ADMIN"
+    ) {
+        throw new Error(
+            "Only owners and admins can assign tasks"
+        );
+    }
+
     const assignee = await User.findById(
         assigneeId
     );
@@ -135,8 +159,43 @@ const assignTask = async (
     return task;
 };
 
+const updateTaskStatus = async (
+    taskId,
+    status,
+    currentUser
+) => {
+    const task = await Task.findById(taskId);
+
+    if (!task) {
+        throw new Error("Task not found");
+    }
+
+    const workspace = await Workspace.findById(
+        task.workspace
+    );
+
+    const isMember = workspace.members.some(
+        (member) =>
+            member.user.toString() ===
+            currentUser._id.toString()
+    );
+
+    if (!isMember) {
+        throw new Error(
+            "You are not a member of this workspace"
+        );
+    }
+
+    task.status = status;
+
+    await task.save();
+
+    return task;
+};
+
 module.exports = {
     createTask,
     getWorkspaceTasks,
     assignTask,
+    updateTaskStatus,
 };

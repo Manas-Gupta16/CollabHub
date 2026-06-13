@@ -26,7 +26,8 @@ const getWorkspaceTasks = async (req, res) => {
         const tasks =
             await taskService.getWorkspaceTasks(
                 req.params.workspaceId,
-                req.user
+                req.user,
+                req.query
             );
 
         res.status(200).json({
@@ -62,8 +63,33 @@ const assignTask = async (req, res) => {
     }
 };
 
+const updateTaskStatus = async (
+    req,
+    res
+) => {
+    try {
+        const task =
+            await taskService.updateTaskStatus(
+                req.params.taskId,
+                req.body.status,
+                req.user
+            );
+
+        res.status(200).json({
+            success: true,
+            data: task,
+        });
+    } catch (error) {
+        res.status(400).json({
+            success: false,
+            message: error.message,
+        });
+    }
+};
+
 module.exports = {
     createTask,
     getWorkspaceTasks,
     assignTask,
+    updateTaskStatus,
 };
