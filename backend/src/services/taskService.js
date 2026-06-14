@@ -1,6 +1,11 @@
 const Task = require("../models/Task");
 const Workspace = require("../models/Workspace");
 const User = require("../models/User");
+const activityService = require("./activityService");
+
+const {
+    ACTIVITY_ACTIONS,
+} = require("../constants/activityConstants");
 
 const createTask = async (
     workspaceId,
@@ -35,6 +40,14 @@ const createTask = async (
 
         workspace: workspaceId,
         createdBy: currentUser._id,
+    });
+
+    await activityService.createActivity({
+        workspace: workspaceId,
+        user: currentUser._id,
+        action:
+            ACTIVITY_ACTIONS.TASK_CREATED,
+        details: `Created task: ${task.title}`,
     });
 
     return task;
@@ -156,6 +169,14 @@ const assignTask = async (
 
     await task.save();
 
+    await activityService.createActivity({
+        workspace: workspace._id,
+        user: currentUser._id,
+        action:
+            ACTIVITY_ACTIONS.TASK_ASSIGNED,
+        details: `Assigned task: ${task.title}`,
+    });
+
     return task;
 };
 
@@ -189,6 +210,14 @@ const updateTaskStatus = async (
     task.status = status;
 
     await task.save();
+
+    await activityService.createActivity({
+        workspace: workspace._id,
+        user: currentUser._id,
+        action:
+            ACTIVITY_ACTIONS.TASK_STATUS_UPDATED,
+        details: `Updated task "${task.title}" to ${status}`,
+    });
 
     return task;
 };

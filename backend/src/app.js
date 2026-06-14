@@ -5,6 +5,7 @@ const userRoutes = require("./routes/userRoutes");
 const authRoutes = require("./routes/authRoutes");
 const workspaceRoutes = require("./routes/workspaceRoutes");
 const taskRoutes = require("./routes/taskRoutes");
+const activityRoutes = require("./routes/activityRoutes");
 
 const app = express();
 
@@ -17,6 +18,7 @@ app.use("/api/users", userRoutes);
 app.use("/api/auth", authRoutes);
 app.use("/api/workspaces", workspaceRoutes);
 app.use("/api", taskRoutes);
+app.use("/api/workspaces", activityRoutes);
 
 // Test Route
 app.get("/", (req, res) => {

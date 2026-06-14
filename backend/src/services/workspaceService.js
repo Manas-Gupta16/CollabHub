@@ -2,6 +2,12 @@ const Workspace = require("../models/Workspace");
 const User = require("../models/User");
 const ROLES = require("../constants/roles");
 
+const activityService = require("./activityService");
+
+const {
+    ACTIVITY_ACTIONS,
+} = require("../constants/activityConstants");
+
 const createWorkspace = async (
     workspaceData,
     currentUser
@@ -22,10 +28,20 @@ const createWorkspace = async (
         ],
     });
 
+    await activityService.createActivity({
+        workspace: workspace._id,
+        user: currentUser._id,
+        action:
+            ACTIVITY_ACTIONS.WORKSPACE_CREATED,
+        details: `Created workspace: ${workspace.name}`,
+    });
+
     return workspace;
 };
 
-const getMyWorkspaces = async (currentUser) => {
+const getMyWorkspaces = async (
+    currentUser
+) => {
     const workspaces = await Workspace.find({
         "members.user": currentUser._id,
     });
@@ -90,17 +106,20 @@ const addMemberToWorkspace = async (
         );
     }
 
-    const user = await User.findOne({ email });
+    const user = await User.findOne({
+        email,
+    });
 
     if (!user) {
         throw new Error("User not found");
     }
 
-    const alreadyMember = workspace.members.some(
-        (member) =>
-            member.user.toString() ===
-            user._id.toString()
-    );
+    const alreadyMember =
+        workspace.members.some(
+            (member) =>
+                member.user.toString() ===
+                user._id.toString()
+        );
 
     if (alreadyMember) {
         throw new Error(
@@ -114,6 +133,15 @@ const addMemberToWorkspace = async (
     });
 
     await workspace.save();
+
+    await activityService.createActivity({
+        workspace: workspace._id,
+        user: currentUser._id,
+        action:
+            ACTIVITY_ACTIONS.MEMBER_ADDED,
+        details: `Added ${user.email} as ${role || ROLES.MEMBER
+            }`,
+    });
 
     return workspace;
 };
