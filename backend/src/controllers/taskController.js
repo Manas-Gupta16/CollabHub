@@ -63,10 +63,7 @@ const assignTask = async (req, res) => {
     }
 };
 
-const updateTaskStatus = async (
-    req,
-    res
-) => {
+const updateTaskStatus = async (req, res) => {
     try {
         const task =
             await taskService.updateTaskStatus(
@@ -87,9 +84,58 @@ const updateTaskStatus = async (
     }
 };
 
+const updateTask = async (
+    req,
+    res
+) => {
+    try {
+        const task =
+            await taskService.updateTask(
+                req.params.taskId,
+                req.body,
+                req.user
+            );
+
+        res.status(200).json({
+            success: true,
+            data: task,
+        });
+    } catch (error) {
+        res.status(400).json({
+            success: false,
+            message: error.message,
+        });
+    }
+};
+
+const deleteTask = async (
+    req,
+    res
+) => {
+    try {
+        const result =
+            await taskService.deleteTask(
+                req.params.taskId,
+                req.user
+            );
+
+        res.status(200).json({
+            success: true,
+            data: result,
+        });
+    } catch (error) {
+        res.status(400).json({
+            success: false,
+            message: error.message,
+        });
+    }
+};
+
 module.exports = {
     createTask,
     getWorkspaceTasks,
     assignTask,
     updateTaskStatus,
+    updateTask,
+    deleteTask,
 };

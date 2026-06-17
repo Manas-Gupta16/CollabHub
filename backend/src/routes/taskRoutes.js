@@ -9,6 +9,8 @@ const {
     getWorkspaceTasks,
     assignTask,
     updateTaskStatus,
+    updateTask,
+    deleteTask
 } = require("../controllers/taskController");
 
 router.post(
@@ -33,6 +35,18 @@ router.patch(
     "/tasks/:taskId/status",
     protect,
     updateTaskStatus
+);
+
+router.patch(
+    "/tasks/:taskId",
+    protect,
+    updateTask
+);
+
+router.delete(
+    "/tasks/:taskId",
+    protect,
+    deleteTask
 );
 
 module.exports = router;

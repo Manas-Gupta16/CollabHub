@@ -222,9 +222,111 @@ const updateTaskStatus = async (
     return task;
 };
 
+const updateTask = async (
+    taskId,
+    taskData,
+    currentUser
+) => {
+    const task = await Task.findById(taskId);
+
+    if (!task) {
+        throw new Error("Task not found");
+    }
+
+    const workspace = await Workspace.findById(
+        task.workspace
+    );
+
+    const currentMember =
+        workspace.members.find(
+            (member) =>
+                member.user.toString() ===
+                currentUser._id.toString()
+        );
+
+    if (!currentMember) {
+        throw new Error(
+            "You are not a member of this workspace"
+        );
+    }
+
+    task.title =
+        taskData.title || task.title;
+
+    task.description =
+        taskData.description ||
+        task.description;
+
+    task.priority =
+        taskData.priority ||
+        task.priority;
+
+    task.dueDate =
+        taskData.dueDate ||
+        task.dueDate;
+
+    await task.save();
+
+    return task;
+};
+
+const deleteTask = async (
+    taskId,
+    currentUser
+) => {
+    const task = await Task.findById(taskId);
+
+    if (!task) {
+        throw new Error("Task not found");
+    }
+
+    const workspace = await Workspace.findById(
+        task.workspace
+    );
+
+    const currentMember =
+        workspace.members.find(
+            (member) =>
+                member.user.toString() ===
+                currentUser._id.toString()
+        );
+
+    if (!currentMember) {
+        throw new Error(
+            "You are not a member of this workspace"
+        );
+    }
+
+    if (
+        currentMember.role !== "OWNER" &&
+        currentMember.role !== "ADMIN"
+    ) {
+        throw new Error(
+            "Only owners and admins can delete tasks"
+        );
+    }
+
+    await activityService.createActivity({
+        workspace: workspace._id,
+        user: currentUser._id,
+        action:
+            ACTIVITY_ACTIONS.TASK_DELETED,
+        details: `Deleted task: ${task.title}`,
+    });
+
+    await Task.findByIdAndDelete(taskId);
+
+    return {
+        message:
+            "Task deleted successfully",
+    };
+};
+
 module.exports = {
     createTask,
     getWorkspaceTasks,
     assignTask,
     updateTaskStatus,
+    updateTask,
+    deleteTask,
 };
