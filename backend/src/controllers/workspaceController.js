@@ -80,9 +80,35 @@ const addMemberToWorkspace = async (req, res) => {
     }
 };
 
+const updateMemberRole = async (
+    req,
+    res
+) => {
+    try {
+        const workspace =
+            await workspaceService.updateMemberRole(
+                req.params.workspaceId,
+                req.body.userId,
+                req.body.role,
+                req.user
+            );
+
+        res.status(200).json({
+            success: true,
+            data: workspace,
+        });
+    } catch (error) {
+        res.status(400).json({
+            success: false,
+            message: error.message,
+        });
+    }
+};
+
 module.exports = {
     createWorkspace,
     getMyWorkspaces,
     getWorkspaceById,
     addMemberToWorkspace,
+    updateMemberRole,
 };

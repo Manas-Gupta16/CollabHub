@@ -10,6 +10,7 @@ const ACTIVITY_ACTIONS = {
     MEMBER_ADDED: "MEMBER_ADDED",
     WORKSPACE_CREATED:
         "WORKSPACE_CREATED",
+    ROLE_UPDATED: "ROLE_UPDATED",
 };
 
 module.exports = {

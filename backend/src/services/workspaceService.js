@@ -146,9 +146,89 @@ const addMemberToWorkspace = async (
     return workspace;
 };
 
+const updateMemberRole = async (
+    workspaceId,
+    userId,
+    role,
+    currentUser
+) => {
+    const workspace =
+        await Workspace.findById(
+            workspaceId
+        );
+
+    if (!workspace) {
+        throw new Error(
+            "Workspace not found"
+        );
+    }
+
+    const ownerMember =
+        workspace.members.find(
+            (member) =>
+                member.user.toString() ===
+                currentUser._id.toString()
+        );
+
+    if (
+        !ownerMember ||
+        ownerMember.role !== ROLES.OWNER
+    ) {
+        throw new Error(
+            "Only workspace owner can update roles"
+        );
+    }
+
+    const targetMember =
+        workspace.members.find(
+            (member) =>
+                member.user.toString() ===
+                userId.toString()
+        );
+
+    if (!targetMember) {
+        throw new Error(
+            "Member not found"
+        );
+    }
+
+    if (
+        targetMember.role ===
+        ROLES.OWNER
+    ) {
+        throw new Error(
+            "Owner role cannot be changed"
+        );
+    }
+
+    if (
+        role !== ROLES.ADMIN &&
+        role !== ROLES.MEMBER
+    ) {
+        throw new Error(
+            "Invalid role"
+        );
+    }
+
+    targetMember.role = role;
+
+    await workspace.save();
+
+    await activityService.createActivity({
+        workspace: workspace._id,
+        user: currentUser._id,
+        action:
+            ACTIVITY_ACTIONS.ROLE_UPDATED,
+        details: `Updated member role to ${role}`,
+    });
+
+    return workspace;
+};
+
 module.exports = {
     createWorkspace,
     getMyWorkspaces,
     getWorkspaceById,
     addMemberToWorkspace,
+    updateMemberRole,
 };
