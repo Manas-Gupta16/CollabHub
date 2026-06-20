@@ -1,6 +1,7 @@
 const Workspace = require("../models/Workspace");
 const User = require("../models/User");
 const ROLES = require("../constants/roles");
+const Task = require("../models/Task");
 
 const activityService = require("./activityService");
 
@@ -225,10 +226,98 @@ const updateMemberRole = async (
     return workspace;
 };
 
+
+const getWorkspaceStats = async (
+    workspaceId,
+    currentUser
+) => {
+    const workspace =
+        await Workspace.findById(
+            workspaceId
+        );
+
+    if (!workspace) {
+        throw new Error(
+            "Workspace not found"
+        );
+    }
+
+    const isMember =
+        workspace.members.some(
+            (member) =>
+                member.user.toString() ===
+                currentUser._id.toString()
+        );
+
+    if (!isMember) {
+        throw new Error(
+            "You are not a member of this workspace"
+        );
+    }
+
+    const totalTasks =
+        await Task.countDocuments({
+            workspace: workspaceId,
+        });
+
+    const todoTasks =
+        await Task.countDocuments({
+            workspace: workspaceId,
+            status: "TODO",
+        });
+
+    const inProgressTasks =
+        await Task.countDocuments({
+            workspace: workspaceId,
+            status: "IN_PROGRESS",
+        });
+
+    const doneTasks =
+        await Task.countDocuments({
+            workspace: workspaceId,
+            status: "DONE",
+        });
+
+    const totalMembers =
+        workspace.members.length;
+
+    const highPriorityTasks =
+        await Task.countDocuments({
+            workspace: workspaceId,
+            priority: "HIGH",
+        });
+
+    const mediumPriorityTasks =
+        await Task.countDocuments({
+            workspace: workspaceId,
+            priority: "MEDIUM",
+        });
+
+    const lowPriorityTasks =
+        await Task.countDocuments({
+            workspace: workspaceId,
+            priority: "LOW",
+        });
+
+    return {
+        totalTasks,
+        todoTasks,
+        inProgressTasks,
+        doneTasks,
+
+        highPriorityTasks,
+        mediumPriorityTasks,
+        lowPriorityTasks,
+
+        totalMembers,
+    };
+};
+
 module.exports = {
     createWorkspace,
     getMyWorkspaces,
     getWorkspaceById,
     addMemberToWorkspace,
     updateMemberRole,
+    getWorkspaceStats,
 };

@@ -10,6 +10,7 @@ const {
     getWorkspaceById,
     addMemberToWorkspace,
     updateMemberRole,
+    getWorkspaceStats,
 } = require(
     "../controllers/workspaceController"
 );
@@ -23,5 +24,7 @@ router.get("/:id", protect, getWorkspaceById);
 router.post("/:id/members", protect, addMemberToWorkspace);
 
 router.patch("/:workspaceId/members/role", protect, updateMemberRole);
+
+router.get("/:workspaceId/stats", protect, getWorkspaceStats);
 
 module.exports = router;

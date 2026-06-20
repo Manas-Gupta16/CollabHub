@@ -105,10 +105,34 @@ const updateMemberRole = async (
     }
 };
 
+const getWorkspaceStats = async (
+    req,
+    res
+) => {
+    try {
+        const stats =
+            await workspaceService.getWorkspaceStats(
+                req.params.workspaceId,
+                req.user
+            );
+
+        res.status(200).json({
+            success: true,
+            data: stats,
+        });
+    } catch (error) {
+        res.status(400).json({
+            success: false,
+            message: error.message,
+        });
+    }
+};
+
 module.exports = {
     createWorkspace,
     getMyWorkspaces,
     getWorkspaceById,
     addMemberToWorkspace,
     updateMemberRole,
+    getWorkspaceStats,
 };
