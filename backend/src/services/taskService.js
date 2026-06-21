@@ -94,6 +94,18 @@ const getWorkspaceTasks = async (
         query.assignee = filters.assignee;
     }
 
+    const page =
+        parseInt(filters.page) || 1;
+
+    const limit =
+        parseInt(filters.limit) || 10;
+
+    const skip =
+        (page - 1) * limit;
+
+    const totalTasks =
+        await Task.countDocuments(query);
+
     const tasks = await Task.find(query)
         .populate(
             "createdBy",
@@ -102,9 +114,21 @@ const getWorkspaceTasks = async (
         .populate(
             "assignee",
             "name email"
-        );
+        )
+        .skip(skip)
+        .limit(limit);
 
-    return tasks;
+    return {
+        tasks,
+        pagination: {
+            totalTasks,
+            currentPage: page,
+            totalPages: Math.ceil(
+                totalTasks / limit
+            ),
+            limit,
+        },
+    };
 };
 
 const assignTask = async (
