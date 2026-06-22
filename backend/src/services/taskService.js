@@ -82,6 +82,23 @@ const getWorkspaceTasks = async (
         workspace: workspaceId,
     };
 
+    if (filters.search) {
+        query.$or = [
+            {
+                title: {
+                    $regex: filters.search,
+                    $options: "i",
+                },
+            },
+            {
+                description: {
+                    $regex: filters.search,
+                    $options: "i",
+                },
+            },
+        ];
+    }
+
     if (filters.status) {
         query.status = filters.status;
     }
@@ -103,10 +120,35 @@ const getWorkspaceTasks = async (
     const skip =
         (page - 1) * limit;
 
+    let sortOptions = {
+        createdAt: -1,
+    };
+
+    if (filters.sortBy) {
+        if (filters.sortBy === "dueDate") {
+            sortOptions = {
+                dueDate: 1,
+            };
+        }
+
+        if (filters.sortBy === "createdAt") {
+            sortOptions = {
+                createdAt: -1,
+            };
+        }
+
+        if (filters.sortBy === "priority") {
+            sortOptions = {
+                priority: 1,
+            };
+        }
+    }
+
     const totalTasks =
         await Task.countDocuments(query);
 
     const tasks = await Task.find(query)
+        .sort(sortOptions)
         .populate(
             "createdBy",
             "name email"
