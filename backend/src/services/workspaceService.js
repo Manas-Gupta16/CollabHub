@@ -1,3 +1,4 @@
+const AppError = require("../utils/AppError");
 const Workspace = require("../models/Workspace");
 const User = require("../models/User");
 const ROLES = require("../constants/roles");
@@ -59,7 +60,7 @@ const getWorkspaceById = async (
     );
 
     if (!workspace) {
-        throw new Error("Workspace not found");
+        throw new AppError("Workspace not found", 404);
     }
 
     const isMember = workspace.members.some(
@@ -69,9 +70,7 @@ const getWorkspaceById = async (
     );
 
     if (!isMember) {
-        throw new Error(
-            "You are not authorized to access this workspace"
-        );
+        throw new AppError("You are not authorized to access this workspace", 403);
     }
 
     return workspace;
@@ -89,7 +88,7 @@ const addMemberToWorkspace = async (
     );
 
     if (!workspace) {
-        throw new Error("Workspace not found");
+        throw new AppError("Workspace not found", 404);
     }
 
     const ownerMember = workspace.members.find(
@@ -102,9 +101,7 @@ const addMemberToWorkspace = async (
         !ownerMember ||
         ownerMember.role !== ROLES.OWNER
     ) {
-        throw new Error(
-            "Only workspace owner can add members"
-        );
+        throw new AppError("Only workspace owner can add members", 403);
     }
 
     const user = await User.findOne({
@@ -112,7 +109,7 @@ const addMemberToWorkspace = async (
     });
 
     if (!user) {
-        throw new Error("User not found");
+        throw new AppError("User not found", 404);
     }
 
     const alreadyMember =
@@ -123,9 +120,7 @@ const addMemberToWorkspace = async (
         );
 
     if (alreadyMember) {
-        throw new Error(
-            "User is already a workspace member"
-        );
+        throw new AppError("User is already a workspace member", 400);
     }
 
     workspace.members.push({
@@ -159,9 +154,7 @@ const updateMemberRole = async (
         );
 
     if (!workspace) {
-        throw new Error(
-            "Workspace not found"
-        );
+        throw new AppError("Workspace not found", 404);
     }
 
     const ownerMember =
@@ -175,9 +168,7 @@ const updateMemberRole = async (
         !ownerMember ||
         ownerMember.role !== ROLES.OWNER
     ) {
-        throw new Error(
-            "Only workspace owner can update roles"
-        );
+        throw new AppError("Only workspace owner can update roles", 403);
     }
 
     const targetMember =
@@ -188,27 +179,21 @@ const updateMemberRole = async (
         );
 
     if (!targetMember) {
-        throw new Error(
-            "Member not found"
-        );
+        throw new AppError("Member not found", 404);
     }
 
     if (
         targetMember.role ===
         ROLES.OWNER
     ) {
-        throw new Error(
-            "Owner role cannot be changed"
-        );
+        throw new AppError("Owner role cannot be changed", 400);
     }
 
     if (
         role !== ROLES.ADMIN &&
         role !== ROLES.MEMBER
     ) {
-        throw new Error(
-            "Invalid role"
-        );
+        throw new AppError("Invalid role", 400);
     }
 
     targetMember.role = role;
@@ -237,9 +222,7 @@ const getWorkspaceStats = async (
         );
 
     if (!workspace) {
-        throw new Error(
-            "Workspace not found"
-        );
+        throw new AppError("Workspace not found", 404);
     }
 
     const isMember =
@@ -250,9 +233,7 @@ const getWorkspaceStats = async (
         );
 
     if (!isMember) {
-        throw new Error(
-            "You are not a member of this workspace"
-        );
+        throw new AppError("You are not a member of this workspace", 403);
     }
 
     const totalTasks =

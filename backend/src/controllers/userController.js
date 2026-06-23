@@ -1,20 +1,25 @@
 const bcrypt = require("bcrypt");
 const User = require("../models/User");
+const asyncHandler = require("../middleware/asyncHandler");
+const AppError = require("../utils/AppError");
 
-const createUser = async (req, res) => {
-    try {
+const createUser = asyncHandler(
+    async (req, res) => {
         const { name, email, password } = req.body;
 
-        const existingUser = await User.findOne({ email });
+        const existingUser = await User.findOne({
+            email,
+        });
 
         if (existingUser) {
-            return res.status(400).json({
-                success: false,
-                message: "User already exists",
-            });
+            throw new AppError(
+                "User already exists",
+                400
+            );
         }
 
-        const hashedPassword = await bcrypt.hash(password, 10);
+        const hashedPassword =
+            await bcrypt.hash(password, 10);
 
         const user = await User.create({
             name,
@@ -26,13 +31,8 @@ const createUser = async (req, res) => {
             success: true,
             data: user,
         });
-    } catch (error) {
-        res.status(500).json({
-            success: false,
-            message: error.message,
-        });
     }
-};
+);
 
 module.exports = {
     createUser,

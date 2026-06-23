@@ -1,3 +1,4 @@
+const AppError = require("../utils/AppError");
 const Activity = require("../models/Activity");
 
 const Workspace = require(
@@ -15,9 +16,7 @@ const getWorkspaceActivities =
             );
 
         if (!workspace) {
-            throw new Error(
-                "Workspace not found"
-            );
+            throw new AppError("Workspace not found", 404);
         }
 
         const isMember =
@@ -28,9 +27,7 @@ const getWorkspaceActivities =
             );
 
         if (!isMember) {
-            throw new Error(
-                "You are not a member of this workspace"
-            );
+            throw new AppError("You are not a member of this workspace", 403);
         }
 
         const activities =

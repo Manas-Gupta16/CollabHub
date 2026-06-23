@@ -1,12 +1,10 @@
 const commentService = require(
     "../services/commentService"
 );
+const asyncHandler = require("../middleware/asyncHandler");
 
-const addComment = async (
-    req,
-    res
-) => {
-    try {
+const addComment = asyncHandler(
+    async (req, res) => {
         const comment =
             await commentService.addComment(
                 req.params.taskId,
@@ -18,19 +16,11 @@ const addComment = async (
             success: true,
             data: comment,
         });
-    } catch (error) {
-        res.status(400).json({
-            success: false,
-            message: error.message,
-        });
     }
-};
+);
 
-const getTaskComments = async (
-    req,
-    res
-) => {
-    try {
+const getTaskComments = asyncHandler(
+    async (req, res) => {
         const comments =
             await commentService.getTaskComments(
                 req.params.taskId,
@@ -41,13 +31,8 @@ const getTaskComments = async (
             success: true,
             data: comments,
         });
-    } catch (error) {
-        res.status(400).json({
-            success: false,
-            message: error.message,
-        });
     }
-};
+);
 
 module.exports = {
     addComment,

@@ -1,6 +1,12 @@
 const express = require("express");
 const cors = require("cors");
 
+const {
+    errorHandler,
+} = require(
+    "./middleware/errorMiddleware"
+);
+
 const userRoutes = require("./routes/userRoutes");
 const authRoutes = require("./routes/authRoutes");
 const workspaceRoutes = require("./routes/workspaceRoutes");
@@ -26,5 +32,9 @@ app.use("/api", commentRoutes);
 app.get("/", (req, res) => {
     res.send("CollabHub API is running...");
 });
+
+app.use(errorHandler);
+
+module.exports = app;
 
 module.exports = app;

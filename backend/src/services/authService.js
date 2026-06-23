@@ -1,3 +1,4 @@
+const AppError = require("../utils/AppError");
 const bcrypt = require("bcrypt");
 const User = require("../models/User");
 const generateToken = require("../utils/generateToken");
@@ -8,7 +9,7 @@ const registerUser = async (userData) => {
     const existingUser = await User.findOne({ email });
 
     if (existingUser) {
-        throw new Error("User already exists");
+        throw new AppError("User already exists", 400);
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
@@ -35,7 +36,7 @@ const loginUser = async (userData) => {
     const user = await User.findOne({ email });
 
     if (!user) {
-        throw new Error("Invalid credentials");
+        throw new AppError("Invalid credentials", 401);
     }
 
     const isPasswordMatch = await bcrypt.compare(
@@ -44,7 +45,7 @@ const loginUser = async (userData) => {
     );
 
     if (!isPasswordMatch) {
-        throw new Error("Invalid credentials");
+        throw new AppError("Invalid credentials", 401);
     }
 
     const token = generateToken(user._id);

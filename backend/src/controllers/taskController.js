@@ -1,7 +1,8 @@
 const taskService = require("../services/taskService");
+const asyncHandler = require("../middleware/asyncHandler");
 
-const createTask = async (req, res) => {
-    try {
+const createTask = asyncHandler(
+    async (req, res) => {
         const task =
             await taskService.createTask(
                 req.params.workspaceId,
@@ -13,16 +14,11 @@ const createTask = async (req, res) => {
             success: true,
             data: task,
         });
-    } catch (error) {
-        res.status(400).json({
-            success: false,
-            message: error.message,
-        });
     }
-};
+);
 
-const getWorkspaceTasks = async (req, res) => {
-    try {
+const getWorkspaceTasks = asyncHandler(
+    async (req, res) => {
         const tasks =
             await taskService.getWorkspaceTasks(
                 req.params.workspaceId,
@@ -34,16 +30,11 @@ const getWorkspaceTasks = async (req, res) => {
             success: true,
             data: tasks,
         });
-    } catch (error) {
-        res.status(400).json({
-            success: false,
-            message: error.message,
-        });
     }
-};
+);
 
-const assignTask = async (req, res) => {
-    try {
+const assignTask = asyncHandler(
+    async (req, res) => {
         const task =
             await taskService.assignTask(
                 req.params.taskId,
@@ -55,16 +46,11 @@ const assignTask = async (req, res) => {
             success: true,
             data: task,
         });
-    } catch (error) {
-        res.status(400).json({
-            success: false,
-            message: error.message,
-        });
     }
-};
+);
 
-const updateTaskStatus = async (req, res) => {
-    try {
+const updateTaskStatus = asyncHandler(
+    async (req, res) => {
         const task =
             await taskService.updateTaskStatus(
                 req.params.taskId,
@@ -76,19 +62,11 @@ const updateTaskStatus = async (req, res) => {
             success: true,
             data: task,
         });
-    } catch (error) {
-        res.status(400).json({
-            success: false,
-            message: error.message,
-        });
     }
-};
+);
 
-const updateTask = async (
-    req,
-    res
-) => {
-    try {
+const updateTask = asyncHandler(
+    async (req, res) => {
         const task =
             await taskService.updateTask(
                 req.params.taskId,
@@ -100,19 +78,11 @@ const updateTask = async (
             success: true,
             data: task,
         });
-    } catch (error) {
-        res.status(400).json({
-            success: false,
-            message: error.message,
-        });
     }
-};
+);
 
-const deleteTask = async (
-    req,
-    res
-) => {
-    try {
+const deleteTask = asyncHandler(
+    async (req, res) => {
         const result =
             await taskService.deleteTask(
                 req.params.taskId,
@@ -123,13 +93,8 @@ const deleteTask = async (
             success: true,
             data: result,
         });
-    } catch (error) {
-        res.status(400).json({
-            success: false,
-            message: error.message,
-        });
     }
-};
+);
 
 module.exports = {
     createTask,

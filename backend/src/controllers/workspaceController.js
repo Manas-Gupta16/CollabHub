@@ -1,7 +1,9 @@
 const workspaceService = require("../services/workspaceService");
 
-const createWorkspace = async (req, res) => {
-    try {
+const asyncHandler = require("../middleware/asyncHandler");
+
+const createWorkspace = asyncHandler(
+    async (req, res) => {
         const workspace =
             await workspaceService.createWorkspace(
                 req.body,
@@ -12,16 +14,11 @@ const createWorkspace = async (req, res) => {
             success: true,
             data: workspace,
         });
-    } catch (error) {
-        res.status(400).json({
-            success: false,
-            message: error.message,
-        });
     }
-};
+);
 
-const getMyWorkspaces = async (req, res) => {
-    try {
+const getMyWorkspaces = asyncHandler(
+    async (req, res) => {
         const workspaces =
             await workspaceService.getMyWorkspaces(
                 req.user
@@ -31,19 +28,14 @@ const getMyWorkspaces = async (req, res) => {
             success: true,
             data: workspaces,
         });
-    } catch (error) {
-        res.status(500).json({
-            success: false,
-            message: error.message,
-        });
     }
-};
+);
 
-const getWorkspaceById = async (req, res) => {
-    try {
+const getWorkspaceById = asyncHandler(
+    async (req, res) => {
         const workspace =
             await workspaceService.getWorkspaceById(
-                req.params.id,
+                req.params.workspaceId,
                 req.user
             );
 
@@ -51,19 +43,14 @@ const getWorkspaceById = async (req, res) => {
             success: true,
             data: workspace,
         });
-    } catch (error) {
-        res.status(404).json({
-            success: false,
-            message: error.message,
-        });
     }
-};
+);
 
-const addMemberToWorkspace = async (req, res) => {
-    try {
+const addMemberToWorkspace = asyncHandler(
+    async (req, res) => {
         const workspace =
             await workspaceService.addMemberToWorkspace(
-                req.params.id,
+                req.params.workspaceId,
                 req.body,
                 req.user
             );
@@ -72,19 +59,11 @@ const addMemberToWorkspace = async (req, res) => {
             success: true,
             data: workspace,
         });
-    } catch (error) {
-        res.status(400).json({
-            success: false,
-            message: error.message,
-        });
     }
-};
+);
 
-const updateMemberRole = async (
-    req,
-    res
-) => {
-    try {
+const updateMemberRole = asyncHandler(
+    async (req, res) => {
         const workspace =
             await workspaceService.updateMemberRole(
                 req.params.workspaceId,
@@ -97,19 +76,11 @@ const updateMemberRole = async (
             success: true,
             data: workspace,
         });
-    } catch (error) {
-        res.status(400).json({
-            success: false,
-            message: error.message,
-        });
     }
-};
+);
 
-const getWorkspaceStats = async (
-    req,
-    res
-) => {
-    try {
+const getWorkspaceStats = asyncHandler(
+    async (req, res) => {
         const stats =
             await workspaceService.getWorkspaceStats(
                 req.params.workspaceId,
@@ -120,13 +91,8 @@ const getWorkspaceStats = async (
             success: true,
             data: stats,
         });
-    } catch (error) {
-        res.status(400).json({
-            success: false,
-            message: error.message,
-        });
     }
-};
+);
 
 module.exports = {
     createWorkspace,

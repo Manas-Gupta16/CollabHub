@@ -1,3 +1,4 @@
+const AppError = require("../utils/AppError");
 const Comment = require("../models/Comment");
 const Task = require("../models/Task");
 const Workspace = require("../models/Workspace");
@@ -17,9 +18,7 @@ const addComment = async (
         await Task.findById(taskId);
 
     if (!task) {
-        throw new Error(
-            "Task not found"
-        );
+        throw new AppError("Task not found", 404);
     }
 
     const workspace =
@@ -35,9 +34,7 @@ const addComment = async (
         );
 
     if (!isMember) {
-        throw new Error(
-            "You are not a member of this workspace"
-        );
+        throw new AppError("You are not a member of this workspace", 403);
     }
 
     const comment =
@@ -66,9 +63,7 @@ const getTaskComments = async (
         await Task.findById(taskId);
 
     if (!task) {
-        throw new Error(
-            "Task not found"
-        );
+        throw new AppError("Task not found", 404);
     }
 
     const workspace =
@@ -84,9 +79,7 @@ const getTaskComments = async (
         );
 
     if (!isMember) {
-        throw new Error(
-            "You are not a member of this workspace"
-        );
+        throw new AppError("You are not a member of this workspace", 403);
     }
 
     const comments =
