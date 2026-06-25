@@ -16,7 +16,10 @@ const getWorkspaceActivities =
             );
 
         if (!workspace) {
-            throw new AppError("Workspace not found", 404);
+            throw new AppError(
+                "Workspace not found",
+                404
+            );
         }
 
         const isMember =
@@ -27,7 +30,10 @@ const getWorkspaceActivities =
             );
 
         if (!isMember) {
-            throw new AppError("You are not a member of this workspace", 403);
+            throw new AppError(
+                "You are not a member of this workspace",
+                403
+            );
         }
 
         const activities =

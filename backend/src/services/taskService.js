@@ -18,7 +18,10 @@ const createTask = async (
     );
 
     if (!workspace) {
-        throw new AppError("Workspace not found", 404);
+        throw new AppError(
+            "Workspace not found",
+            404
+        );
     }
 
     const isMember = workspace.members.some(
@@ -28,7 +31,10 @@ const createTask = async (
     );
 
     if (!isMember) {
-        throw new AppError("You are not a member of this workspace", 403);
+        throw new AppError(
+            "You are not a member of this workspace",
+            403
+        );
     }
 
     const task = await Task.create({
@@ -62,7 +68,10 @@ const getWorkspaceTasks = async (
     );
 
     if (!workspace) {
-        throw new AppError("Workspace not found", 404);
+        throw new AppError(
+            "Workspace not found",
+            404
+        );
     }
 
     const isMember = workspace.members.some(
@@ -72,7 +81,10 @@ const getWorkspaceTasks = async (
     );
 
     if (!isMember) {
-        throw new AppError("You are not a member of this workspace", 403);
+        throw new AppError(
+            "You are not a member of this workspace",
+            403
+        );
     }
 
     const query = {
@@ -178,7 +190,10 @@ const assignTask = async (
     const task = await Task.findById(taskId);
 
     if (!task) {
-        throw new AppError("Task not found", 404);
+        throw new AppError(
+            "Task not found",
+            404
+        );
     }
 
     const workspace = await Workspace.findById(
@@ -193,14 +208,20 @@ const assignTask = async (
         );
 
     if (!currentMember) {
-        throw new AppError("You are not a member of this workspace", 403);
+        throw new AppError(
+            "You are not a member of this workspace",
+            403
+        );
     }
 
     if (
         currentMember.role !== "OWNER" &&
         currentMember.role !== "ADMIN"
     ) {
-        throw new AppError("Only owners and admins can assign tasks", 403);
+        throw new AppError(
+            "Only owners and admins can assign tasks",
+            403
+        );
     }
 
     const assignee = await User.findById(
@@ -208,7 +229,10 @@ const assignTask = async (
     );
 
     if (!assignee) {
-        throw new AppError("User not found", 404);
+        throw new AppError(
+            "User not found",
+            404
+        );
     }
 
     const isWorkspaceMember =
@@ -219,7 +243,10 @@ const assignTask = async (
         );
 
     if (!isWorkspaceMember) {
-        throw new AppError("User is not a workspace member", 400);
+        throw new AppError(
+            "User is not a workspace member",
+            400
+        );
     }
 
     task.assignee = assigneeId;
@@ -245,7 +272,10 @@ const updateTaskStatus = async (
     const task = await Task.findById(taskId);
 
     if (!task) {
-        throw new AppError("Task not found", 404);
+        throw new AppError(
+            "Task not found",
+            404
+        );
     }
 
     const workspace = await Workspace.findById(
@@ -259,7 +289,10 @@ const updateTaskStatus = async (
     );
 
     if (!isMember) {
-        throw new AppError("You are not a member of this workspace", 403);
+        throw new AppError(
+            "You are not a member of this workspace",
+            403
+        );
     }
 
     task.status = status;
@@ -285,7 +318,10 @@ const updateTask = async (
     const task = await Task.findById(taskId);
 
     if (!task) {
-        throw new AppError("Task not found", 404);
+        throw new AppError(
+            "Task not found",
+            404
+        );
     }
 
     const workspace = await Workspace.findById(
@@ -300,7 +336,10 @@ const updateTask = async (
         );
 
     if (!currentMember) {
-        throw new AppError("You are not a member of this workspace", 403);
+        throw new AppError(
+            "You are not a member of this workspace",
+            403
+        );
     }
 
     task.title =
@@ -330,7 +369,10 @@ const deleteTask = async (
     const task = await Task.findById(taskId);
 
     if (!task) {
-        throw new AppError("Task not found", 404);
+        throw new AppError(
+            "Task not found",
+            404
+        );
     }
 
     const workspace = await Workspace.findById(
@@ -345,14 +387,20 @@ const deleteTask = async (
         );
 
     if (!currentMember) {
-        throw new AppError("You are not a member of this workspace", 403);
+        throw new AppError(
+            "You are not a member of this workspace",
+            403
+        );
     }
 
     if (
         currentMember.role !== "OWNER" &&
         currentMember.role !== "ADMIN"
     ) {
-        throw new AppError("Only owners and admins can delete tasks", 403);
+        throw new AppError(
+            "Only owners and admins can delete tasks",
+            403
+        );
     }
 
     await activityService.createActivity({

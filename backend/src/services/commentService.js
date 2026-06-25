@@ -18,7 +18,10 @@ const addComment = async (
         await Task.findById(taskId);
 
     if (!task) {
-        throw new AppError("Task not found", 404);
+        throw new AppError(
+            "Task not found",
+            404
+        );
     }
 
     const workspace =
@@ -34,7 +37,10 @@ const addComment = async (
         );
 
     if (!isMember) {
-        throw new AppError("You are not a member of this workspace", 403);
+        throw new AppError(
+            "You are not a member of this workspace",
+            403
+        );
     }
 
     const comment =
@@ -63,7 +69,10 @@ const getTaskComments = async (
         await Task.findById(taskId);
 
     if (!task) {
-        throw new AppError("Task not found", 404);
+        throw new AppError(
+            "Task not found",
+            404
+        );
     }
 
     const workspace =
@@ -79,7 +88,10 @@ const getTaskComments = async (
         );
 
     if (!isMember) {
-        throw new AppError("You are not a member of this workspace", 403);
+        throw new AppError(
+            "You are not a member of this workspace",
+            403
+        );
     }
 
     const comments =

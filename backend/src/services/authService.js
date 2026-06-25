@@ -9,7 +9,10 @@ const registerUser = async (userData) => {
     const existingUser = await User.findOne({ email });
 
     if (existingUser) {
-        throw new AppError("User already exists", 400);
+        throw new AppError(
+            "User already exists",
+            400
+        );
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
@@ -36,7 +39,10 @@ const loginUser = async (userData) => {
     const user = await User.findOne({ email });
 
     if (!user) {
-        throw new AppError("Invalid credentials", 401);
+        throw new AppError(
+            "Invalid credentials",
+            401
+        );
     }
 
     const isPasswordMatch = await bcrypt.compare(
@@ -45,7 +51,10 @@ const loginUser = async (userData) => {
     );
 
     if (!isPasswordMatch) {
-        throw new AppError("Invalid credentials", 401);
+        throw new AppError(
+            "Invalid credentials",
+            401
+        );
     }
 
     const token = generateToken(user._id);

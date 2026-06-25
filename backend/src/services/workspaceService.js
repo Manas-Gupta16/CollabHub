@@ -1,8 +1,11 @@
-const AppError = require("../utils/AppError");
 const Workspace = require("../models/Workspace");
 const User = require("../models/User");
 const ROLES = require("../constants/roles");
 const Task = require("../models/Task");
+
+const AppError = require(
+    "../utils/AppError"
+);
 
 const activityService = require("./activityService");
 
@@ -60,7 +63,10 @@ const getWorkspaceById = async (
     );
 
     if (!workspace) {
-        throw new AppError("Workspace not found", 404);
+        throw new AppError(
+            "Workspace not found",
+            404
+        );
     }
 
     const isMember = workspace.members.some(
@@ -70,7 +76,10 @@ const getWorkspaceById = async (
     );
 
     if (!isMember) {
-        throw new AppError("You are not authorized to access this workspace", 403);
+        throw new AppError(
+            "You are not authorized to access this workspace",
+            403
+        );
     }
 
     return workspace;
@@ -88,7 +97,10 @@ const addMemberToWorkspace = async (
     );
 
     if (!workspace) {
-        throw new AppError("Workspace not found", 404);
+        throw new AppError(
+            "Workspace not found",
+            404
+        );
     }
 
     const ownerMember = workspace.members.find(
@@ -101,7 +113,10 @@ const addMemberToWorkspace = async (
         !ownerMember ||
         ownerMember.role !== ROLES.OWNER
     ) {
-        throw new AppError("Only workspace owner can add members", 403);
+        throw new AppError(
+            "Only workspace owner can add members",
+            403
+        );
     }
 
     const user = await User.findOne({
@@ -109,7 +124,10 @@ const addMemberToWorkspace = async (
     });
 
     if (!user) {
-        throw new AppError("User not found", 404);
+        throw new AppError(
+            "User not found",
+            404
+        );
     }
 
     const alreadyMember =
@@ -120,7 +138,10 @@ const addMemberToWorkspace = async (
         );
 
     if (alreadyMember) {
-        throw new AppError("User is already a workspace member", 400);
+        throw new AppError(
+            "User is already a workspace member",
+            400
+        );
     }
 
     workspace.members.push({
@@ -154,7 +175,10 @@ const updateMemberRole = async (
         );
 
     if (!workspace) {
-        throw new AppError("Workspace not found", 404);
+        throw new AppError(
+            "Workspace not found",
+            404
+        );
     }
 
     const ownerMember =
@@ -168,7 +192,10 @@ const updateMemberRole = async (
         !ownerMember ||
         ownerMember.role !== ROLES.OWNER
     ) {
-        throw new AppError("Only workspace owner can update roles", 403);
+        throw new AppError(
+            "Only workspace owner can update roles",
+            403
+        );
     }
 
     const targetMember =
@@ -179,21 +206,30 @@ const updateMemberRole = async (
         );
 
     if (!targetMember) {
-        throw new AppError("Member not found", 404);
+        throw new AppError(
+            "Member not found",
+            404
+        );
     }
 
     if (
         targetMember.role ===
         ROLES.OWNER
     ) {
-        throw new AppError("Owner role cannot be changed", 400);
+        throw new AppError(
+            "Owner role cannot be changed",
+            400
+        );
     }
 
     if (
         role !== ROLES.ADMIN &&
         role !== ROLES.MEMBER
     ) {
-        throw new AppError("Invalid role", 400);
+        throw new AppError(
+            "Invalid role",
+            400
+        );
     }
 
     targetMember.role = role;
@@ -222,7 +258,10 @@ const getWorkspaceStats = async (
         );
 
     if (!workspace) {
-        throw new AppError("Workspace not found", 404);
+        throw new AppError(
+            "Workspace not found",
+            404
+        );
     }
 
     const isMember =
@@ -233,7 +272,10 @@ const getWorkspaceStats = async (
         );
 
     if (!isMember) {
-        throw new AppError("You are not a member of this workspace", 403);
+        throw new AppError(
+            "You are not a member of this workspace",
+            403
+        );
     }
 
     const totalTasks =
