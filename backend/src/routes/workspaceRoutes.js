@@ -5,6 +5,15 @@ const router = express.Router();
 const { protect } = require("../middleware/authMiddleware");
 
 const {
+    createWorkspaceValidator,
+    addMemberValidator,
+} = require("../validators/workspaceValidator");
+
+const validate = require(
+    "../middleware/validationMiddleware"
+);
+
+const {
     createWorkspace,
     getMyWorkspaces,
     getWorkspaceById,
@@ -15,13 +24,13 @@ const {
     "../controllers/workspaceController"
 );
 
-router.post("/", protect, createWorkspace);
+router.post("/", protect, createWorkspaceValidator, validate, createWorkspace);
 
 router.get("/", protect, getMyWorkspaces);
 
-router.get("/:id", protect, getWorkspaceById);
+router.get("/:workspaceId", protect, getWorkspaceById);
 
-router.post("/:id/members", protect, addMemberToWorkspace);
+router.post("/:workspaceId/members", protect, addMemberValidator, validate, addMemberToWorkspace);
 
 router.patch("/:workspaceId/members/role", protect, updateMemberRole);
 

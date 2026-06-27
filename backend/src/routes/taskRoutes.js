@@ -5,6 +5,16 @@ const router = express.Router();
 const { protect } = require("../middleware/authMiddleware");
 
 const {
+    createTaskValidator,
+    assignTaskValidator,
+    updateStatusValidator,
+} = require("../validators/taskValidator");
+
+const validate = require(
+    "../middleware/validationMiddleware"
+);
+
+const {
     createTask,
     getWorkspaceTasks,
     assignTask,
@@ -16,6 +26,8 @@ const {
 router.post(
     "/workspaces/:workspaceId/tasks",
     protect,
+    createTaskValidator,
+    validate,
     createTask
 );
 
@@ -28,12 +40,16 @@ router.get(
 router.patch(
     "/tasks/:taskId/assign",
     protect,
+    assignTaskValidator,
+    validate,
     assignTask
 );
 
 router.patch(
     "/tasks/:taskId/status",
     protect,
+    updateStatusValidator,
+    validate,
     updateTaskStatus
 );
 

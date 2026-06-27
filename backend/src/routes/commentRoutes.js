@@ -9,6 +9,14 @@ const {
 );
 
 const {
+    addCommentValidator,
+} = require("../validators/commentValidator");
+
+const validate = require(
+    "../middleware/validationMiddleware"
+);
+
+const {
     addComment,
     getTaskComments,
 } = require(
@@ -18,6 +26,8 @@ const {
 router.post(
     "/tasks/:taskId/comments",
     protect,
+    addCommentValidator,
+    validate,
     addComment
 );
 
