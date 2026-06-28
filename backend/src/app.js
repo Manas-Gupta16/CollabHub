@@ -1,10 +1,15 @@
 const express = require("express");
 const cors = require("cors");
+const helmet = require("helmet");
 
 const {
     errorHandler,
 } = require(
     "./middleware/errorMiddleware"
+);
+
+const logger = require(
+    "./middleware/loggerMiddleware"
 );
 
 const userRoutes = require("./routes/userRoutes");
@@ -14,11 +19,23 @@ const taskRoutes = require("./routes/taskRoutes");
 const activityRoutes = require("./routes/activityRoutes");
 const commentRoutes = require("./routes/commentRoutes");
 
+const apiLimiter = require(
+    "./middleware/rateLimiter"
+);
+
+
+
 const app = express();
 
 // Middleware
 app.use(cors());
 app.use(express.json());
+
+
+app.use(logger);
+
+app.use(helmet());
+app.use(apiLimiter);
 
 // Routes
 app.use("/api/users", userRoutes);
@@ -34,7 +51,5 @@ app.get("/", (req, res) => {
 });
 
 app.use(errorHandler);
-
-module.exports = app;
 
 module.exports = app;

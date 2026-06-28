@@ -322,6 +322,30 @@ const getWorkspaceStats = async (
             priority: "LOW",
         });
 
+    const completionRate =
+        totalTasks === 0
+            ? 0
+            : Math.round(
+                (doneTasks / totalTasks) * 100
+            );
+
+    const assignedTasks =
+        await Task.countDocuments({
+            workspace: workspaceId,
+            assignee: currentUser._id,
+        });
+
+    const overdueTasks =
+        await Task.countDocuments({
+            workspace: workspaceId,
+            dueDate: {
+                $lt: new Date(),
+            },
+            status: {
+                $ne: "DONE",
+            },
+        });
+
     return {
         totalTasks,
         todoTasks,
@@ -333,6 +357,11 @@ const getWorkspaceStats = async (
         lowPriorityTasks,
 
         totalMembers,
+
+        completionRate,
+
+        assignedTasks,
+        overdueTasks,
     };
 };
 
