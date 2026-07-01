@@ -1,5 +1,4 @@
 const requiredEnvVars = [
-    "PORT",
     "MONGO_URI",
     "JWT_SECRET",
 ];
