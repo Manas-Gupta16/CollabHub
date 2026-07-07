@@ -2,6 +2,14 @@ const express = require("express");
 const cors = require("cors");
 const helmet = require("helmet");
 
+const swaggerUi = require(
+    "swagger-ui-express"
+);
+
+const swaggerSpec = require(
+    "./docs/swagger"
+);
+
 const {
     errorHandler,
 } = require(
@@ -49,6 +57,12 @@ app.use("/api", commentRoutes);
 app.get("/", (req, res) => {
     res.send("CollabHub API is running...");
 });
+
+app.use(
+    "/api-docs",
+    swaggerUi.serve,
+    swaggerUi.setup(swaggerSpec)
+);
 
 app.use(errorHandler);
 
