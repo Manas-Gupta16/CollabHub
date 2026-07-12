@@ -4,6 +4,7 @@ const Task = require("../models/Task");
 const Workspace = require("../models/Workspace");
 
 const activityService = require("./activityService");
+const notificationService = require("./notificationService");
 
 const {
     ACTIVITY_ACTIONS,
@@ -57,6 +58,16 @@ const addComment = async (
             ACTIVITY_ACTIONS.TASK_COMMENTED,
         details: `Commented on task: ${task.title}`,
     });
+
+    if (task.assignee && task.assignee.toString() !== currentUser._id.toString()) {
+        await notificationService.createNotification({
+            recipientId: task.assignee,
+            type: "NEW_COMMENT",
+            message: `${currentUser.name} commented on your task: ${task.title}`,
+            workspaceId: workspace._id,
+            relatedEntityId: task._id
+        });
+    }
 
     return comment;
 };

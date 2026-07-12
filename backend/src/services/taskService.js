@@ -3,6 +3,7 @@ const Task = require("../models/Task");
 const Workspace = require("../models/Workspace");
 const User = require("../models/User");
 const activityService = require("./activityService");
+const notificationService = require("./notificationService");
 
 const {
     ACTIVITY_ACTIONS,
@@ -260,6 +261,16 @@ const assignTask = async (
             ACTIVITY_ACTIONS.TASK_ASSIGNED,
         details: `Assigned task: ${task.title}`,
     });
+
+    if (assigneeId.toString() !== currentUser._id.toString()) {
+        await notificationService.createNotification({
+            recipientId: assigneeId,
+            type: "TASK_ASSIGNED",
+            message: `You were assigned to task: ${task.title}`,
+            workspaceId: workspace._id,
+            relatedEntityId: task._id
+        });
+    }
 
     return task;
 };
