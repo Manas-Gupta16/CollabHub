@@ -41,6 +41,18 @@ const initSocket = (server) => {
         // Automatically join a room named after the user's ID for direct messages/notifications
         socket.join(socket.user._id.toString());
 
+        // Join a specific workspace room
+        socket.on("join_workspace", (workspaceId) => {
+            socket.join(workspaceId);
+            console.log(`User ${socket.user.name} joined workspace room: ${workspaceId}`);
+        });
+
+        // Leave a specific workspace room
+        socket.on("leave_workspace", (workspaceId) => {
+            socket.leave(workspaceId);
+            console.log(`User ${socket.user.name} left workspace room: ${workspaceId}`);
+        });
+
         socket.on("disconnect", () => {
             console.log(`User disconnected via socket: ${socket.user.name} (${socket.id})`);
         });

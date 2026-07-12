@@ -26,6 +26,7 @@ const workspaceRoutes = require("./routes/workspaceRoutes");
 const taskRoutes = require("./routes/taskRoutes");
 const activityRoutes = require("./routes/activityRoutes");
 const commentRoutes = require("./routes/commentRoutes");
+const messageRoutes = require("./routes/messageRoutes");
 
 const apiLimiter = require(
     "./middleware/rateLimiter"
@@ -52,6 +53,7 @@ app.use("/api/workspaces", workspaceRoutes);
 app.use("/api", taskRoutes);
 app.use("/api/workspaces", activityRoutes);
 app.use("/api", commentRoutes);
+app.use("/api/workspaces", messageRoutes);
 
 // Test Route
 app.get("/", (req, res) => {
