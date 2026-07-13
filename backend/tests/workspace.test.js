@@ -93,5 +93,76 @@ describe("Workspace Routes", () => {
             expect(response.status).toBe(403);
             expect(response.body.success).toBe(false);
         });
+
+        test("6. Add Member - Fail (User not found)", async () => {
+            const response = await request(app)
+                .post(`/api/workspaces/${workspaceId}/members`)
+                .set("Authorization", `Bearer ${token1}`)
+                .send({ email: "notfound@example.com", role: "MEMBER" });
+            
+            expect(response.status).toBe(404);
+            expect(response.body.message).toBe("User not found");
+        });
+
+        test("7. Add Member - Fail (Already a member)", async () => {
+            const response = await request(app)
+                .post(`/api/workspaces/${workspaceId}/members`)
+                .set("Authorization", `Bearer ${token1}`)
+                .send({ email: "user2@example.com", role: "MEMBER" });
+            
+            expect(response.status).toBe(400);
+            expect(response.body.message).toBe("User is already a workspace member");
+        });
+
+        test("8. Update Role - Fail (Owner role cannot be changed)", async () => {
+            const response = await request(app)
+                .patch(`/api/workspaces/${workspaceId}/members/role`)
+                .set("Authorization", `Bearer ${token1}`)
+                .send({ userId: user1._id, role: "ADMIN" });
+            
+            expect(response.status).toBe(400);
+            expect(response.body.message).toBe("Owner role cannot be changed");
+        });
+
+        test("9. Update Role - Fail (Invalid role)", async () => {
+            const response = await request(app)
+                .patch(`/api/workspaces/${workspaceId}/members/role`)
+                .set("Authorization", `Bearer ${token1}`)
+                .send({ userId: user2._id, role: "SUPERMAN" });
+            
+            expect(response.status).toBe(400);
+        });
+
+        test("10. Get Workspace By ID - Success", async () => {
+            const response = await request(app)
+                .get(`/api/workspaces/${workspaceId}`)
+                .set("Authorization", `Bearer ${token1}`);
+            
+            expect(response.status).toBe(200);
+            expect(response.body.data._id.toString()).toBe(workspaceId.toString());
+        });
+
+        test("11. Get Workspace By ID - Fail (Not a member)", async () => {
+            await request(app).post("/api/auth/register").send({ name: "User 3", email: "user3@example.com", password: "password" });
+            const res3 = await request(app).post("/api/auth/login").send({ email: "user3@example.com", password: "password" });
+            const token3 = res3.body.data.token;
+
+            const response = await request(app)
+                .get(`/api/workspaces/${workspaceId}`)
+                .set("Authorization", `Bearer ${token3}`);
+            
+            expect(response.status).toBe(403);
+            expect(response.body.message).toBe("You are not authorized to access this workspace");
+        });
+
+        test("12. Get Workspace Stats - Success", async () => {
+            const response = await request(app)
+                .get(`/api/workspaces/${workspaceId}/stats`)
+                .set("Authorization", `Bearer ${token1}`);
+            
+            expect(response.status).toBe(200);
+            expect(response.body.data).toHaveProperty("totalTasks");
+            expect(response.body.data).toHaveProperty("totalMembers");
+        });
     });
 });
