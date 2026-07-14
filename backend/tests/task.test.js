@@ -107,8 +107,11 @@ describe("Task Routes", () => {
         });
 
         test("8. Assign Task - Success", async () => {
-            // Add user2 to workspace first
+            // Create user 2
+            await request(app).post("/api/auth/register").send({ name: "User2", email: "u2@example.com", password: "password" });
             const u2 = await User.findOne({ email: "u2@example.com" });
+            
+            // Add user2 to workspace first
             await request(app)
                 .post(`/api/workspaces/${workspaceId}/members`)
                 .set("Authorization", `Bearer ${token}`)
@@ -124,8 +127,17 @@ describe("Task Routes", () => {
         });
 
         test("9. Delete Task - Fail (Not owner/admin)", async () => {
-            // User 2 tries to delete task
-            const res2 = await request(app).post("/api/auth/login").send({ email: "u2@example.com", password: "password" });
+            // Create user 3
+            await request(app).post("/api/auth/register").send({ name: "User3", email: "u3@example.com", password: "password" });
+            
+            // Add user3 to workspace as MEMBER
+            await request(app)
+                .post(`/api/workspaces/${workspaceId}/members`)
+                .set("Authorization", `Bearer ${token}`)
+                .send({ email: "u3@example.com", role: "MEMBER" });
+
+            // User 3 tries to delete task
+            const res2 = await request(app).post("/api/auth/login").send({ email: "u3@example.com", password: "password" });
             const user2Token = res2.body.data.token;
 
             const response = await request(app)
