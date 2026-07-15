@@ -1,4 +1,4 @@
-# 🚀 CollabHub – Modern Team Collaboration Platform
+# CollabHub – Modern Team Collaboration Platform
 
 CollabHub is a full-stack collaboration platform designed for teams and developers to communicate, manage tasks, and collaborate efficiently in real time.
 
@@ -6,42 +6,47 @@ This project is being built from scratch with a strong focus on scalable backend
 
 ---
 
-## ✨ Features
+## Features
 
-### 🔐 Authentication & Security
+### Authentication & Security
 
 - JWT-based Authentication
 - Secure Login & Registration
 - Protected Routes
 - Role-Based Access Control
 
-### 👥 Workspaces & Collaboration
+### Workspaces & Collaboration
 
 - Create and manage workspaces
 - Invite team members
 - Workspace roles & permissions
 
-### 💬 Communication System
+### Communication System
 
 - Team channels
-- Messaging system
+- Real-time messaging (Socket.IO)
 - Message history
 - Notifications & mentions
 
-### 📋 Task Management
+### Task Management
 
 - Create tasks
 - Assign tasks to members
 - Due dates & priorities
 - Task status tracking
 
-### 🔎 Search & Filtering
+### Activity & Notifications
+
+- Activity logs
+- Advanced real-time notifications
+
+### Search & Filtering
 
 - Search tasks & messages
 - Pagination
 - Sorting & filtering
 
-### 🎨 Frontend Experience
+### Frontend Experience
 
 - Cinematic landing page
 - Responsive dashboard
@@ -50,7 +55,7 @@ This project is being built from scratch with a strong focus on scalable backend
 
 ---
 
-## 🛠️ Tech Stack
+## Tech Stack
 
 ### Frontend
 
@@ -72,12 +77,15 @@ This project is being built from scratch with a strong focus on scalable backend
 ### Tools & Technologies
 
 - JWT Authentication
-- Git & GitHub
-- REST APIs
+- Git & GitHub Actions (CI/CD)
+- REST APIs & Swagger UI
+- Docker & Docker Compose
+- Socket.IO
+- Jest & Supertest
 
 ---
 
-## 📁 Project Structure
+## Project Structure
 
 ```txt
 CollabHub/
@@ -107,7 +115,7 @@ CollabHub/
 
 ---
 
-## ⚙️ Installation & Setup
+## Installation & Setup
 
 ### 1. Clone the Repository
 
@@ -141,7 +149,7 @@ npm run dev
 
 ---
 
-## 🌐 Initial API Endpoint
+## Initial API Endpoint
 
 ```http
 GET /
@@ -155,22 +163,16 @@ Response:
 
 ---
 
-## 🚧 Future Improvements
+## Future Improvements
 
-- Real-time messaging using Socket.IO
 - File uploads
-- Activity logs
-- Advanced notifications
-- Docker containerization
-- CI/CD pipelines
-- Testing suite
 - Cloud deployment
 - PostgreSQL integration
 - Microservices architecture (future scope)
 
 ---
 
-## 📌 Learning Goals of This Project
+## Learning Goals of This Project
 
 - Build scalable backend systems
 - Master MongoDB & database design
@@ -181,19 +183,19 @@ Response:
 
 ---
 
-## 🤝 Contributing
+## Contributing
 
 Contributions are welcome. Feel free to fork the repository and submit pull requests.
 
 ---
 
-## 📄 License
+## License
 
 This project is licensed under the MIT License.
 
 ---
 
-## 👨‍💻 Author
+## Author
 
 **Manas Gupta**
 Aspiring Software Engineer
