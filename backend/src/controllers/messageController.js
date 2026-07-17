@@ -5,7 +5,8 @@ const sendMessage = asyncHandler(async (req, res) => {
     const message = await messageService.sendMessage(
         req.params.workspaceId,
         req.body.content,
-        req.user
+        req.user,
+        req.files
     );
 
     res.status(201).json({

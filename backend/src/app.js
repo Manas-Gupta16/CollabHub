@@ -42,6 +42,10 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+// Serve uploads statically
+const path = require("path");
+app.use("/uploads", express.static(path.join(__dirname, "../uploads")));
+
 
 app.use(logger);
 

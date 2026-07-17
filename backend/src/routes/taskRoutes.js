@@ -10,6 +10,7 @@ const express = require("express");
 const router = express.Router();
 
 const { protect } = require("../middleware/authMiddleware");
+const upload = require("../middleware/uploadMiddleware");
 
 const {
     createTaskValidator,
@@ -76,6 +77,7 @@ const {
 router.post(
     "/workspaces/:workspaceId/tasks",
     protect,
+    upload.array("attachments", 5),
     createTaskValidator,
     validate,
     createTask
@@ -234,6 +236,7 @@ router.patch(
 router.patch(
     "/tasks/:taskId",
     protect,
+    upload.array("attachments", 5),
     updateTask
 );
 

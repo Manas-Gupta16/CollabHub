@@ -7,7 +7,8 @@ const createTask = asyncHandler(
             await taskService.createTask(
                 req.params.workspaceId,
                 req.body,
-                req.user
+                req.user,
+                req.files
             );
 
         res.status(201).json({
@@ -71,7 +72,8 @@ const updateTask = asyncHandler(
             await taskService.updateTask(
                 req.params.taskId,
                 req.body,
-                req.user
+                req.user,
+                req.files
             );
 
         res.status(200).json({

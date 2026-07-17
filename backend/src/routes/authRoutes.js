@@ -17,7 +17,10 @@ const {
     register,
     login,
     getProfile,
+    updateProfile,
 } = require("../controllers/authController");
+
+const upload = require("../middleware/uploadMiddleware");
 
 /**
  * @swagger
@@ -111,6 +114,13 @@ router.get(
     "/profile",
     protect,
     getProfile
+);
+
+router.put(
+    "/profile",
+    protect,
+    upload.single("avatar"),
+    updateProfile
 );
 
 module.exports = router;

@@ -32,8 +32,24 @@ const getProfile = asyncHandler(
     }
 );
 
+const updateProfile = asyncHandler(
+    async (req, res) => {
+        const user = req.user;
+        if (req.file) {
+            user.avatar = `/uploads/${req.file.filename}`;
+            await user.save();
+        }
+
+        res.status(200).json({
+            success: true,
+            user,
+        });
+    }
+);
+
 module.exports = {
     register,
     login,
     getProfile,
+    updateProfile,
 };

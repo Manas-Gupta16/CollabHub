@@ -17,6 +17,9 @@ const messageSchema = new mongoose.Schema(
             ref: "Workspace",
             required: true,
         },
+        attachments: [{
+            type: String
+        }],
     },
     {
         timestamps: true,

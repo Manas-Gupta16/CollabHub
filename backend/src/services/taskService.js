@@ -12,7 +12,8 @@ const {
 const createTask = async (
     workspaceId,
     taskData,
-    currentUser
+    currentUser,
+    files = []
 ) => {
     const workspace = await Workspace.findById(
         workspaceId
@@ -38,6 +39,8 @@ const createTask = async (
         );
     }
 
+    const attachments = files ? files.map(file => `/uploads/${file.filename}`) : [];
+
     const task = await Task.create({
         title: taskData.title,
         description: taskData.description,
@@ -46,6 +49,7 @@ const createTask = async (
 
         workspace: workspaceId,
         createdBy: currentUser._id,
+        attachments,
     });
 
     await activityService.createActivity({
@@ -324,7 +328,8 @@ const updateTaskStatus = async (
 const updateTask = async (
     taskId,
     taskData,
-    currentUser
+    currentUser,
+    files = []
 ) => {
     const task = await Task.findById(taskId);
 
@@ -367,6 +372,11 @@ const updateTask = async (
     task.dueDate =
         taskData.dueDate ||
         task.dueDate;
+
+    if (files && files.length > 0) {
+        const newAttachments = files.map(file => `/uploads/${file.filename}`);
+        task.attachments = [...(task.attachments || []), ...newAttachments];
+    }
 
     await task.save();
 
