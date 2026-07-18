@@ -16,6 +16,8 @@ const {
     "./middleware/errorMiddleware"
 );
 
+const AppError = require("./utils/AppError");
+
 const logger = require(
     "./middleware/loggerMiddleware"
 );
@@ -73,6 +75,10 @@ app.use(
     swaggerUi.serve,
     swaggerUi.setup(swaggerSpec)
 );
+
+app.use((req, res, next) => {
+    next(new AppError(`Can't find ${req.originalUrl} on this server!`, 404));
+});
 
 app.use(errorHandler);
 

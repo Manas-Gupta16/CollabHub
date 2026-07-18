@@ -1,5 +1,11 @@
 const dotenv = require("dotenv");
 
+process.on("uncaughtException", (err) => {
+    console.error("UNCAUGHT EXCEPTION! 💥 Shutting down...");
+    console.error(err.name, err.message);
+    process.exit(1);
+});
+
 // Load Environment Variables
 dotenv.config();
 
@@ -24,4 +30,12 @@ const PORT = process.env.PORT || 5000;
 // Start Server
 server.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
+});
+
+process.on("unhandledRejection", (err) => {
+    console.error("UNHANDLED REJECTION! 💥 Shutting down...");
+    console.error(err.name, err.message);
+    server.close(() => {
+        process.exit(1);
+    });
 });
