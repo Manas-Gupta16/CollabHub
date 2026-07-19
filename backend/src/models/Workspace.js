@@ -34,6 +34,34 @@ const workspaceSchema = new mongoose.Schema(
                 },
             },
         ],
+
+        channels: [
+            {
+                name: { type: String, required: true },
+                isPrivate: { type: Boolean, default: false }
+            }
+        ],
+
+        pinnedLinks: [
+            {
+                title: { type: String, required: true },
+                url: { type: String, required: true }
+            }
+        ],
+
+        keyDeadlines: [
+            {
+                title: { type: String, required: true },
+                date: { type: Date, required: true }
+            }
+        ],
+
+        teamGoals: [
+            {
+                title: { type: String, required: true },
+                isCompleted: { type: Boolean, default: false }
+            }
+        ]
     },
     {
         timestamps: true,

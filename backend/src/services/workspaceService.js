@@ -31,6 +31,20 @@ const createWorkspace = async (
                 role: ROLES.OWNER,
             },
         ],
+        channels: [
+            { name: "general", isPrivate: false },
+            { name: "announcements", isPrivate: false }
+        ],
+        pinnedLinks: [
+            { title: "CollabHub Docs", url: "https://link.com/CollabHub/1" }
+        ],
+        keyDeadlines: [
+            { title: "Project Launch", date: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000) } // 7 days from now
+        ],
+        teamGoals: [
+            { title: "Complete design system", isCompleted: true },
+            { title: "Setup API routes", isCompleted: false }
+        ]
     });
 
     await activityService.createActivity({
@@ -60,7 +74,7 @@ const getWorkspaceById = async (
 ) => {
     const workspace = await Workspace.findById(
         workspaceId
-    );
+    ).populate("members.user", "name email profileImage");
 
     if (!workspace) {
         throw new AppError(
