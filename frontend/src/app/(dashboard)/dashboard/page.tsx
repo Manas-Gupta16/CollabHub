@@ -1,7 +1,10 @@
 "use client"
 import { Card, CardContent } from "@/components/ui/card"
 import { LineChart, Line, XAxis, Tooltip, ResponsiveContainer } from "recharts"
-import { CheckCircle2, Clock, Users, ArrowUpRight, MessageSquare, Plus, Activity } from "lucide-react"
+import { CheckCircle2, Clock, Users, ArrowUpRight, Plus } from "lucide-react"
+import { useQuery } from "@tanstack/react-query"
+import { getWorkspaces } from "@/lib/api"
+import Link from "next/link"
 
 const data = [
   { name: 'Mon', tasks: 4 },
@@ -13,13 +16,27 @@ const data = [
   { name: 'Sun', tasks: 1 },
 ]
 
+const colors = ['bg-orange-500', 'bg-blue-500', 'bg-purple-500', 'bg-emerald-500', 'bg-pink-500']
+const hoverColors = ['text-orange-500', 'text-blue-500', 'text-purple-500', 'text-emerald-500', 'text-pink-500']
+
 export default function Dashboard() {
+  const { data: workspaces } = useQuery({
+    queryKey: ['workspaces'],
+    queryFn: getWorkspaces,
+  })
+
   return (
-    <div className="flex-1 overflow-y-auto bg-white p-6 md:p-8">
-      <div className="max-w-6xl mx-auto space-y-6">
+    <div className="flex-1 overflow-y-auto bg-gradient-to-br from-[#F5F8FF] to-[#E9F0FE] p-6 md:p-8 relative">
+
+      {/* Animated character decoration */}
+      <div className="absolute top-6 right-8 w-20 h-24 opacity-30 hidden xl:block pointer-events-none">
+        <img src="https://api.dicebear.com/7.x/micah/svg?seed=Dashboard&backgroundColor=transparen&mouth=smilet&mouth=smile" alt="" className="w-full h-full object-contain" />
+      </div>
+
+      <div className="max-w-6xl mx-auto space-y-6 relative z-10">
         
         {/* Clean Header */}
-        <div className="flex justify-between items-end border-b border-gray-100 pb-4">
+        <div className="flex justify-between items-end border-b border-gray-200/50 pb-4">
           <div>
             <h1 className="text-[20px] font-bold text-gray-900 tracking-tight">Overview</h1>
             <p className="text-[13px] text-gray-500 font-medium mt-1">
@@ -27,7 +44,7 @@ export default function Dashboard() {
             </p>
           </div>
           <div className="hidden md:flex gap-2">
-            <button className="px-3 py-1.5 bg-gray-50 hover:bg-gray-100 border border-gray-100 rounded-md text-[13px] font-semibold text-gray-700 transition-colors flex items-center gap-1.5 shadow-sm">
+            <button className="px-3 py-1.5 bg-white/80 hover:bg-white border border-gray-200/60 rounded-md text-[13px] font-semibold text-gray-700 transition-colors flex items-center gap-1.5 shadow-sm backdrop-blur-sm">
               <Plus className="w-3.5 h-3.5" strokeWidth={2.5}/>
               New Task
             </button>
@@ -36,7 +53,7 @@ export default function Dashboard() {
 
         {/* Minimal Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <Card className="border-gray-100 shadow-sm hover:border-gray-200 transition-colors">
+          <Card className="border-gray-200/50 shadow-sm bg-white/80 backdrop-blur-sm hover:border-gray-300/60 transition-colors">
             <CardContent className="p-4 flex items-center justify-between">
               <div>
                 <p className="text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-0.5">Total Tasks</p>
@@ -47,7 +64,7 @@ export default function Dashboard() {
               </div>
             </CardContent>
           </Card>
-          <Card className="border-gray-100 shadow-sm hover:border-gray-200 transition-colors">
+          <Card className="border-gray-200/50 shadow-sm bg-white/80 backdrop-blur-sm hover:border-gray-300/60 transition-colors">
             <CardContent className="p-4 flex items-center justify-between">
               <div>
                 <p className="text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-0.5">In Progress</p>
@@ -58,7 +75,7 @@ export default function Dashboard() {
               </div>
             </CardContent>
           </Card>
-          <Card className="border-gray-100 shadow-sm hover:border-gray-200 transition-colors">
+          <Card className="border-gray-200/50 shadow-sm bg-white/80 backdrop-blur-sm hover:border-gray-300/60 transition-colors">
             <CardContent className="p-4 flex items-center justify-between">
               <div>
                 <p className="text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-0.5">Active Members</p>
@@ -69,7 +86,7 @@ export default function Dashboard() {
               </div>
             </CardContent>
           </Card>
-          <Card className="border-gray-100 shadow-sm hover:border-gray-200 transition-colors">
+          <Card className="border-gray-200/50 shadow-sm bg-white/80 backdrop-blur-sm hover:border-gray-300/60 transition-colors">
             <CardContent className="p-4 flex items-center justify-between">
               <div>
                 <p className="text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-0.5">Productivity</p>
@@ -87,7 +104,7 @@ export default function Dashboard() {
           <div className="lg:col-span-2 space-y-6">
             
             {/* Chart */}
-            <Card className="border-gray-100 shadow-sm">
+            <Card className="border-gray-200/50 shadow-sm bg-white/80 backdrop-blur-sm">
               <CardContent className="p-5">
                 <div className="mb-4">
                   <h3 className="text-[14px] font-bold text-gray-900">Activity Overview</h3>
@@ -116,68 +133,45 @@ export default function Dashboard() {
               </CardContent>
             </Card>
 
-            {/* Active Workspaces */}
-            <Card className="border-gray-100 shadow-sm">
+            {/* Active Workspaces — from backend */}
+            <Card className="border-gray-200/50 shadow-sm bg-white/80 backdrop-blur-sm">
               <CardContent className="p-5">
                 <div className="flex items-center justify-between mb-4">
                   <div>
                     <h3 className="text-[14px] font-bold text-gray-900">Recent Workspaces</h3>
                     <p className="text-[12px] text-gray-500 font-medium">Your recently accessed projects</p>
                   </div>
-                  <button className="text-[12px] font-bold text-gray-400 hover:text-gray-900 transition-colors">View All</button>
+                  <Link href="/workspaces" className="text-[12px] font-bold text-gray-400 hover:text-gray-900 transition-colors">View All</Link>
                 </div>
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                  <div className="p-3.5 rounded-xl border border-gray-100 bg-gray-50/50 hover:bg-gray-50 hover:border-gray-200 transition-all cursor-pointer group">
-                    <div className="flex items-center gap-3 mb-4">
-                      <div className="w-8 h-8 rounded-md bg-orange-50 border border-orange-100 flex items-center justify-center text-orange-500 font-bold text-[11px]">
-                        PD
-                      </div>
-                      <div>
-                        <h4 className="font-bold text-[13px] text-gray-900 group-hover:text-orange-500 transition-colors line-clamp-1">Project Delta</h4>
-                        <p className="text-[11px] font-medium text-gray-500">8 active members</p>
-                      </div>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <div className="flex -space-x-1.5">
-                        {[
-                          "https://api.dicebear.com/7.x/micah/svg?seed=Felix&backgroundColor=f3f4f6",
-                          "https://api.dicebear.com/7.x/micah/svg?seed=Aneka&backgroundColor=f3f4f6",
-                          "https://api.dicebear.com/7.x/micah/svg?seed=Jocelyn&backgroundColor=f3f4f6"
-                        ].map((url, i) => (
-                          <div key={i} className="w-5 h-5 rounded-full border border-white overflow-hidden bg-gray-200 shadow-sm">
-                            <img src={url} className="w-full h-full object-cover"/>
+                  {workspaces?.slice(0, 4).map((ws: any, i: number) => (
+                    <Link key={ws._id} href={`/workspaces/${ws._id}`}>
+                      <div className="p-3.5 rounded-xl border border-gray-100 bg-gray-50/50 hover:bg-gray-50 hover:border-gray-200 transition-all cursor-pointer group">
+                        <div className="flex items-center gap-3 mb-4">
+                          <div className={`w-8 h-8 rounded-md ${colors[i % colors.length]} bg-opacity-20 border border-gray-100 flex items-center justify-center font-bold text-[11px] text-white`}>
+                            {ws.name?.substring(0, 2).toUpperCase()}
                           </div>
-                        ))}
-                      </div>
-                      <span className="text-[11px] font-bold text-gray-400 group-hover:text-gray-600 transition-colors">Enter &rarr;</span>
-                    </div>
-                  </div>
-                  
-                  <div className="p-3.5 rounded-xl border border-gray-100 bg-gray-50/50 hover:bg-gray-50 hover:border-gray-200 transition-all cursor-pointer group">
-                    <div className="flex items-center gap-3 mb-4">
-                      <div className="w-8 h-8 rounded-md bg-blue-50 border border-blue-100 flex items-center justify-center text-blue-500 font-bold text-[11px]">
-                        DT
-                      </div>
-                      <div>
-                        <h4 className="font-bold text-[13px] text-gray-900 group-hover:text-blue-500 transition-colors line-clamp-1">Design Team Hub</h4>
-                        <p className="text-[11px] font-medium text-gray-500">12 active members</p>
-                      </div>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <div className="flex -space-x-1.5">
-                        {[
-                          "https://api.dicebear.com/7.x/micah/svg?seed=George&backgroundColor=f3f4f6",
-                          "https://api.dicebear.com/7.x/micah/svg?seed=Jasper&backgroundColor=f3f4f6"
-                        ].map((url, i) => (
-                          <div key={i} className="w-5 h-5 rounded-full border border-white overflow-hidden bg-gray-200 shadow-sm">
-                            <img src={url} className="w-full h-full object-cover"/>
+                          <div>
+                            <h4 className={`font-bold text-[13px] text-gray-900 group-hover:${hoverColors[i % hoverColors.length]} transition-colors line-clamp-1`}>{ws.name}</h4>
+                            <p className="text-[11px] font-medium text-gray-500">{ws.members?.length || 0} members</p>
                           </div>
-                        ))}
+                        </div>
+                        <div className="flex justify-between items-center">
+                          <div className="flex -space-x-1.5">
+                            {(ws.members || []).slice(0, 3).map((m: any, j: number) => (
+                              <div key={j} className="w-5 h-5 rounded-full border border-white overflow-hidden bg-gray-200 shadow-sm">
+                                <img src={`https://api.dicebear.com/7.x/micah/svg?seed=${m.user?.name || `user${j}`}&backgroundColor=f3f4f6`} className="w-full h-full object-cover"/>
+                              </div>
+                            ))}
+                          </div>
+                          <span className="text-[11px] font-bold text-gray-400 group-hover:text-gray-600 transition-colors">Enter &rarr;</span>
+                        </div>
                       </div>
-                      <span className="text-[11px] font-bold text-gray-400 group-hover:text-gray-600 transition-colors">Enter &rarr;</span>
-                    </div>
-                  </div>
+                    </Link>
+                  )) || (
+                    <div className="col-span-2 text-center text-sm text-gray-400 py-8">No workspaces yet. Create one to get started!</div>
+                  )}
                 </div>
               </CardContent>
             </Card>
@@ -185,7 +179,7 @@ export default function Dashboard() {
 
           {/* Right Sidebar Area (Recent Activity) */}
           <div className="space-y-6">
-            <Card className="border-gray-100 shadow-sm h-full max-h-[500px] flex flex-col">
+            <Card className="border-gray-200/50 shadow-sm h-full max-h-[500px] flex flex-col bg-white/80 backdrop-blur-sm">
               <CardContent className="p-5 flex-1 flex flex-col">
                 <div className="flex items-center justify-between mb-5">
                    <h3 className="text-[14px] font-bold text-gray-900">Recent Activity</h3>
@@ -211,9 +205,11 @@ export default function Dashboard() {
                 </div>
                 
                 <div className="mt-4 pt-4 border-t border-gray-100">
-                  <button className="w-full py-1.5 bg-gray-50 hover:bg-gray-100 border border-gray-100 rounded-md text-[12px] font-bold text-gray-600 transition-colors shadow-sm">
-                    View All Activity
-                  </button>
+                  <Link href="/activity">
+                    <button className="w-full py-1.5 bg-gray-50 hover:bg-gray-100 border border-gray-100 rounded-md text-[12px] font-bold text-gray-600 transition-colors shadow-sm">
+                      View All Activity
+                    </button>
+                  </Link>
                 </div>
               </CardContent>
             </Card>

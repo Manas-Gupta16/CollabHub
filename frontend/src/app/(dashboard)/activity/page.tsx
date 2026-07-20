@@ -23,8 +23,14 @@ export default function ActivityPage() {
   ]
 
   return (
-    <div className="flex-1 overflow-y-auto bg-[#FAFAFA] p-8">
-      <div className="max-w-4xl mx-auto space-y-8">
+    <div className="flex-1 overflow-y-auto bg-gradient-to-br from-[#F5F8FF] to-[#E9F0FE] p-8 relative">
+
+      {/* Animated character decoration */}
+      <div className="absolute top-8 right-12 w-24 h-28 opacity-20 hidden xl:block pointer-events-none">
+        <img src="https://api.dicebear.com/7.x/micah/svg?seed=ActivityBot&backgroundColor=transparen&mouth=smilet&mouth=smile" alt="" className="w-full h-full object-contain" />
+      </div>
+
+      <div className="max-w-4xl mx-auto space-y-8 relative z-10">
         
         {/* Header */}
         <div>
@@ -38,8 +44,8 @@ export default function ActivityPage() {
             <div key={group.date} className="relative">
               {/* Group Date Header */}
               <div className="flex items-center gap-4 mb-6">
-                <div className="text-sm font-bold text-gray-900 uppercase tracking-wider bg-[#FAFAFA] z-10 pr-4">{group.date}</div>
-                <div className="h-px bg-gray-200 flex-1"></div>
+                <div className="text-sm font-bold text-gray-900 uppercase tracking-wider bg-gradient-to-r from-[#F5F8FF] to-transparent z-10 pr-4">{group.date}</div>
+                <div className="h-px bg-gray-200/80 flex-1"></div>
               </div>
 
               <div className="space-y-8">
@@ -47,13 +53,13 @@ export default function ActivityPage() {
                   <div key={item.id} className="flex gap-6 relative">
                     {/* Vertical Line Connection */}
                     {index !== group.items.length - 1 && (
-                      <div className="absolute left-6 top-10 bottom-[-32px] w-px bg-gray-200"></div>
+                      <div className="absolute left-6 top-10 bottom-[-32px] w-px bg-gray-200/80"></div>
                     )}
                     
                     {/* Avatar & Icon */}
                     <div className="relative shrink-0 z-10">
                       <div className="w-12 h-12 rounded-full bg-gray-200 overflow-hidden shadow-sm">
-                        <img src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${item.user}`} className="w-full h-full" />
+                        <img src={`https://api.dicebear.com/7.x/micah/svg?seed=${item.user.replace(/\s/g, '')}&backgroundColor=f3f4f6`} className="w-full h-full object-cover" />
                       </div>
                       <div className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-white border border-gray-100 shadow-sm flex items-center justify-center">
                         {item.icon}
@@ -61,7 +67,7 @@ export default function ActivityPage() {
                     </div>
 
                     {/* Content */}
-                    <div className="flex-1 bg-white p-4 rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
+                    <div className="flex-1 bg-white/80 backdrop-blur-sm p-4 rounded-xl border border-gray-200/60 shadow-sm hover:shadow-md transition-shadow">
                       <div className="flex justify-between items-start">
                         <div className="text-sm leading-relaxed">
                           <span className="font-bold text-gray-900">{item.user}</span>{' '}

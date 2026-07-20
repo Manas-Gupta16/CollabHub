@@ -5,9 +5,26 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { User, Bell, Lock, Layout, MonitorSmartphone, CreditCard, Settings } from "lucide-react"
+import { useQuery } from "@tanstack/react-query"
+import api from "@/lib/api"
 
 export default function SettingsPage() {
   const [activeTab, setActiveTab] = useState('profile')
+
+  const { data: user } = useQuery({
+    queryKey: ['profile'],
+    queryFn: async () => {
+      const res = await api.get('/auth/profile')
+      return res.data?.user
+    },
+  })
+
+  const userName = user?.name || ''
+  const userEmail = user?.email || ''
+  const nameParts = userName.split(' ')
+  const firstName = nameParts[0] || ''
+  const lastName = nameParts.slice(1).join(' ') || ''
+  const userSeed = userName.replace(/\s/g, '') || 'Design'
 
   const tabs = [
     { id: 'profile', label: 'Profile', icon: <User className="w-4 h-4"/> },
@@ -19,8 +36,14 @@ export default function SettingsPage() {
   ]
 
   return (
-    <div className="flex-1 overflow-y-auto bg-[#FAFAFA] p-8">
-      <div className="max-w-5xl mx-auto space-y-8">
+    <div className="flex-1 overflow-y-auto bg-gradient-to-br from-[#F5F8FF] to-[#E9F0FE] p-8 relative">
+
+      {/* Animated character decoration */}
+      <div className="absolute top-8 right-12 w-24 h-28 opacity-20 hidden xl:block pointer-events-none">
+        <img src="https://api.dicebear.com/7.x/micah/svg?seed=SettingsBot&backgroundColor=transparen&mouth=smilet&mouth=smile" alt="" className="w-full h-full object-contain" />
+      </div>
+
+      <div className="max-w-5xl mx-auto space-y-8 relative z-10">
         
         {/* Header */}
         <div>
@@ -39,7 +62,7 @@ export default function SettingsPage() {
                 className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium transition-colors ${
                   activeTab === tab.id 
                     ? 'bg-indigo-50 text-[#6366F1]' 
-                    : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
+                    : 'text-gray-600 hover:bg-white/80 hover:text-gray-900'
                 }`}
               >
                 {tab.icon}
@@ -51,13 +74,13 @@ export default function SettingsPage() {
           {/* Content Area */}
           <div className="flex-1">
             {activeTab === 'profile' && (
-              <Card className="border-gray-200">
+              <Card className="border-gray-200/60 bg-white/80 backdrop-blur-sm">
                 <CardContent className="p-8">
                   <h2 className="text-xl font-bold text-gray-900 mb-6">Profile Settings</h2>
                   
                   <div className="flex items-center gap-6 mb-8">
                     <div className="w-20 h-20 rounded-full border border-gray-200 overflow-hidden bg-gray-100 shrink-0">
-                      <img src="https://api.dicebear.com/7.x/micah/svg?seed=Design&backgroundColor=f3f4f6" className="w-full h-full object-cover" />
+                      <img src={`https://api.dicebear.com/7.x/micah/svg?seed=${userSeed}&backgroundColor=f3f4f6`} className="w-full h-full object-cover" />
                     </div>
                     <div>
                       <div className="flex gap-2">
@@ -72,22 +95,22 @@ export default function SettingsPage() {
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                       <div className="space-y-2">
                         <label className="text-sm font-semibold text-gray-900">First Name</label>
-                        <Input defaultValue="Design" className="bg-gray-50" />
+                        <Input defaultValue={firstName} className="bg-gray-50" />
                       </div>
                       <div className="space-y-2">
                         <label className="text-sm font-semibold text-gray-900">Last Name</label>
-                        <Input defaultValue="Yeather" className="bg-gray-50" />
+                        <Input defaultValue={lastName} className="bg-gray-50" />
                       </div>
                     </div>
                     <div className="space-y-2">
                       <label className="text-sm font-semibold text-gray-900">Email Address</label>
-                      <Input defaultValue="design.y@collabhub.com" className="bg-gray-50" />
+                      <Input defaultValue={userEmail} className="bg-gray-50" />
                     </div>
                     <div className="space-y-2">
                       <label className="text-sm font-semibold text-gray-900">Bio</label>
                       <textarea 
                         className="w-full h-24 px-3 py-2 border border-gray-200 rounded-md bg-gray-50 text-sm focus:outline-none focus:ring-2 focus:ring-[#6366F1]"
-                        defaultValue="Passionate about creating intuitive, user-centric experiences. Leading the design system and overall aesthetic of CollabHub."
+                        defaultValue="Passionate about creating intuitive, user-centric experiences. Building the future of collaboration at CollabHub."
                       />
                     </div>
                   </div>
@@ -102,7 +125,7 @@ export default function SettingsPage() {
             )}
 
             {activeTab !== 'profile' && (
-              <Card className="border-gray-200">
+              <Card className="border-gray-200/60 bg-white/80 backdrop-blur-sm">
                 <CardContent className="p-8 flex flex-col items-center justify-center text-center py-20">
                   <div className="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center mb-4">
                     <Settings className="w-8 h-8 text-gray-400" />

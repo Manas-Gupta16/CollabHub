@@ -1,0 +1,21 @@
+# CollabHub Frontend Tasks
+
+- `[x]` **1. Project Initialization & Architecture**
+- `[x]` **2. Design System & Shadcn/UI**
+- `[x]` **3. Core Layouts & Routing**
+- `[ ]` **4. Pages Implementation (New Spec)**
+  - `[x]` Page 1: Dashboard (30%)
+  - `[ ]` Page 2: Workspaces List (20%)
+  - `[ ]` Page 3: Workspace Details
+  - `[ ]` Page 4: Task Board (Kanban) (25%)
+  - `[ ]` Page 5: Task Details (Drawer/Modal)
+  - `[ ]` Page 6: Analytics (10%)
+  - `[ ]` Page 7: Activity Feed (5%)
+  - `[ ]` Page 8: Notifications (5%)
+  - `[x]` Page 9: Messages (5%)
+  - `[ ]` Page 10: Search (CMD+K)
+  - `[ ]` Page 11: Profile
+  - `[ ]` Page 12: Settings
+- `[ ]` **5. Refinement & Polish**
+  - `[ ]` Responsive mobile views
+  - `[ ]` Mock data and real-time states

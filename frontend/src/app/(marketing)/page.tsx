@@ -1,16 +1,8 @@
-"use client"
 import Link from "next/link"
-import { useEffect, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Rocket, Calendar, MessageSquare, Cloud, FileText, GitPullRequest, Search, Hash, Plus, Settings, CheckCircle2, Pin } from "lucide-react"
 
 export default function LandingPage() {
-  const [isLoggedIn, setIsLoggedIn] = useState(false)
-
-  useEffect(() => {
-    setIsLoggedIn(!!localStorage.getItem('token'))
-  }, [])
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#F5F8FF] to-[#E9F0FE] font-sans overflow-hidden">
       
@@ -31,9 +23,9 @@ export default function LandingPage() {
           <Link href="#support" className="hover:text-gray-900 transition-colors">Support</Link>
         </div>
 
-        <Link href={isLoggedIn ? "/dashboard" : "/signup"}>
+        <Link href="/signup">
           <Button className="bg-[#5C55E6] hover:bg-[#4F46E5] text-white px-5 py-5 rounded-[8px] font-semibold text-[15px] shadow-sm transition-all">
-            {isLoggedIn ? "Go to Dashboard" : "Get CollabHub Free"}
+            Get CollabHub Free
           </Button>
         </Link>
       </nav>
@@ -53,32 +45,9 @@ export default function LandingPage() {
             CollabHub is the ultimate platform for team communication and project coordination. Streamline your workflows, share ideas, and keep everyone on the same page.
           </p>
           
-          {/* 3D Character Illustrations (Cluster) */}
-          <div className="relative w-[320px] h-[300px] mt-8 hidden lg:block -ml-6 -mt-8">
-             {/* Character 1 (Back left) */}
-             <div className="absolute top-0 left-0 w-40 h-48 drop-shadow-xl z-0 opacity-90 transform -rotate-6">
-               <img 
-                 src="https://api.dicebear.com/7.x/micah/svg?seed=Designer&backgroundColor=transparent" 
-                 alt="Designer" 
-                 className="w-full h-full object-contain scale-x-[-1]" 
-               />
-             </div>
-             {/* Character 2 (Back right) */}
-             <div className="absolute top-4 right-0 w-36 h-44 drop-shadow-xl z-10 opacity-95 transform rotate-12">
-               <img 
-                 src="https://api.dicebear.com/7.x/micah/svg?seed=Developer&backgroundColor=transparent" 
-                 alt="Developer" 
-                 className="w-full h-full object-contain" 
-               />
-             </div>
-             {/* Character 3 (Front center) */}
-             <div className="absolute bottom-0 left-10 w-48 h-56 drop-shadow-2xl z-20">
-               <img 
-                 src="https://api.dicebear.com/7.x/micah/svg?seed=Manager&backgroundColor=transparent" 
-                 alt="Manager" 
-                 className="w-full h-full object-contain" 
-               />
-             </div>
+          {/* Man with laptop illustration (Clean simple SVG tracing original lines) */}
+          <div className="relative w-56 h-64 mt-8 hidden lg:block -ml-2">
+             <img src="https://api.dicebear.com/7.x/micah/svg?seed=Hero&backgroundColor=transparent&mouth=smile" alt="Hero Character" className="w-full h-full drop-shadow-xl" />
           </div>
         </div>
 
@@ -149,7 +118,7 @@ export default function LandingPage() {
                 <div className="mt-auto p-2 sm:p-3 border-t border-gray-100 flex justify-between items-center">
                    <div className="flex items-center gap-1.5">
                      <div className="w-4 h-4 sm:w-5 sm:h-5 rounded-full overflow-hidden bg-gray-100">
-                        <img src="https://api.dicebear.com/7.x/micah/svg?seed=George&backgroundColor=f3f4f6" alt="avatar" className="w-full h-full object-cover"/>
+                        <img src="https://api.dicebear.com/7.x/micah/svg?seed=User1&backgroundColor=f3f4f6&mouth=smile" alt="avatar" className="w-full h-full object-cover"/>
                      </div>
                      <div className="hidden sm:block"><div className="font-semibold text-gray-900 text-[8px] sm:text-[10px]">Destriee</div></div>
                    </div>
@@ -163,16 +132,16 @@ export default function LandingPage() {
                   <div className="flex items-center gap-2"><span className="font-bold text-[9px] sm:text-[13px] text-gray-900"># design-feedback</span><span className="px-1.5 sm:px-2 py-0.5 bg-gray-50 border border-gray-100 rounded-full text-gray-500 font-medium text-[6px] sm:text-[8px]">Today</span></div>
                   <div className="flex -space-x-1 sm:-space-x-1.5">
                     {[
-                      "https://api.dicebear.com/7.x/micah/svg?seed=Jasper&backgroundColor=f3f4f6",
-                      "https://api.dicebear.com/7.x/micah/svg?seed=Oliver&backgroundColor=f3f4f6",
-                      "https://api.dicebear.com/7.x/micah/svg?seed=Bob&backgroundColor=f3f4f6"
+                      "https://api.dicebear.com/7.x/micah/svg?seed=User2&backgroundColor=f3f4f6&mouth=smile",
+                      "https://api.dicebear.com/7.x/micah/svg?seed=User3&backgroundColor=f3f4f6&mouth=smile",
+                      "https://api.dicebear.com/7.x/micah/svg?seed=User4&backgroundColor=f3f4f6&mouth=smile"
                     ].map((url, i)=><div key={i} className="w-4 h-4 sm:w-5 sm:h-5 rounded-full bg-gray-200 border-2 border-white overflow-hidden"><img src={url} className="w-full h-full object-cover"/></div>)}
                   </div>
                 </div>
                 <div className="flex-1 p-3 sm:p-5 space-y-4 sm:space-y-6 bg-white overflow-hidden">
                   <div className="flex gap-2 sm:gap-3">
                     <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-gray-200 overflow-hidden shrink-0">
-                       <img src="https://api.dicebear.com/7.x/micah/svg?seed=Felix&backgroundColor=f3f4f6" className="w-full h-full object-cover"/>
+                       <img src="https://api.dicebear.com/7.x/micah/svg?seed=User5&backgroundColor=f3f4f6&mouth=smile" className="w-full h-full object-cover"/>
                     </div>
                     <div>
                       <div className="flex gap-2 items-baseline mb-0.5 sm:mb-1"><span className="font-bold text-gray-900 text-[8px] sm:text-[11px]">Project Delta</span><span className="text-gray-400 text-[6px] sm:text-[8px]">2:44 PM</span></div>
@@ -184,7 +153,7 @@ export default function LandingPage() {
                   </div>
                   <div className="flex gap-2 sm:gap-3">
                     <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-gray-200 overflow-hidden shrink-0">
-                       <img src="https://api.dicebear.com/7.x/micah/svg?seed=Aneka&backgroundColor=f3f4f6" className="w-full h-full object-cover"/>
+                       <img src="https://api.dicebear.com/7.x/micah/svg?seed=User6&backgroundColor=f3f4f6&mouth=smile" className="w-full h-full object-cover"/>
                     </div>
                     <div>
                       <div className="flex gap-2 items-baseline mb-0.5 sm:mb-1"><span className="font-bold text-gray-900 text-[8px] sm:text-[11px]">Marfor Roather</span><span className="text-gray-400 text-[6px] sm:text-[8px]">3:55 PM</span></div>
@@ -216,10 +185,10 @@ export default function LandingPage() {
                    <div className="text-[7px] sm:text-[10px] font-bold text-gray-900 mb-2 sm:mb-3">Online Team</div>
                    <div className="space-y-1.5 sm:space-y-2 mb-4 sm:mb-6">
                      {[
-                       { n: 'Domo Hamo', p: 'https://api.dicebear.com/7.x/micah/svg?seed=Jocelyn&backgroundColor=f3f4f6' },
-                       { n: 'Design Yeather', p: 'https://api.dicebear.com/7.x/micah/svg?seed=George&backgroundColor=f3f4f6' },
-                       { n: 'Marfor Roather', p: 'https://api.dicebear.com/7.x/micah/svg?seed=Jasper&backgroundColor=f3f4f6' },
-                       { n: 'Mike Ritare', p: 'https://api.dicebear.com/7.x/micah/svg?seed=Oliver&backgroundColor=f3f4f6' }
+                       { n: 'Domo Hamo', p: 'https://api.dicebear.com/7.x/micah/svg?seed=User7&backgroundColor=f3f4f6&mouth=smile' },
+                       { n: 'Design Yeather', p: 'https://api.dicebear.com/7.x/micah/svg?seed=User8&backgroundColor=f3f4f6&mouth=smile' },
+                       { n: 'Marfor Roather', p: 'https://api.dicebear.com/7.x/micah/svg?seed=User9&backgroundColor=f3f4f6&mouth=smile' },
+                       { n: 'Mike Ritare', p: 'https://api.dicebear.com/7.x/micah/svg?seed=User10&backgroundColor=f3f4f6&mouth=smile' }
                      ].map((user,i)=>(
                        <div key={i} className="flex justify-between items-center">
                          <div className="flex items-center gap-1.5 sm:gap-2">
@@ -275,10 +244,10 @@ export default function LandingPage() {
               <div className="flex-1 p-2 sm:p-3 overflow-hidden bg-white">
                  {/* Mini chat bubbles or video call grid */}
                  <div className="grid grid-cols-2 gap-1.5 sm:gap-2 mb-3">
-                   <div className="aspect-square bg-blue-50 rounded-lg overflow-hidden"><img src="https://api.dicebear.com/7.x/micah/svg?seed=Bob&backgroundColor=f3f4f6" className="w-full h-full object-cover"/></div>
-                   <div className="aspect-square bg-purple-50 rounded-lg overflow-hidden"><img src="https://api.dicebear.com/7.x/micah/svg?seed=Felix&backgroundColor=f3f4f6" className="w-full h-full object-cover"/></div>
-                   <div className="aspect-square bg-orange-50 rounded-lg overflow-hidden"><img src="https://api.dicebear.com/7.x/micah/svg?seed=Aneka&backgroundColor=f3f4f6" className="w-full h-full object-cover"/></div>
-                   <div className="aspect-square bg-emerald-50 rounded-lg overflow-hidden"><img src="https://api.dicebear.com/7.x/micah/svg?seed=Jocelyn&backgroundColor=f3f4f6" className="w-full h-full object-cover"/></div>
+                   <div className="aspect-square bg-blue-50 rounded-lg overflow-hidden"><img src="https://api.dicebear.com/7.x/micah/svg?seed=User11&backgroundColor=f3f4f6&mouth=smile" className="w-full h-full object-cover"/></div>
+                   <div className="aspect-square bg-purple-50 rounded-lg overflow-hidden"><img src="https://api.dicebear.com/7.x/micah/svg?seed=User12&backgroundColor=f3f4f6&mouth=smile" className="w-full h-full object-cover"/></div>
+                   <div className="aspect-square bg-orange-50 rounded-lg overflow-hidden"><img src="https://api.dicebear.com/7.x/micah/svg?seed=User13&backgroundColor=f3f4f6&mouth=smile" className="w-full h-full object-cover"/></div>
+                   <div className="aspect-square bg-emerald-50 rounded-lg overflow-hidden"><img src="https://api.dicebear.com/7.x/micah/svg?seed=User14&backgroundColor=f3f4f6&mouth=smile" className="w-full h-full object-cover"/></div>
                  </div>
                  <div className="bg-white p-2 rounded-lg shadow-sm border border-gray-100">
                    <div className="font-bold text-gray-900 mb-1 text-[7px] sm:text-[9px]">Channels</div>

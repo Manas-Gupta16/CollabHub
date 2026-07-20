@@ -6,15 +6,15 @@ import { Button } from "@/components/ui/button"
 
 const initialTasks = {
   todo: [
-    { id: '1', title: 'Design new landing page', priority: 'High', date: 'Oct 24', comments: 3, attachments: 2, assignee: 'https://api.dicebear.com/7.x/micah/svg?seed=George&backgroundColor=f3f4f6', tag: 'Design' },
-    { id: '2', title: 'Research competitor pricing', priority: 'Low', date: 'Oct 26', comments: 0, attachments: 0, assignee: 'https://api.dicebear.com/7.x/micah/svg?seed=Jasper&backgroundColor=f3f4f6', tag: 'Marketing' }
+    { id: '1', title: 'Design new landing page', priority: 'High', date: 'Oct 24', comments: 3, attachments: 2, assignee: 'https://images.unsplash.com/photo-1599566150163-29194dcaad36?w=100&h=100&fit=crop', tag: 'Design' },
+    { id: '2', title: 'Research competitor pricing', priority: 'Low', date: 'Oct 26', comments: 0, attachments: 0, assignee: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&h=100&fit=crop', tag: 'Marketing' }
   ],
   inProgress: [
-    { id: '3', title: 'Implement Kanban Board Drag & Drop', priority: 'High', date: 'Oct 25', comments: 5, attachments: 1, assignee: 'https://api.dicebear.com/7.x/micah/svg?seed=Oliver&backgroundColor=f3f4f6', tag: 'Engineering' },
-    { id: '4', title: 'Fix notification socket issue', priority: 'Medium', date: 'Oct 25', comments: 1, attachments: 0, assignee: 'https://api.dicebear.com/7.x/micah/svg?seed=Bob&backgroundColor=f3f4f6', tag: 'Engineering' }
+    { id: '3', title: 'Implement Kanban Board Drag & Drop', priority: 'High', date: 'Oct 25', comments: 5, attachments: 1, assignee: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop', tag: 'Engineering' },
+    { id: '4', title: 'Fix notification socket issue', priority: 'Medium', date: 'Oct 25', comments: 1, attachments: 0, assignee: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100&h=100&fit=crop', tag: 'Engineering' }
   ],
   done: [
-    { id: '5', title: 'Setup Next.js App Router', priority: 'High', date: 'Oct 23', comments: 8, attachments: 0, assignee: 'https://api.dicebear.com/7.x/micah/svg?seed=Felix&backgroundColor=f3f4f6', tag: 'Engineering' }
+    { id: '5', title: 'Setup Next.js App Router', priority: 'High', date: 'Oct 23', comments: 8, attachments: 0, assignee: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=100&h=100&fit=crop', tag: 'Engineering' }
   ]
 }
 
@@ -102,7 +102,7 @@ export default function TaskBoard() {
         </div>
         <div className="flex items-center gap-3">
           <div className="flex -space-x-2 mr-2">
-             {['https://api.dicebear.com/7.x/micah/svg?seed=Aneka&backgroundColor=f3f4f6', 'https://api.dicebear.com/7.x/micah/svg?seed=Jocelyn&backgroundColor=f3f4f6'].map((url, i) => (
+             {['https://images.unsplash.com/photo-1599566150163-29194dcaad36?w=100&h=100&fit=crop', 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&h=100&fit=crop'].map((url, i) => (
                <div key={i} className="w-8 h-8 rounded-full border-2 border-white overflow-hidden bg-gray-100">
                  <img src={url} className="w-full h-full object-cover"/>
                </div>

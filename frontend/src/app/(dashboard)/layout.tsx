@@ -8,7 +8,7 @@ import {
 } from "lucide-react"
 import Link from "next/link"
 import { useQuery } from "@tanstack/react-query"
-import { getWorkspaces } from "@/lib/api"
+import api, { getWorkspaces } from "@/lib/api"
 import { useState, useEffect } from "react"
 import { useRouter, usePathname } from "next/navigation"
 
@@ -23,11 +23,27 @@ export default function DashboardLayout({
 
   useEffect(() => {
     setIsMounted(true)
-  }, [])
+    // Auth guard: redirect to login if no token
+    const token = localStorage.getItem("token")
+    if (!token) {
+      router.push("/login")
+    }
+  }, [router])
+
+  // Fetch logged-in user profile
+  const { data: user } = useQuery({
+    queryKey: ['profile'],
+    queryFn: async () => {
+      const res = await api.get('/auth/profile')
+      return res.data?.user
+    },
+    enabled: isMounted && !!localStorage.getItem("token"),
+  })
 
   const { data: workspaces, isLoading } = useQuery({
     queryKey: ['workspaces'],
-    queryFn: getWorkspaces
+    queryFn: getWorkspaces,
+    enabled: isMounted && !!localStorage.getItem("token"),
   })
 
   // Extract ID from path if available
@@ -39,6 +55,9 @@ export default function DashboardLayout({
   ]
 
   const colors = ['bg-blue-500', 'bg-orange-500', 'bg-purple-500', 'bg-gray-400', 'bg-emerald-500']
+
+  const userName = user?.name || 'User'
+  const userSeed = user?.name?.replace(/\s/g, '') || 'Oliver'
 
   if (!isMounted) return null
 
@@ -65,14 +84,16 @@ export default function DashboardLayout({
             <div className="space-y-1">
               {isLoading ? (
                 <div className="px-2 text-xs text-gray-400">Loading workspaces...</div>
-              ) : workspaces?.map((ws: any, i: number) => (
+              ) : workspaces?.length ? workspaces.map((ws: any, i: number) => (
                 <Link key={ws._id} href={`/workspaces/${ws._id}`}>
                   <div className={`flex items-center gap-2.5 px-2 py-1.5 rounded-md text-[13px] font-medium transition-colors cursor-pointer ${activeWorkspace?._id === ws._id ? 'bg-gray-100 text-gray-900' : 'text-gray-700 hover:bg-gray-50'}`}>
                     <div className={`w-2.5 h-2.5 rounded-[2px] ${colors[i % colors.length]}`}></div>
                     {ws.name}
                   </div>
                 </Link>
-              ))}
+              )) : (
+                <div className="px-2 text-xs text-gray-400">No workspaces yet</div>
+              )}
             </div>
           </div>
 
@@ -84,7 +105,7 @@ export default function DashboardLayout({
             </div>
             <div className="space-y-1">
               {channels.map((channel: any, i: number) => {
-                const isActive = pathname === '/messages' && i === 0; // Simple highlight for demo
+                const isActive = pathname === '/messages' && i === 0;
                 return (
                   <Link 
                     key={channel._id || i} 
@@ -108,10 +129,10 @@ export default function DashboardLayout({
         <div className="mt-auto p-4 border-t border-gray-100 flex justify-between items-center bg-gray-50/50">
           <div className="flex items-center gap-2.5 cursor-pointer">
             <div className="w-8 h-8 rounded-full overflow-hidden bg-gray-200 shadow-sm border border-gray-100">
-               <img src="https://api.dicebear.com/7.x/micah/svg?seed=Oliver&backgroundColor=f3f4f6" alt="avatar" className="w-full h-full object-cover"/>
+               <img src={`https://api.dicebear.com/7.x/micah/svg?seed=${userSeed}&backgroundColor=f3f4f6`} alt="avatar" className="w-full h-full object-cover"/>
             </div>
             <div>
-              <div className="text-[13px] font-bold text-gray-900 leading-tight">Destriee</div>
+              <div className="text-[13px] font-bold text-gray-900 leading-tight">{userName}</div>
               <div className="text-[11px] text-gray-500 font-medium">Collab User</div>
             </div>
           </div>
@@ -124,7 +145,6 @@ export default function DashboardLayout({
                 localStorage.removeItem("token");
                 router.push("/");
               }}
-              title="Sign Out"
             />
           </div>
         </div>

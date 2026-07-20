@@ -1,31 +1,8 @@
 "use client"
 
-import { Plus, Search, CheckCircle2, Pin, Calendar, Loader2 } from "lucide-react"
-import { useSearchParams } from "next/navigation"
-import { useQuery } from "@tanstack/react-query"
-import { getWorkspaceById, getWorkspaces } from "@/lib/api"
-import { Suspense } from "react"
+import { Plus, Search, CheckCircle2, Pin, Calendar } from "lucide-react"
 
-function MessagesContent() {
-  const searchParams = useSearchParams()
-  const workspaceId = searchParams.get('workspace')
-
-  // We first fetch all workspaces to fallback to the first one if no workspace param
-  const { data: workspaces, isLoading: isLoadingWorkspaces } = useQuery({
-    queryKey: ['workspaces'],
-    queryFn: getWorkspaces
-  })
-
-  const activeId = workspaceId || workspaces?.[0]?._id
-
-  const { data: workspace, isLoading: isLoadingWorkspace } = useQuery({
-    queryKey: ['workspace', activeId],
-    queryFn: () => getWorkspaceById(activeId!),
-    enabled: !!activeId
-  })
-
-  const channelName = searchParams.get('channel') || workspace?.channels?.[0]?.name || 'general'
-
+export default function MessagesPage() {
   return (
     <div className="flex-1 flex overflow-hidden bg-white">
       
@@ -35,14 +12,14 @@ function MessagesContent() {
         {/* Header */}
         <div className="h-14 border-b border-gray-100 flex items-center justify-between px-6 shrink-0">
           <div className="flex items-center gap-2">
-             <span className="font-bold text-[15px] text-gray-900 tracking-tight"># {channelName}</span>
+             <span className="font-bold text-[15px] text-gray-900 tracking-tight"># design-feedback</span>
              <span className="px-2 py-0.5 bg-gray-50 border border-gray-100 rounded-full text-gray-500 font-medium text-[11px] ml-1">Today</span>
           </div>
           <div className="flex -space-x-1.5">
             {[
-              "https://api.dicebear.com/7.x/micah/svg?seed=Bob&backgroundColor=f3f4f6",
-              "https://api.dicebear.com/7.x/micah/svg?seed=Felix&backgroundColor=f3f4f6",
-              "https://api.dicebear.com/7.x/micah/svg?seed=Aneka&backgroundColor=f3f4f6"
+              "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100&h=100&fit=crop",
+              "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&h=100&fit=crop",
+              "https://images.unsplash.com/photo-1599566150163-29194dcaad36?w=100&h=100&fit=crop"
             ].map((url, i)=>(
                <div key={i} className="w-7 h-7 rounded-full bg-gray-200 border-2 border-white overflow-hidden shadow-sm">
                  <img src={url} className="w-full h-full object-cover"/>
@@ -57,7 +34,7 @@ function MessagesContent() {
           {/* Message 1 */}
           <div className="flex gap-4 group">
             <div className="w-10 h-10 rounded-full bg-gray-200 overflow-hidden shrink-0 shadow-sm border border-gray-100">
-               <img src="https://api.dicebear.com/7.x/micah/svg?seed=Jocelyn&backgroundColor=f3f4f6" className="w-full h-full object-cover"/>
+               <img src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100&h=100&fit=crop" className="w-full h-full object-cover"/>
             </div>
             <div>
               <div className="flex gap-2 items-baseline mb-1">
@@ -79,7 +56,7 @@ function MessagesContent() {
           {/* Message 2 */}
           <div className="flex gap-4 group">
             <div className="w-10 h-10 rounded-full bg-gray-200 overflow-hidden shrink-0 shadow-sm border border-gray-100">
-               <img src="https://api.dicebear.com/7.x/micah/svg?seed=George&backgroundColor=f3f4f6" className="w-full h-full object-cover"/>
+               <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&h=100&fit=crop" className="w-full h-full object-cover"/>
             </div>
             <div>
               <div className="flex gap-2 items-baseline mb-1">
@@ -112,7 +89,7 @@ function MessagesContent() {
           {/* Message 3 */}
           <div className="flex gap-4 group">
             <div className="w-10 h-10 rounded-full bg-gray-200 overflow-hidden shrink-0 shadow-sm border border-gray-100">
-               <img src="https://api.dicebear.com/7.x/micah/svg?seed=Jasper&backgroundColor=f3f4f6" className="w-full h-full object-cover"/>
+               <img src="https://images.unsplash.com/photo-1599566150163-29194dcaad36?w=100&h=100&fit=crop" className="w-full h-full object-cover"/>
             </div>
             <div className="flex-1 max-w-2xl">
               <div className="flex gap-2 items-baseline mb-1">
@@ -170,78 +147,45 @@ function MessagesContent() {
         </div>
         
         <div className="px-5 py-4 overflow-y-auto custom-scrollbar">
-           {isLoadingWorkspace ? (
-             <div className="flex flex-col items-center justify-center py-10 text-gray-400">
-               <Loader2 className="w-6 h-6 animate-spin mb-2" />
-               <span className="text-xs font-medium">Loading details...</span>
-             </div>
-           ) : (
-             <>
-               <div className="text-[12px] font-bold text-gray-900 mb-4 tracking-tight">Online Team</div>
-               <div className="space-y-3.5 mb-8">
-                 {workspace?.members?.map((member: any, i: number) => (
-                   <div key={member.user._id} className="flex justify-between items-center cursor-pointer group">
-                     <div className="flex items-center gap-2.5">
-                       <div className="w-7 h-7 rounded-full bg-gray-200 overflow-hidden shadow-sm border border-gray-100">
-                          <img src={`https://api.dicebear.com/7.x/micah/svg?seed=${member.user.name}&backgroundColor=f3f4f6`} className="w-full h-full object-cover"/>
-                       </div>
-                       <span className="font-semibold text-gray-600 text-[13px] group-hover:text-gray-900 transition-colors">{member.user.name}</span>
-                     </div>
-                     <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 shadow-sm shadow-emerald-200"></div>
-                   </div>
-                 ))}
-                 {(!workspace?.members || workspace.members.length === 0) && (
-                    <div className="text-xs text-gray-400 font-medium">No members online</div>
-                 )}
-               </div>
-               
-               <div className="text-[12px] font-bold text-gray-900 mb-4 tracking-tight">Workspace Details</div>
-               <div className="text-[11px] font-bold text-gray-500 mb-2 uppercase tracking-wider">Pinned Links</div>
-               <div className="space-y-2 mb-6">
-                 {workspace?.pinnedLinks?.map((link: any, i: number) => (
-                   <div key={i} className="flex gap-2 text-gray-500 truncate text-[12px] font-medium hover:text-[#6366F1] cursor-pointer transition-colors">
-                     <Pin className="w-3.5 h-3.5 text-red-500 shrink-0 mt-0.5"/> {link.title}
-                   </div>
-                 ))}
-                 {(!workspace?.pinnedLinks || workspace.pinnedLinks.length === 0) && (
-                    <div className="text-xs text-gray-400 font-medium">No pinned links</div>
-                 )}
-               </div>
-               
-               <div className="text-[11px] font-bold text-gray-500 mb-2 uppercase tracking-wider">Key deadlines</div>
-               {workspace?.keyDeadlines?.map((deadline: any, i: number) => (
-                 <div key={i} className="flex gap-2 text-gray-700 mb-6 items-center text-[12px] font-medium">
-                   <Calendar className="w-4 h-4 text-gray-400"/> {new Date(deadline.date).toLocaleDateString()}
+           <div className="text-[12px] font-bold text-gray-900 mb-4 tracking-tight">Online Team</div>
+           <div className="space-y-3.5 mb-8">
+             {[
+               { n: 'Domo Hamo', p: 'https://images.unsplash.com/photo-1599566150163-29194dcaad36?w=100&h=100&fit=crop' },
+               { n: 'Design Yeather', p: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=100&h=100&fit=crop' },
+               { n: 'Marfor Roather', p: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop' },
+               { n: 'Mike Ritare', p: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100&h=100&fit=crop' },
+               { n: 'Nabry Shana', p: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&h=100&fit=crop' }
+             ].map((user,i)=>(
+               <div key={i} className="flex justify-between items-center cursor-pointer group">
+                 <div className="flex items-center gap-2.5">
+                   <div className="w-7 h-7 rounded-full bg-gray-200 overflow-hidden shadow-sm border border-gray-100"><img src={user.p} className="w-full h-full object-cover"/></div>
+                   <span className="font-semibold text-gray-600 text-[13px] group-hover:text-gray-900 transition-colors">{user.n}</span>
                  </div>
-               ))}
-               {(!workspace?.keyDeadlines || workspace.keyDeadlines.length === 0) && (
-                  <div className="text-xs text-gray-400 font-medium mb-6">No deadlines set</div>
-               )}
-               
-               <div className="text-[11px] font-bold text-gray-500 mb-2 uppercase tracking-wider">Team goals</div>
-               <div className="space-y-2.5">
-                 {workspace?.teamGoals?.map((goal: any, i: number) => (
-                   <div key={i} className="flex gap-2 text-gray-700 truncate items-center text-[12px] font-medium">
-                     <CheckCircle2 className={`w-4 h-4 ${goal.isCompleted ? 'text-emerald-500' : 'text-gray-300'}`}/> {goal.title}
-                   </div>
-                 ))}
-                 {(!workspace?.teamGoals || workspace.teamGoals.length === 0) && (
-                    <div className="text-xs text-gray-400 font-medium">No goals set</div>
-                 )}
+                 <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 shadow-sm shadow-emerald-200"></div>
                </div>
-             </>
-           )}
+             ))}
+           </div>
+           
+           <div className="text-[12px] font-bold text-gray-900 mb-4 tracking-tight">Workspace Details</div>
+           <div className="text-[11px] font-bold text-gray-500 mb-2 uppercase tracking-wider">Pinned Links</div>
+           <div className="space-y-2 mb-6">
+             <div className="flex gap-2 text-gray-500 truncate text-[12px] font-medium hover:text-[#6366F1] cursor-pointer transition-colors"><Pin className="w-3.5 h-3.5 text-red-500 shrink-0 mt-0.5"/> https://link.com/CollabHub/1</div>
+             <div className="flex gap-2 text-gray-500 truncate text-[12px] font-medium hover:text-[#6366F1] cursor-pointer transition-colors"><Pin className="w-3.5 h-3.5 text-red-500 shrink-0 mt-0.5"/> https://www.vekoonce.ee/v1/</div>
+             <div className="flex gap-2 text-gray-500 truncate text-[12px] font-medium hover:text-[#6366F1] cursor-pointer transition-colors"><Pin className="w-3.5 h-3.5 text-red-500 shrink-0 mt-0.5"/> TeamBinz.com/workspace</div>
+           </div>
+           
+           <div className="text-[11px] font-bold text-gray-500 mb-2 uppercase tracking-wider">Key deadlines</div>
+           <div className="flex gap-2 text-gray-700 mb-6 items-center text-[12px] font-medium"><Calendar className="w-4 h-4 text-gray-400"/> May 28th, 2026, 20:00</div>
+           
+           <div className="text-[11px] font-bold text-gray-500 mb-2 uppercase tracking-wider">Team goals</div>
+           <div className="space-y-2.5">
+             <div className="flex gap-2 text-gray-700 truncate items-center text-[12px] font-medium"><CheckCircle2 className="w-4 h-4 text-gray-300"/> Team goals team...</div>
+             <div className="flex gap-2 text-gray-700 truncate items-center text-[12px] font-medium"><CheckCircle2 className="w-4 h-4 text-gray-300"/> Team goals to s...</div>
+             <div className="flex gap-2 text-gray-700 truncate items-center text-[12px] font-medium"><CheckCircle2 className="w-4 h-4 text-gray-300"/> Team goals for s...</div>
+           </div>
         </div>
       </div>
 
     </div>
-  )
-}
-
-export default function MessagesPageWrapper() {
-  return (
-    <Suspense fallback={<div className="flex-1 flex items-center justify-center bg-white"><Loader2 className="w-8 h-8 animate-spin text-gray-400"/></div>}>
-      <MessagesContent />
-    </Suspense>
   )
 }

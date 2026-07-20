@@ -85,7 +85,7 @@ const getWorkspaceById = async (
 
     const isMember = workspace.members.some(
         (member) =>
-            member.user.toString() ===
+            (member.user._id || member.user).toString() ===
             currentUser._id.toString()
     );
 

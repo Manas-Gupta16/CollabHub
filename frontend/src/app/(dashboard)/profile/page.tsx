@@ -3,14 +3,34 @@
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Mail, MapPin, Link as LinkIcon, Calendar, CheckCircle2, MessageSquare, GitCommit } from "lucide-react"
+import { useQuery } from "@tanstack/react-query"
+import api from "@/lib/api"
 
 export default function ProfilePage() {
+  const { data: user } = useQuery({
+    queryKey: ['profile'],
+    queryFn: async () => {
+      const res = await api.get('/auth/profile')
+      return res.data?.user
+    },
+  })
+
+  const userName = user?.name || 'User'
+  const userEmail = user?.email || 'user@collabhub.com'
+  const userSeed = userName.replace(/\s/g, '')
+
   return (
-    <div className="flex-1 overflow-y-auto bg-[#FAFAFA] p-8">
-      <div className="max-w-4xl mx-auto space-y-6">
+    <div className="flex-1 overflow-y-auto bg-gradient-to-br from-[#F5F8FF] to-[#E9F0FE] p-8 relative">
+
+      {/* Animated character decoration */}
+      <div className="absolute top-8 right-12 w-24 h-28 opacity-20 hidden xl:block pointer-events-none">
+        <img src="https://api.dicebear.com/7.x/micah/svg?seed=ProfileBot&backgroundColor=transparen&mouth=smilet&mouth=smile" alt="" className="w-full h-full object-contain" />
+      </div>
+
+      <div className="max-w-4xl mx-auto space-y-6 relative z-10">
         
         {/* Profile Header Card */}
-        <Card className="overflow-hidden border-gray-200">
+        <Card className="overflow-hidden border-gray-200/60 bg-white/80 backdrop-blur-sm">
           <div className="h-32 bg-gradient-to-r from-[#6366F1] to-purple-500 w-full relative">
             <Button variant="outline" className="absolute top-4 right-4 bg-white/20 text-white border-white/40 hover:bg-white/30 hover:text-white">
               Edit Cover
@@ -19,11 +39,11 @@ export default function ProfilePage() {
           <CardContent className="p-8 pt-0 relative">
              <div className="flex flex-col sm:flex-row gap-6 items-start sm:items-end -mt-12 mb-6">
                <div className="w-24 h-24 rounded-full border-4 border-white bg-white shadow-md overflow-hidden shrink-0">
-                  <img src="https://api.dicebear.com/7.x/micah/svg?seed=Design&backgroundColor=f3f4f6" className="w-full h-full object-cover" />
+                  <img src={`https://api.dicebear.com/7.x/micah/svg?seed=${userSeed}&backgroundColor=f3f4f6`} className="w-full h-full object-cover" />
                </div>
                <div className="flex-1">
-                 <h1 className="text-2xl font-bold text-gray-900 tracking-tight">Design Yeather</h1>
-                 <p className="text-gray-500 font-medium">Senior Product Designer at CollabHub</p>
+                 <h1 className="text-2xl font-bold text-gray-900 tracking-tight">{userName}</h1>
+                 <p className="text-gray-500 font-medium">Product Designer at CollabHub</p>
                </div>
                <div className="flex gap-2 w-full sm:w-auto">
                  <Button variant="outline" className="flex-1 sm:flex-none border-gray-200">Share</Button>
@@ -33,9 +53,9 @@ export default function ProfilePage() {
 
              <div className="flex flex-wrap gap-y-2 gap-x-6 text-sm text-gray-600">
                <div className="flex items-center gap-1.5"><MapPin className="w-4 h-4 text-gray-400"/> San Francisco, CA</div>
-               <div className="flex items-center gap-1.5"><Mail className="w-4 h-4 text-gray-400"/> design.y@collabhub.com</div>
-               <div className="flex items-center gap-1.5"><LinkIcon className="w-4 h-4 text-gray-400"/> dribbble.com/yeather</div>
-               <div className="flex items-center gap-1.5"><Calendar className="w-4 h-4 text-gray-400"/> Joined March 2026</div>
+               <div className="flex items-center gap-1.5"><Mail className="w-4 h-4 text-gray-400"/> {userEmail}</div>
+               <div className="flex items-center gap-1.5"><LinkIcon className="w-4 h-4 text-gray-400"/> collabhub.com</div>
+               <div className="flex items-center gap-1.5"><Calendar className="w-4 h-4 text-gray-400"/> Joined 2026</div>
              </div>
           </CardContent>
         </Card>
@@ -44,11 +64,11 @@ export default function ProfilePage() {
           
           {/* Left Column */}
           <div className="lg:col-span-1 space-y-6">
-            <Card className="border-gray-200">
+            <Card className="border-gray-200/60 bg-white/80 backdrop-blur-sm">
               <CardContent className="p-6">
                  <h2 className="text-lg font-bold text-gray-900 mb-4">About</h2>
                  <p className="text-sm text-gray-600 leading-relaxed mb-6">
-                   Passionate about creating intuitive, user-centric experiences. Leading the design system and overall aesthetic of CollabHub.
+                   Passionate about creating intuitive, user-centric experiences. Building the future of collaboration at CollabHub.
                  </p>
                  <h2 className="text-lg font-bold text-gray-900 mb-4">Stats</h2>
                  <div className="space-y-4">
@@ -71,7 +91,7 @@ export default function ProfilePage() {
 
           {/* Right Column */}
           <div className="lg:col-span-2 space-y-6">
-            <Card className="border-gray-200">
+            <Card className="border-gray-200/60 bg-white/80 backdrop-blur-sm">
               <CardContent className="p-6">
                 <h2 className="text-lg font-bold text-gray-900 mb-6">Recent Activity</h2>
                 <div className="space-y-6">
