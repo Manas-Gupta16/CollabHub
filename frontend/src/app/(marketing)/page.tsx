@@ -45,9 +45,17 @@ export default function LandingPage() {
             CollabHub is the ultimate platform for team communication and project coordination. Streamline your workflows, share ideas, and keep everyone on the same page.
           </p>
           
-          {/* Man with laptop illustration (Clean simple SVG tracing original lines) */}
-          <div className="relative w-56 h-64 mt-8 hidden lg:block -ml-2">
-             <img src="https://api.dicebear.com/7.x/micah/svg?seed=Hero&backgroundColor=transparent&mouth=smile" alt="Hero Character" className="w-full h-full drop-shadow-xl" />
+          {/* Animated Team Illustration */}
+          <div className="relative w-80 h-48 mt-12 hidden lg:block -ml-4">
+            <div className="w-36 h-36 absolute left-0 bottom-0 z-10 transition-transform hover:-translate-y-2 duration-300">
+               <img src="https://api.dicebear.com/7.x/micah/svg?seed=Felix&backgroundColor=transparent&mouth=laughing" alt="Team Member 1" className="w-full h-full drop-shadow-xl" />
+            </div>
+            <div className="w-44 h-44 absolute left-20 bottom-2 z-20 transition-transform hover:-translate-y-2 duration-300">
+               <img src="https://api.dicebear.com/7.x/micah/svg?seed=Caleb&backgroundColor=transparent&mouth=smile" alt="Team Member 2" className="w-full h-full drop-shadow-2xl" />
+            </div>
+            <div className="w-36 h-36 absolute left-48 bottom-0 z-10 transition-transform hover:-translate-y-2 duration-300">
+               <img src="https://api.dicebear.com/7.x/micah/svg?seed=Oliver&backgroundColor=transparent&mouth=laughing" alt="Team Member 3" className="w-full h-full drop-shadow-xl" />
+            </div>
           </div>
         </div>
 

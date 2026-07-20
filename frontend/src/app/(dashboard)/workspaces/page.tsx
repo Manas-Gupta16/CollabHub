@@ -19,11 +19,6 @@ export default function WorkspacesPage() {
   return (
     <div className="flex-1 overflow-y-auto bg-gradient-to-br from-[#F5F8FF] to-[#E9F0FE] p-8 relative">
 
-      {/* Animated character decoration */}
-      <div className="absolute bottom-8 right-12 w-24 h-28 opacity-30 hidden xl:block pointer-events-none">
-        <img src="https://api.dicebear.com/7.x/micah/svg?seed=WorkspaceBot&backgroundColor=transparent&mouth=smile" alt="" className="w-full h-full object-contain" />
-      </div>
-
       <div className="max-w-6xl mx-auto space-y-8 relative z-10">
         
         {/* Header */}

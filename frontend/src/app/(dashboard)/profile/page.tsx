@@ -22,11 +22,6 @@ export default function ProfilePage() {
   return (
     <div className="flex-1 overflow-y-auto bg-gradient-to-br from-[#F5F8FF] to-[#E9F0FE] p-8 relative">
 
-      {/* Animated character decoration */}
-      <div className="absolute top-8 right-12 w-24 h-28 opacity-20 hidden xl:block pointer-events-none">
-        <img src="https://api.dicebear.com/7.x/micah/svg?seed=ProfileBot&backgroundColor=transparen&mouth=smilet&mouth=smile" alt="" className="w-full h-full object-contain" />
-      </div>
-
       <div className="max-w-4xl mx-auto space-y-6 relative z-10">
         
         {/* Profile Header Card */}
