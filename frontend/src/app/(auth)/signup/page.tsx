@@ -28,7 +28,7 @@ export default function Signup() {
       const token = loginRes.data?.data?.token
       if (token) {
         localStorage.setItem("token", token)
-        router.push("/dashboard")
+        window.location.href = "/dashboard"
       } else {
         // Registration succeeded but auto-login failed — go to login page
         router.push("/login")

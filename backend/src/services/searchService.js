@@ -15,14 +15,15 @@ const globalSearch = async (workspaceId, query, currentUser) => {
     }
 
     const isMember = workspace.members.some(
-        (member) => member.user.toString() === currentUser._id.toString()
+        (member) => member.user.toString() === currentUser._id.toString() && member.status !== "PENDING"
     );
 
     if (!isMember) {
         throw new AppError("You are not a member of this workspace", 403);
     }
 
-    const regex = new RegExp(query, "i");
+    const escapedQuery = query.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
+    const regex = new RegExp(escapedQuery, "i");
 
     const [tasks, messages, comments] = await Promise.all([
         Task.find({

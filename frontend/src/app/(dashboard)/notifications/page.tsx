@@ -1,100 +1,191 @@
 "use client"
 
 import { Button } from "@/components/ui/button"
-import { Check, Settings, Bell, MessageSquare, AtSign, FileText, CheckCircle2 } from "lucide-react"
+import { Check, Settings, Bell, AtSign, FileText, CheckCircle2, Users, X } from "lucide-react"
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
+import { getNotifications, markNotificationRead, markAllNotificationsRead, acceptInvitation, rejectInvitation } from "@/lib/api"
+import { useRouter } from "next/navigation"
+
+function relativeTime(dateStr: string) {
+  const diff = Date.now() - new Date(dateStr).getTime()
+  const mins = Math.floor(diff / 60000)
+  if (mins < 1) return "just now"
+  if (mins < 60) return `${mins}m ago`
+  const hrs = Math.floor(mins / 60)
+  if (hrs < 24) return `${hrs}h ago`
+  const days = Math.floor(hrs / 24)
+  if (days < 7) return `${days}d ago`
+  return new Date(dateStr).toLocaleDateString()
+}
 
 export default function NotificationsPage() {
-  const notifications = [
-    {
-      group: 'Today',
-      items: [
-        { id: 1, type: 'mention', user: 'Domo Hamo', action: 'mentioned you in', target: '#design-feedback', content: 'What do you think about the new typography scale?', time: '2h ago', read: false, icon: <AtSign className="w-4 h-4 text-[#6366F1]" />, bg: 'bg-indigo-50' },
-        { id: 2, type: 'task', user: 'Marfor Roather', action: 'assigned you to', target: 'Update Login UI', time: '4h ago', read: false, icon: <CheckCircle2 className="w-4 h-4 text-emerald-500" />, bg: 'bg-emerald-50' },
-        { id: 3, type: 'file', user: 'Design Yeather', action: 'uploaded a new file', target: 'Landing_Page_v2.pdf', time: '5h ago', read: true, icon: <FileText className="w-4 h-4 text-orange-500" />, bg: 'bg-orange-50' }
-      ]
+  const queryClient = useQueryClient()
+  const router = useRouter()
+
+  const { data: notificationsData, isLoading } = useQuery({
+    queryKey: ['notifications'],
+    queryFn: getNotifications,
+  })
+
+  const markReadMutation = useMutation({
+    mutationFn: markNotificationRead,
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['notifications'] })
+  })
+
+  const markAllReadMutation = useMutation({
+    mutationFn: markAllNotificationsRead,
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['notifications'] })
+  })
+
+  const acceptMutation = useMutation({
+    mutationFn: acceptInvitation,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['notifications'] })
+      queryClient.invalidateQueries({ queryKey: ['workspaces'] })
+      alert("Workspace invitation accepted!")
     },
-    {
-      group: 'Yesterday',
-      items: [
-        { id: 4, type: 'message', user: 'Mike Ritare', action: 'replied to your thread in', target: '#engineering-log', content: 'I deployed the fix to staging. Should be good to test.', time: 'Yesterday at 3:45 PM', read: true, icon: <MessageSquare className="w-4 h-4 text-blue-500" />, bg: 'bg-blue-50' }
-      ]
-    },
-    {
-      group: 'Earlier',
-      items: [
-        { id: 5, type: 'mention', user: 'Jason Reiber', action: 'mentioned you in', target: 'Project Delta', content: 'Can we schedule a sync for next week?', time: 'Oct 20', read: true, icon: <AtSign className="w-4 h-4 text-[#6366F1]" />, bg: 'bg-indigo-50' }
-      ]
+    onError: (err: any) => {
+      alert(err.response?.data?.message || "Failed to accept invitation.")
     }
-  ]
+  })
+
+  const rejectMutation = useMutation({
+    mutationFn: rejectInvitation,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['notifications'] })
+      alert("Workspace invitation declined.")
+    },
+    onError: (err: any) => {
+      alert(err.response?.data?.message || "Failed to decline invitation.")
+    }
+  })
+
+  const notifications = notificationsData || []
+  const unreadCount = notifications.filter((n: any) => !n.isRead).length
 
   return (
-    <div className="flex-1 overflow-y-auto bg-gradient-to-br from-[#F5F8FF] to-[#E9F0FE] p-8 relative">
+    <div className="flex-1 flex flex-col overflow-hidden bg-[#FAFAFA]">
 
-      <div className="max-w-3xl mx-auto space-y-8 relative z-10">
-        
-        {/* Header */}
-        <div className="flex justify-between items-center bg-white/80 backdrop-blur-sm p-6 rounded-2xl border border-gray-200/60 shadow-sm">
-          <div className="flex items-center gap-4">
-            <div className="w-12 h-12 bg-indigo-50 text-[#6366F1] rounded-xl flex items-center justify-center">
-              <Bell className="w-6 h-6" />
-            </div>
-            <div>
-              <h1 className="text-2xl font-bold text-gray-900 tracking-tight">Notifications</h1>
-              <p className="text-gray-500 text-sm mt-1">You have 2 unread notifications.</p>
-            </div>
-          </div>
-          <div className="flex gap-2">
-            <Button variant="outline" className="border-gray-200">
-              <Check className="w-4 h-4 mr-2" />
-              Mark all as read
-            </Button>
-            <Button variant="ghost" size="icon" className="text-gray-500">
-              <Settings className="w-5 h-5" />
-            </Button>
-          </div>
-        </div>
-
-        {/* List */}
-        <div className="space-y-8">
-          {notifications.map((group) => (
-            <div key={group.group}>
-              <h2 className="text-sm font-bold text-gray-900 uppercase tracking-wider mb-4 px-2">{group.group}</h2>
-              <div className="bg-white/80 backdrop-blur-sm border border-gray-200/60 rounded-xl overflow-hidden shadow-sm">
-                <div className="divide-y divide-gray-100">
-                  {group.items.map((item) => (
-                    <div key={item.id} className={`p-5 flex gap-4 transition-colors hover:bg-gray-50/50 ${item.read ? 'opacity-70' : 'bg-blue-50/20'}`}>
-                       <div className="relative shrink-0">
-                         <div className="w-10 h-10 rounded-full bg-gray-200 overflow-hidden">
-                           <img src={`https://api.dicebear.com/7.x/micah/svg?seed=${item.user.replace(/\s/g, '')}&backgroundColor=f3f4f6`} className="w-full h-full object-cover" />
-                         </div>
-                         <div className={`absolute -bottom-1 -right-1 w-5 h-5 rounded-full ${item.bg} border-2 border-white flex items-center justify-center`}>
-                            {item.icon}
-                         </div>
-                       </div>
-                       <div className="flex-1 min-w-0">
-                         <div className="text-sm">
-                           <span className="font-bold text-gray-900">{item.user}</span>{' '}
-                           <span className="text-gray-600">{item.action}</span>{' '}
-                           <span className="font-bold text-gray-900">{item.target}</span>
-                         </div>
-                         {item.content && (
-                           <div className="mt-1 text-sm text-gray-600 border-l-2 border-gray-200 pl-3 py-0.5 my-2 italic">
-                             &quot;{item.content}&quot;
-                           </div>
-                         )}
-                         <div className="text-xs text-gray-400 mt-1">{item.time}</div>
-                       </div>
-                       {!item.read && (
-                         <div className="w-2.5 h-2.5 rounded-full bg-[#6366F1] mt-2 shrink-0 shadow-sm"></div>
-                       )}
-                    </div>
-                  ))}
-                </div>
+      {/* Header */}
+      <div className="px-8 py-5 border-b border-gray-100 bg-white shrink-0">
+        <div className="max-w-4xl mx-auto">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 rounded-lg bg-gray-100 border border-gray-200 flex items-center justify-center">
+                <Bell className="w-4 h-4 text-gray-600" strokeWidth={2.5} />
+              </div>
+              <div>
+                <h1 className="text-lg font-bold text-gray-900 tracking-tight">Notifications</h1>
+                <p className="text-[12px] text-gray-500 font-medium">
+                  You have {unreadCount} unread notification{unreadCount !== 1 && 's'}.
+                </p>
               </div>
             </div>
-          ))}
+            <div className="flex gap-2">
+              <Button variant="outline" className="h-8 text-[12px] border-gray-200 px-3" onClick={() => markAllReadMutation.mutate()} disabled={unreadCount === 0 || markAllReadMutation.isPending}>
+                <Check className="w-3.5 h-3.5 mr-1.5" />
+                Mark all as read
+              </Button>
+            </div>
+          </div>
         </div>
+      </div>
 
+      {/* List */}
+      <div className="flex-1 overflow-y-auto">
+        <div className="max-w-4xl mx-auto px-8 py-6 space-y-4">
+          {isLoading ? (
+            <div className="text-center py-16 text-sm text-gray-400 font-medium">Loading notifications...</div>
+          ) : notifications.length === 0 ? (
+            <div className="text-center py-16">
+              <div className="w-12 h-12 rounded-xl bg-gray-100 border border-gray-200 flex items-center justify-center mx-auto mb-3">
+                <Bell className="w-5 h-5 text-gray-400" />
+              </div>
+              <p className="text-sm font-semibold text-gray-600">No notifications yet</p>
+              <p className="text-xs text-gray-400 mt-1">We'll alert you when something happens.</p>
+            </div>
+          ) : (
+            <div className="space-y-1.5">
+              {notifications.map((item: any) => {
+                let IconComponent = Bell;
+                let iconBg = 'bg-gray-100 text-gray-600';
+                let title = item.title || 'Notification';
+                
+                if (item.type === 'WORKSPACE_INVITATION') {
+                  IconComponent = Users;
+                  iconBg = 'bg-indigo-50 text-[#6366F1]';
+                  title = item.title || 'Workspace Invitation';
+                } else if (item.type === 'TASK_ASSIGNED') {
+                  IconComponent = CheckCircle2;
+                  iconBg = 'bg-emerald-50 text-emerald-600';
+                  title = item.title || 'Task Assigned';
+                } else if (item.type === 'NEW_COMMENT') {
+                  IconComponent = FileText;
+                  iconBg = 'bg-amber-50 text-amber-600';
+                  title = item.title || 'New Comment';
+                } else if (item.type === 'MENTION') {
+                  IconComponent = AtSign;
+                  iconBg = 'bg-pink-50 text-pink-600';
+                  title = item.title || 'New Mention';
+                }
+
+                return (
+                  <div key={item._id} className={`flex items-center gap-3 px-4 py-3 bg-white rounded-lg border border-gray-100 transition-all group ${
+                    !item.isRead ? "border-indigo-100 bg-indigo-50/10" : ""
+                  }`}>
+                     {/* Icon */}
+                     <div className={`w-8 h-8 rounded-lg ${iconBg} flex items-center justify-center shrink-0`}>
+                        <IconComponent className="w-4 h-4" strokeWidth={2}/>
+                     </div>
+
+                     {/* Content */}
+                     <div className="flex-1 min-w-0">
+                       <p className="text-[13px] text-gray-700 leading-tight">
+                         <span className="font-semibold text-gray-900">{title}</span>{' '}
+                         <span>{item.message}</span>
+                       </p>
+                       {item.type === 'WORKSPACE_INVITATION' && (
+                         <div className="flex gap-2 mt-2">
+                           <Button 
+                             size="sm" 
+                             className="bg-[#6366F1] hover:bg-[#4F46E5] text-white text-[11px] h-7 px-3 rounded-md shadow-sm"
+                             onClick={() => acceptMutation.mutate(item._id)}
+                             disabled={acceptMutation.isPending || rejectMutation.isPending}
+                           >
+                             {acceptMutation.isPending ? 'Accepting...' : 'Accept'}
+                           </Button>
+                           <Button 
+                             size="sm" 
+                             variant="outline" 
+                             className="border-gray-200 text-gray-600 text-[11px] h-7 px-3 rounded-md hover:bg-red-50 hover:text-red-600 hover:border-red-100"
+                             onClick={() => rejectMutation.mutate(item._id)}
+                             disabled={acceptMutation.isPending || rejectMutation.isPending}
+                           >
+                             {rejectMutation.isPending ? 'Declining...' : 'Decline'}
+                           </Button>
+                         </div>
+                       )}
+                     </div>
+
+                     {/* Time */}
+                     <span className="text-[11px] text-gray-400 font-medium shrink-0 w-16 text-right">
+                       {relativeTime(item.createdAt)}
+                     </span>
+
+                     {/* Action dot */}
+                     {!item.isRead && item.type !== 'WORKSPACE_INVITATION' && (
+                       <button 
+                         onClick={() => markReadMutation.mutate(item._id)} 
+                         className="w-2 h-2 rounded-full bg-[#6366F1] shrink-0 shadow-sm hover:ring-4 ring-indigo-100 transition-all cursor-pointer" 
+                         title="Mark as read"
+                       />
+                     )}
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
       </div>
     </div>
   )

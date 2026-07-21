@@ -1,6 +1,9 @@
 const Notification = require("../models/Notification");
 const AppError = require("../utils/AppError");
 const { getIO } = require("../socket");
+const Workspace = require("../models/Workspace");
+const activityService = require("./activityService");
+const { ACTIVITY_ACTIONS } = require("../constants/activityConstants");
 
 const createNotification = async ({ recipientId, type, message, workspaceId, relatedEntityId }) => {
     const notification = await Notification.create({
@@ -49,9 +52,75 @@ const markAllAsRead = async (userId) => {
     return { success: true };
 };
 
+const acceptInvitation = async (notificationId, userId) => {
+    const notification = await Notification.findOne({ _id: notificationId, recipient: userId });
+    if (!notification) {
+        throw new AppError("Notification not found", 404);
+    }
+    if (notification.type !== "WORKSPACE_INVITATION") {
+        throw new AppError("Notification is not a workspace invitation", 400);
+    }
+
+    const workspace = await Workspace.findById(notification.workspace);
+    if (!workspace) {
+        throw new AppError("Workspace not found", 404);
+    }
+
+    const member = workspace.members.find(
+        (m) => m.user.toString() === userId.toString()
+    );
+    if (!member) {
+        throw new AppError("You are not listed in this workspace's members list", 400);
+    }
+
+    if (member.status === "ACTIVE") {
+        // Already active, just mark notification as read/deleted
+        await Notification.findByIdAndDelete(notificationId);
+        return { workspace, alreadyActive: true };
+    }
+
+    member.status = "ACTIVE";
+    await workspace.save();
+
+    await activityService.createActivity({
+        workspace: workspace._id,
+        user: userId,
+        action: ACTIVITY_ACTIONS.MEMBER_ADDED,
+        details: `Joined workspace: ${workspace.name}`,
+    });
+
+    await Notification.findByIdAndDelete(notificationId);
+
+    return { workspace };
+};
+
+const rejectInvitation = async (notificationId, userId) => {
+    const notification = await Notification.findOne({ _id: notificationId, recipient: userId });
+    if (!notification) {
+        throw new AppError("Notification not found", 404);
+    }
+    if (notification.type !== "WORKSPACE_INVITATION") {
+        throw new AppError("Notification is not a workspace invitation", 400);
+    }
+
+    const workspace = await Workspace.findById(notification.workspace);
+    if (workspace) {
+        workspace.members = workspace.members.filter(
+            (m) => m.user.toString() !== userId.toString()
+        );
+        await workspace.save();
+    }
+
+    await Notification.findByIdAndDelete(notificationId);
+
+    return { success: true };
+};
+
 module.exports = {
     createNotification,
     getUserNotifications,
     markAsRead,
     markAllAsRead,
+    acceptInvitation,
+    rejectInvitation,
 };

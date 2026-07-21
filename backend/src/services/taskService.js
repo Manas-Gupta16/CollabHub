@@ -29,7 +29,7 @@ const createTask = async (
     const isMember = workspace.members.some(
         (member) =>
             member.user.toString() ===
-            currentUser._id.toString()
+            currentUser._id.toString() && member.status !== "PENDING"
     );
 
     if (!isMember) {
@@ -46,6 +46,7 @@ const createTask = async (
         description: taskData.description,
         priority: taskData.priority,
         dueDate: taskData.dueDate,
+        assignee: taskData.assignee || undefined,
 
         workspace: workspaceId,
         createdBy: currentUser._id,
@@ -82,7 +83,7 @@ const getWorkspaceTasks = async (
     const isMember = workspace.members.some(
         (member) =>
             member.user.toString() ===
-            currentUser._id.toString()
+            currentUser._id.toString() && member.status !== "PENDING"
     );
 
     if (!isMember) {
@@ -209,7 +210,7 @@ const assignTask = async (
         workspace.members.find(
             (member) =>
                 member.user.toString() ===
-                currentUser._id.toString()
+                currentUser._id.toString() && member.status !== "PENDING"
         );
 
     if (!currentMember) {
@@ -244,7 +245,7 @@ const assignTask = async (
         workspace.members.some(
             (member) =>
                 member.user.toString() ===
-                assigneeId.toString()
+                assigneeId.toString() && member.status !== "PENDING"
         );
 
     if (!isWorkspaceMember) {
@@ -300,7 +301,7 @@ const updateTaskStatus = async (
     const isMember = workspace.members.some(
         (member) =>
             member.user.toString() ===
-            currentUser._id.toString()
+            currentUser._id.toString() && member.status !== "PENDING"
     );
 
     if (!isMember) {
@@ -348,7 +349,7 @@ const updateTask = async (
         workspace.members.find(
             (member) =>
                 member.user.toString() ===
-                currentUser._id.toString()
+                currentUser._id.toString() && member.status !== "PENDING"
         );
 
     if (!currentMember) {
@@ -404,7 +405,7 @@ const deleteTask = async (
         workspace.members.find(
             (member) =>
                 member.user.toString() ===
-                currentUser._id.toString()
+                currentUser._id.toString() && member.status !== "PENDING"
         );
 
     if (!currentMember) {

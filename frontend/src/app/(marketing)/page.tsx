@@ -37,7 +37,7 @@ export default function LandingPage() {
         <div className="lg:w-[42%] z-10 relative pr-4">
           <h1 className="text-[3rem] lg:text-[4rem] font-bold text-gray-900 leading-[1.02] tracking-tighter mb-5">
             COLLABORATION<br/>
-            THAT'S<br/>
+            THAT&apos;S<br/>
             EFFORTLESS &<br/>
             POWERFUL
           </h1>
@@ -143,13 +143,13 @@ export default function LandingPage() {
                       "https://api.dicebear.com/7.x/micah/svg?seed=User2&backgroundColor=f3f4f6&mouth=smile",
                       "https://api.dicebear.com/7.x/micah/svg?seed=User3&backgroundColor=f3f4f6&mouth=smile",
                       "https://api.dicebear.com/7.x/micah/svg?seed=User4&backgroundColor=f3f4f6&mouth=smile"
-                    ].map((url, i)=><div key={i} className="w-4 h-4 sm:w-5 sm:h-5 rounded-full bg-gray-200 border-2 border-white overflow-hidden"><img src={url} className="w-full h-full object-cover"/></div>)}
+                      ].map((url, i)=><div key={i} className="w-4 h-4 sm:w-5 sm:h-5 rounded-full bg-gray-200 border-2 border-white overflow-hidden"><img src={url} alt="User" className="w-full h-full object-cover"/></div>)}
                   </div>
                 </div>
                 <div className="flex-1 p-3 sm:p-5 space-y-4 sm:space-y-6 bg-white overflow-hidden">
                   <div className="flex gap-2 sm:gap-3">
                     <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-gray-200 overflow-hidden shrink-0">
-                       <img src="https://api.dicebear.com/7.x/micah/svg?seed=User5&backgroundColor=f3f4f6&mouth=smile" className="w-full h-full object-cover"/>
+                       <img src="https://api.dicebear.com/7.x/micah/svg?seed=User5&backgroundColor=f3f4f6&mouth=smile" alt="User 5" className="w-full h-full object-cover"/>
                     </div>
                     <div>
                       <div className="flex gap-2 items-baseline mb-0.5 sm:mb-1"><span className="font-bold text-gray-900 text-[8px] sm:text-[11px]">Project Delta</span><span className="text-gray-400 text-[6px] sm:text-[8px]">2:44 PM</span></div>
@@ -161,7 +161,7 @@ export default function LandingPage() {
                   </div>
                   <div className="flex gap-2 sm:gap-3">
                     <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-gray-200 overflow-hidden shrink-0">
-                       <img src="https://api.dicebear.com/7.x/micah/svg?seed=User6&backgroundColor=f3f4f6&mouth=smile" className="w-full h-full object-cover"/>
+                       <img src="https://api.dicebear.com/7.x/micah/svg?seed=User6&backgroundColor=f3f4f6&mouth=smile" alt="User 6" className="w-full h-full object-cover"/>
                     </div>
                     <div>
                       <div className="flex gap-2 items-baseline mb-0.5 sm:mb-1"><span className="font-bold text-gray-900 text-[8px] sm:text-[11px]">Marfor Roather</span><span className="text-gray-400 text-[6px] sm:text-[8px]">3:55 PM</span></div>
@@ -200,7 +200,7 @@ export default function LandingPage() {
                      ].map((user,i)=>(
                        <div key={i} className="flex justify-between items-center">
                          <div className="flex items-center gap-1.5 sm:gap-2">
-                           <div className="w-4 h-4 sm:w-5 sm:h-5 rounded-full bg-gray-200 overflow-hidden"><img src={user.p} className="w-full h-full object-cover"/></div>
+                           <div className="w-4 h-4 sm:w-5 sm:h-5 rounded-full bg-gray-200 overflow-hidden"><img src={user.p} alt={user.n} className="w-full h-full object-cover"/></div>
                            <span className="font-medium text-gray-700 truncate text-[7px] sm:text-[9px]">{user.n}</span>
                          </div>
                          <div className="w-1.5 h-1.5 rounded-full bg-emerald-400"></div>
@@ -252,10 +252,10 @@ export default function LandingPage() {
               <div className="flex-1 p-2 sm:p-3 overflow-hidden bg-white">
                  {/* Mini chat bubbles or video call grid */}
                  <div className="grid grid-cols-2 gap-1.5 sm:gap-2 mb-3">
-                   <div className="aspect-square bg-blue-50 rounded-lg overflow-hidden"><img src="https://api.dicebear.com/7.x/micah/svg?seed=User11&backgroundColor=f3f4f6&mouth=smile" className="w-full h-full object-cover"/></div>
-                   <div className="aspect-square bg-purple-50 rounded-lg overflow-hidden"><img src="https://api.dicebear.com/7.x/micah/svg?seed=User12&backgroundColor=f3f4f6&mouth=smile" className="w-full h-full object-cover"/></div>
-                   <div className="aspect-square bg-orange-50 rounded-lg overflow-hidden"><img src="https://api.dicebear.com/7.x/micah/svg?seed=User13&backgroundColor=f3f4f6&mouth=smile" className="w-full h-full object-cover"/></div>
-                   <div className="aspect-square bg-emerald-50 rounded-lg overflow-hidden"><img src="https://api.dicebear.com/7.x/micah/svg?seed=User14&backgroundColor=f3f4f6&mouth=smile" className="w-full h-full object-cover"/></div>
+                   <div className="aspect-square bg-blue-50 rounded-lg overflow-hidden"><img src="https://api.dicebear.com/7.x/micah/svg?seed=User11&backgroundColor=f3f4f6&mouth=smile" alt="User 11" className="w-full h-full object-cover"/></div>
+                   <div className="aspect-square bg-purple-50 rounded-lg overflow-hidden"><img src="https://api.dicebear.com/7.x/micah/svg?seed=User12&backgroundColor=f3f4f6&mouth=smile" alt="User 12" className="w-full h-full object-cover"/></div>
+                   <div className="aspect-square bg-orange-50 rounded-lg overflow-hidden"><img src="https://api.dicebear.com/7.x/micah/svg?seed=User13&backgroundColor=f3f4f6&mouth=smile" alt="User 13" className="w-full h-full object-cover"/></div>
+                   <div className="aspect-square bg-emerald-50 rounded-lg overflow-hidden"><img src="https://api.dicebear.com/7.x/micah/svg?seed=User14&backgroundColor=f3f4f6&mouth=smile" alt="User 14" className="w-full h-full object-cover"/></div>
                  </div>
                  <div className="bg-white p-2 rounded-lg shadow-sm border border-gray-100">
                    <div className="font-bold text-gray-900 mb-1 text-[7px] sm:text-[9px]">Channels</div>

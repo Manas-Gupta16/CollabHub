@@ -13,7 +13,7 @@ const sendMessage = async (workspaceId, content, currentUser, files = []) => {
     }
 
     const isMember = workspace.members.some(
-        (member) => member.user.toString() === currentUser._id.toString()
+        (member) => member.user.toString() === currentUser._id.toString() && member.status !== "PENDING"
     );
 
     if (!isMember) {
@@ -38,12 +38,28 @@ const sendMessage = async (workspaceId, content, currentUser, files = []) => {
     
     if (mentions && mentions.length > 0) {
         const usernames = mentions.map(m => m.substring(1)); // Remove @
-        const mentionedUsers = await User.find({ name: { $in: usernames } });
+        const mentionedUsers = [];
+        for (const username of usernames) {
+            const matches = await User.find({
+                name: { $regex: new RegExp(`^${username}$|^${username}\\s`, "i") }
+            });
+            mentionedUsers.push(...matches);
+        }
+
+        // Deduplicate matched users
+        const uniqueUserIds = new Set();
+        const uniqueMentionedUsers = [];
+        for (const u of mentionedUsers) {
+            if (!uniqueUserIds.has(u._id.toString())) {
+                uniqueUserIds.add(u._id.toString());
+                uniqueMentionedUsers.push(u);
+            }
+        }
         
-        for (const user of mentionedUsers) {
+        for (const user of uniqueMentionedUsers) {
             // Ensure they are in the workspace
             const isMentionedUserMember = workspace.members.some(
-                m => m.user.toString() === user._id.toString()
+                m => m.user.toString() === user._id.toString() && m.status !== "PENDING"
             );
 
             if (isMentionedUserMember) {
@@ -71,7 +87,7 @@ const getWorkspaceMessages = async (workspaceId, currentUser, filters) => {
     }
 
     const isMember = workspace.members.some(
-        (member) => member.user.toString() === currentUser._id.toString()
+        (member) => member.user.toString() === currentUser._id.toString() && member.status !== "PENDING"
     );
 
     if (!isMember) {

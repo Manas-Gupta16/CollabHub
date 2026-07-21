@@ -1,5 +1,6 @@
 const authService = require("../services/authService");
 const asyncHandler = require("../middleware/asyncHandler");
+const bcrypt = require("bcrypt");
 
 const register = asyncHandler(
     async (req, res) => {
@@ -34,11 +35,25 @@ const getProfile = asyncHandler(
 
 const updateProfile = asyncHandler(
     async (req, res) => {
-        const user = req.user;
-        if (req.file) {
-            user.avatar = `/uploads/${req.file.filename}`;
-            await user.save();
+        const user = await User.findById(req.user._id);
+        
+        if (req.body.name) {
+            user.name = req.body.name;
         }
+        if (req.body.email) {
+            user.email = req.body.email;
+        }
+        if (req.body.password) {
+            user.password = await bcrypt.hash(req.body.password, 10);
+        }
+        
+        if (req.body.removeAvatar === "true" || req.body.removeAvatar === true) {
+            user.avatar = "";
+        } else if (req.file) {
+            user.avatar = `/uploads/${req.file.filename}`;
+        }
+        
+        await user.save();
 
         res.status(200).json({
             success: true,

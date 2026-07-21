@@ -29,11 +29,12 @@ const createWorkspace = async (
             {
                 user: currentUser._id,
                 role: ROLES.OWNER,
+                status: "ACTIVE",
             },
         ],
         channels: [
-            { name: "general", isPrivate: false },
-            { name: "announcements", isPrivate: false }
+            { name: "General", isPrivate: false },
+            { name: "Announcements", isPrivate: false }
         ],
         pinnedLinks: [
             { title: "CollabHub Docs", url: "https://link.com/CollabHub/1" }
@@ -62,8 +63,27 @@ const getMyWorkspaces = async (
     currentUser
 ) => {
     const workspaces = await Workspace.find({
-        "members.user": currentUser._id,
-    });
+        members: {
+            $elemMatch: {
+                user: currentUser._id,
+                status: { $ne: "PENDING" }
+            }
+        }
+    }).populate("members.user", "name email profileImage");
+
+    for (const ws of workspaces) {
+        let hasGeneral = false;
+        for (const c of ws.channels) {
+            if (c.name.toLowerCase() === "general") {
+                c.name = "General";
+                hasGeneral = true;
+            }
+        }
+        if (!hasGeneral) {
+            ws.channels.unshift({ name: "General", isPrivate: false });
+        }
+        await ws.save();
+    }
 
     return workspaces;
 };
@@ -86,7 +106,7 @@ const getWorkspaceById = async (
     const isMember = workspace.members.some(
         (member) =>
             (member.user._id || member.user).toString() ===
-            currentUser._id.toString()
+            currentUser._id.toString() && member.status !== "PENDING"
     );
 
     if (!isMember) {
@@ -95,6 +115,18 @@ const getWorkspaceById = async (
             403
         );
     }
+
+    let hasGeneral = false;
+    for (const c of workspace.channels) {
+        if (c.name.toLowerCase() === "general") {
+            c.name = "General";
+            hasGeneral = true;
+        }
+    }
+    if (!hasGeneral) {
+        workspace.channels.unshift({ name: "General", isPrivate: false });
+    }
+    await workspace.save();
 
     return workspace;
 };
@@ -144,34 +176,50 @@ const addMemberToWorkspace = async (
         );
     }
 
-    const alreadyMember =
-        workspace.members.some(
-            (member) =>
-                member.user.toString() ===
-                user._id.toString()
-        );
+    const existingMember = workspace.members.find(
+        (member) =>
+            member.user.toString() ===
+            user._id.toString()
+    );
 
-    if (alreadyMember) {
-        throw new AppError(
-            "User is already a workspace member",
-            400
-        );
+    if (existingMember) {
+        if (existingMember.status === "PENDING") {
+            throw new AppError(
+                "User has already been invited to this workspace",
+                400
+            );
+        } else {
+            throw new AppError(
+                "User is already a member of this workspace",
+                400
+            );
+        }
     }
 
     workspace.members.push({
         user: user._id,
         role: role || ROLES.MEMBER,
+        status: "PENDING",
     });
 
     await workspace.save();
+
+    // Create invitation notification
+    const notificationService = require("./notificationService");
+    await notificationService.createNotification({
+        recipientId: user._id,
+        type: "WORKSPACE_INVITATION",
+        message: `${currentUser.name} invited you to join workspace "${workspace.name}"`,
+        workspaceId: workspace._id,
+        relatedEntityId: workspace._id
+    });
 
     await activityService.createActivity({
         workspace: workspace._id,
         user: currentUser._id,
         action:
             ACTIVITY_ACTIONS.MEMBER_ADDED,
-        details: `Added ${user.email} as ${role || ROLES.MEMBER
-            }`,
+        details: `Invited ${user.email} as ${role || ROLES.MEMBER}`,
     });
 
     return workspace;
@@ -199,7 +247,7 @@ const updateMemberRole = async (
         workspace.members.find(
             (member) =>
                 member.user.toString() ===
-                currentUser._id.toString()
+                currentUser._id.toString() && member.status !== "PENDING"
         );
 
     if (
@@ -216,7 +264,7 @@ const updateMemberRole = async (
         workspace.members.find(
             (member) =>
                 member.user.toString() ===
-                userId.toString()
+                userId.toString() && member.status !== "PENDING"
         );
 
     if (!targetMember) {
@@ -282,7 +330,7 @@ const getWorkspaceStats = async (
         workspace.members.some(
             (member) =>
                 member.user.toString() ===
-                currentUser._id.toString()
+                currentUser._id.toString() && member.status !== "PENDING"
         );
 
     if (!isMember) {
@@ -379,6 +427,48 @@ const getWorkspaceStats = async (
     };
 };
 
+const createChannel = async (workspaceId, channelData, currentUser) => {
+    const workspace = await Workspace.findById(workspaceId);
+    if (!workspace) {
+        throw new AppError("Workspace not found", 404);
+    }
+
+    const currentMember = workspace.members.find(
+        (member) => member.user.toString() === currentUser._id.toString() && member.status !== "PENDING"
+    );
+
+    if (!currentMember) {
+        throw new AppError("You are not a member of this workspace", 403);
+    }
+
+    // Only Owner and Admin can create channels
+    if (currentMember.role !== "OWNER" && currentMember.role !== "ADMIN") {
+        throw new AppError("Only owners and admins can create channels", 403);
+    }
+
+    const { name, isPrivate } = channelData;
+
+    // Check duplicate channel name
+    const channelExists = workspace.channels.some(
+        (c) => c.name.toLowerCase() === name.toLowerCase()
+    );
+    if (channelExists) {
+        throw new AppError("Channel name already exists in this workspace", 400);
+    }
+
+    workspace.channels.push({ name, isPrivate: !!isPrivate });
+    await workspace.save();
+
+    await activityService.createActivity({
+        workspace: workspace._id,
+        user: currentUser._id,
+        action: ACTIVITY_ACTIONS.CHANNEL_CREATED || "CHANNEL_CREATED",
+        details: `Created channel: #${name}`,
+    });
+
+    return workspace;
+};
+
 module.exports = {
     createWorkspace,
     getMyWorkspaces,
@@ -386,4 +476,102 @@ module.exports = {
     addMemberToWorkspace,
     updateMemberRole,
     getWorkspaceStats,
+    createChannel,
+};
+
+const removeMemberFromWorkspace = async (workspaceId, userId, currentUser) => {
+    const workspace = await Workspace.findById(workspaceId);
+    if (!workspace) {
+        throw new AppError("Workspace not found", 404);
+    }
+
+    const currentMember = workspace.members.find(
+        (member) => member.user.toString() === currentUser._id.toString() && member.status !== "PENDING"
+    );
+
+    if (!currentMember || currentMember.role !== "OWNER") {
+        throw new AppError("Only workspace owners can remove members", 403);
+    }
+
+    if (userId.toString() === workspace.owner.toString()) {
+        throw new AppError("Owner cannot be removed from the workspace", 400);
+    }
+
+    const memberExists = workspace.members.some(
+        (member) => member.user.toString() === userId.toString()
+    );
+
+    if (!memberExists) {
+        throw new AppError("Member not found in workspace", 404);
+    }
+
+    workspace.members = workspace.members.filter(
+        (member) => member.user.toString() !== userId.toString()
+    );
+
+    await workspace.save();
+
+    await activityService.createActivity({
+        workspace: workspace._id,
+        user: currentUser._id,
+        action: "MEMBER_REMOVED",
+        details: `Removed member from workspace`,
+    });
+
+    return workspace;
+};
+
+const deleteChannel = async (workspaceId, channelName, currentUser) => {
+    const workspace = await Workspace.findById(workspaceId);
+    if (!workspace) {
+        throw new AppError("Workspace not found", 404);
+    }
+
+    const currentMember = workspace.members.find(
+        (member) => member.user.toString() === currentUser._id.toString() && member.status !== "PENDING"
+    );
+
+    if (!currentMember) {
+        throw new AppError("You are not a member of this workspace", 403);
+    }
+
+    if (currentMember.role !== "OWNER" && currentMember.role !== "ADMIN") {
+        throw new AppError("Only owners and admins can delete channels", 403);
+    }
+
+    if (channelName.toLowerCase() === "general") {
+        throw new AppError("The general channel cannot be deleted", 400);
+    }
+
+    const channelIndex = workspace.channels.findIndex(
+        (c) => c.name.toLowerCase() === channelName.toLowerCase()
+    );
+
+    if (channelIndex === -1) {
+        throw new AppError("Channel not found", 404);
+    }
+
+    workspace.channels.splice(channelIndex, 1);
+    await workspace.save();
+
+    await activityService.createActivity({
+        workspace: workspace._id,
+        user: currentUser._id,
+        action: "CHANNEL_DELETED",
+        details: `Deleted channel: #${channelName}`,
+    });
+
+    return workspace;
+};
+
+module.exports = {
+    createWorkspace,
+    getMyWorkspaces,
+    getWorkspaceById,
+    addMemberToWorkspace,
+    updateMemberRole,
+    getWorkspaceStats,
+    createChannel,
+    removeMemberFromWorkspace,
+    deleteChannel,
 };

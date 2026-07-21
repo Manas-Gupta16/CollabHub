@@ -32,6 +32,12 @@ const workspaceSchema = new mongoose.Schema(
                     enum: ["OWNER", "ADMIN", "MEMBER"],
                     default: "MEMBER",
                 },
+
+                status: {
+                    type: String,
+                    enum: ["ACTIVE", "PENDING"],
+                    default: "ACTIVE",
+                },
             },
         ],
 

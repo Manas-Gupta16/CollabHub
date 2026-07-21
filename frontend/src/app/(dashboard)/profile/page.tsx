@@ -34,7 +34,7 @@ export default function ProfilePage() {
           <CardContent className="p-8 pt-0 relative">
              <div className="flex flex-col sm:flex-row gap-6 items-start sm:items-end -mt-12 mb-6">
                <div className="w-24 h-24 rounded-full border-4 border-white bg-white shadow-md overflow-hidden shrink-0">
-                  <img src={`https://api.dicebear.com/7.x/micah/svg?seed=${userSeed}&backgroundColor=f3f4f6`} className="w-full h-full object-cover" />
+                  <img src={user?.avatar ? `http://localhost:5000${user.avatar}` : `https://api.dicebear.com/7.x/initials/svg?seed=${userSeed}&backgroundColor=6366f1&textColor=ffffff`} className="w-full h-full object-cover" />
                </div>
                <div className="flex-1">
                  <h1 className="text-2xl font-bold text-gray-900 tracking-tight">{userName}</h1>
@@ -42,7 +42,7 @@ export default function ProfilePage() {
                </div>
                <div className="flex gap-2 w-full sm:w-auto">
                  <Button variant="outline" className="flex-1 sm:flex-none border-gray-200">Share</Button>
-                 <Button className="flex-1 sm:flex-none bg-[#6366F1] hover:bg-[#4F46E5] text-white">Edit Profile</Button>
+                 <a href="/settings"><Button className="flex-1 sm:flex-none bg-[#6366F1] hover:bg-[#4F46E5] text-white">Edit Profile</Button></a>
                </div>
              </div>
 

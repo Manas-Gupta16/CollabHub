@@ -23,7 +23,7 @@ export default function Login() {
       const token = res.data?.data?.token
       if (token) {
         localStorage.setItem("token", token)
-        router.push("/dashboard")
+        window.location.href = "/dashboard"
       } else {
         setError("Login failed. No token received.")
       }

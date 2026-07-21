@@ -14,6 +14,7 @@ const { protect } = require("../middleware/authMiddleware");
 const {
     createWorkspaceValidator,
     addMemberValidator,
+    createChannelValidator,
 } = require("../validators/workspaceValidator");
 
 const validate = require(
@@ -27,6 +28,9 @@ const {
     addMemberToWorkspace,
     updateMemberRole,
     getWorkspaceStats,
+    createChannel,
+    removeMemberFromWorkspace,
+    deleteChannel,
 } = require(
     "../controllers/workspaceController"
 );
@@ -219,5 +223,10 @@ router.patch("/:workspaceId/members/role", protect, updateMemberRole);
  *         description: Workspace statistics returned
  */
 router.get("/:workspaceId/stats", protect, getWorkspaceStats);
+
+router.post("/:workspaceId/channels", protect, createChannelValidator, validate, createChannel);
+
+router.delete("/:workspaceId/members/:userId", protect, removeMemberFromWorkspace);
+router.delete("/:workspaceId/channels/:channelName", protect, deleteChannel);
 
 module.exports = router;

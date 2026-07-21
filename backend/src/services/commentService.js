@@ -34,7 +34,7 @@ const addComment = async (
         workspace.members.some(
             (member) =>
                 member.user.toString() ===
-                currentUser._id.toString()
+                currentUser._id.toString() && member.status !== "PENDING"
         );
 
     if (!isMember) {
@@ -95,7 +95,7 @@ const getTaskComments = async (
         workspace.members.some(
             (member) =>
                 member.user.toString() ===
-                currentUser._id.toString()
+                currentUser._id.toString() && member.status !== "PENDING"
         );
 
     if (!isMember) {

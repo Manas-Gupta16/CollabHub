@@ -1,16 +1,17 @@
 const ACTIVITY_ACTIONS = {
-    TASK_CREATED: "TASK_CREATED",
-    TASK_ASSIGNED: "TASK_ASSIGNED",
+    TASK_CREATED: "created task",
+    TASK_ASSIGNED: "assigned task",
     TASK_STATUS_UPDATED:
-        "TASK_STATUS_UPDATED",
+        "updated task status",
     TASK_COMMENTED:
-        "TASK_COMMENTED",
-    TASK_DELETED: "TASK_DELETED",
+        "commented on task",
+    TASK_DELETED: "deleted task",
 
-    MEMBER_ADDED: "MEMBER_ADDED",
+    MEMBER_ADDED: "added member",
     WORKSPACE_CREATED:
-        "WORKSPACE_CREATED",
-    ROLE_UPDATED: "ROLE_UPDATED",
+        "created workspace",
+    ROLE_UPDATED: "updated role",
+    CHANNEL_CREATED: "created channel",
 };
 
 module.exports = {
