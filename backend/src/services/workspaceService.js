@@ -214,23 +214,16 @@ const addMemberToWorkspace = async (
     );
 
     if (existingMember) {
-        if (existingMember.status === "PENDING") {
-            throw new AppError(
-                "User has already been invited to this workspace",
-                400
-            );
-        } else {
-            throw new AppError(
-                "User is already a member of this workspace",
-                400
-            );
-        }
+        throw new AppError(
+            "User is already a workspace member",
+            400
+        );
     }
 
     workspace.members.push({
         user: user._id,
         role: role || ROLES.MEMBER,
-        status: "PENDING",
+        status: "ACTIVE",
     });
 
     await workspace.save();

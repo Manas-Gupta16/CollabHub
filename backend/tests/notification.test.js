@@ -39,6 +39,9 @@ describe("Notification Routes", () => {
         // User 1 creates Task
         const taskRes = await request(app).post(`/api/workspaces/${workspaceId}/tasks`).set("Authorization", `Bearer ${token1}`).send({ title: "Task 1", status: "TODO", priority: "LOW" });
         taskId = taskRes.body.data._id;
+
+        // Clear automatic invitation notifications for isolated testing
+        await Notification.deleteMany({});
     });
 
     test("1. Assign Task creates Notification for assignee", async () => {
@@ -48,7 +51,7 @@ describe("Notification Routes", () => {
             .set("Authorization", `Bearer ${token1}`)
             .send({ assigneeId: user2._id });
 
-        const notifications = await Notification.find({ recipient: user2._id });
+        const notifications = await Notification.find({ recipient: user2._id, type: "TASK_ASSIGNED" });
         expect(notifications.length).toBe(1);
         expect(notifications[0].type).toBe("TASK_ASSIGNED");
     });
