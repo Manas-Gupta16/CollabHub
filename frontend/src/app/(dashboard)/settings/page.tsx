@@ -4,27 +4,46 @@ import { useState, useRef, useEffect, Suspense } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
-import { User, Bell, Lock, Layout, MonitorSmartphone, CreditCard, Settings } from "lucide-react"
+import { User, Bell, Lock, Layout, MonitorSmartphone, CreditCard, Settings, Layers, Crown, ShieldCheck, Shield, UserX, Check } from "lucide-react"
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
-import { updateProfile } from "@/lib/api"
+import { updateProfile, getWorkspaces, getWorkspaceById, updateWorkspaceInfo, updateMemberRole, removeMemberFromWorkspace } from "@/lib/api"
 import api from "@/lib/api"
-import { useSearchParams } from "next/navigation"
+import { useSearchParams, useRouter } from "next/navigation"
 import { UserAvatar } from "@/components/UserAvatar"
 
 function SettingsContent() {
   const queryClient = useQueryClient()
   const searchParams = useSearchParams()
+  const router = useRouter()
   const queryTab = searchParams.get('tab')
+  const queryWorkspaceId = searchParams.get('workspace')
+
   const [activeTab, setActiveTab] = useState('profile')
+  const [selectedWorkspaceId, setSelectedWorkspaceId] = useState<string>('')
+
+  const fileInputRef = useRef<HTMLInputElement>(null)
+
+  // Fetch workspaces list
+  const { data: workspaces } = useQuery({
+    queryKey: ['workspaces'],
+    queryFn: getWorkspaces,
+  })
 
   useEffect(() => {
-    if (queryTab && ['profile', 'account', 'security', 'notifications', 'devices', 'billing'].includes(queryTab)) {
+    if (queryWorkspaceId) {
+      setSelectedWorkspaceId(queryWorkspaceId)
+    } else if (workspaces && workspaces.length > 0 && !selectedWorkspaceId) {
+      setSelectedWorkspaceId(workspaces[0]._id)
+    }
+  }, [queryWorkspaceId, workspaces])
+
+  useEffect(() => {
+    if (queryTab && ['profile', 'account', 'security', 'notifications', 'devices', 'billing', 'workspace'].includes(queryTab)) {
       setActiveTab(queryTab)
     }
   }, [queryTab])
 
-  const fileInputRef = useRef<HTMLInputElement>(null)
-
+  // Current logged in user profile
   const { data: user } = useQuery({
     queryKey: ['profile'],
     queryFn: async () => {
@@ -33,15 +52,26 @@ function SettingsContent() {
     },
   })
 
+  // Selected workspace details
+  const { data: activeWorkspace } = useQuery({
+    queryKey: ['workspace', selectedWorkspaceId],
+    queryFn: () => getWorkspaceById(selectedWorkspaceId),
+    enabled: !!selectedWorkspaceId && activeTab === 'workspace'
+  })
+
   const userName = user?.name || ''
   const userEmail = user?.email || ''
-  const nameParts = userName.split(' ')
   
   const [firstName, setFirstName] = useState('')
   const [lastName, setLastName] = useState('')
   const [email, setEmail] = useState('')
   const [avatarFile, setAvatarFile] = useState<File | null>(null)
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null)
+  const [removeAvatar, setRemoveAvatar] = useState(false)
+
+  // Workspace settings state
+  const [wsName, setWsName] = useState('')
+  const [wsDesc, setWsDesc] = useState('')
 
   useEffect(() => {
     if (user) {
@@ -55,13 +85,17 @@ function SettingsContent() {
     }
   }, [user])
 
-  const [removeAvatar, setRemoveAvatar] = useState(false)
+  useEffect(() => {
+    if (activeWorkspace) {
+      setWsName(activeWorkspace.name || '')
+      setWsDesc(activeWorkspace.description || '')
+    }
+  }, [activeWorkspace])
 
   const userSeed = userName.replace(/\s/g, '') || 'Design'
   const fallbackAvatar = `https://api.dicebear.com/7.x/initials/svg?seed=${userSeed}&backgroundColor=6366f1&textColor=ffffff`
-  const displayAvatar = avatarPreview || fallbackAvatar
 
-  const updateMutation = useMutation({
+  const updateProfileMutation = useMutation({
     mutationFn: updateProfile,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['profile'] })
@@ -73,7 +107,40 @@ function SettingsContent() {
     }
   })
 
-  const handleSave = () => {
+  const updateWorkspaceMutation = useMutation({
+    mutationFn: (data: { name?: string; description?: string }) => updateWorkspaceInfo(selectedWorkspaceId, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['workspace', selectedWorkspaceId] })
+      queryClient.invalidateQueries({ queryKey: ['workspaces'] })
+      alert("Workspace settings updated successfully!")
+    },
+    onError: (err: any) => {
+      alert(err.response?.data?.message || "Failed to update workspace settings.")
+    }
+  })
+
+  const updateMemberRoleMutation = useMutation({
+    mutationFn: ({ userId, role }: { userId: string; role: string }) => updateMemberRole(selectedWorkspaceId, userId, role),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['workspace', selectedWorkspaceId] })
+    },
+    onError: (err: any) => {
+      alert(err.response?.data?.message || "Failed to update member role.")
+    }
+  })
+
+  const removeMemberMutation = useMutation({
+    mutationFn: (userId: string) => removeMemberFromWorkspace(selectedWorkspaceId, userId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['workspace', selectedWorkspaceId] })
+      alert("Member removed from workspace.")
+    },
+    onError: (err: any) => {
+      alert(err.response?.data?.message || "Failed to remove member.")
+    }
+  })
+
+  const handleSaveProfile = () => {
     const formData = new FormData()
     formData.append('name', `${firstName} ${lastName}`.trim())
     formData.append('email', email)
@@ -83,7 +150,12 @@ function SettingsContent() {
     if (removeAvatar) {
       formData.append('removeAvatar', 'true')
     }
-    updateMutation.mutate(formData)
+    updateProfileMutation.mutate(formData)
+  }
+
+  const handleSaveWorkspace = () => {
+    if (!wsName.trim()) return
+    updateWorkspaceMutation.mutate({ name: wsName.trim(), description: wsDesc.trim() })
   }
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -115,7 +187,7 @@ function SettingsContent() {
     }
     const formData = new FormData()
     formData.append('password', password)
-    updateMutation.mutate(formData, {
+    updateProfileMutation.mutate(formData, {
       onSuccess: () => {
         setPassword("")
         setConfirmPassword("")
@@ -124,37 +196,41 @@ function SettingsContent() {
   }
 
   const tabs = [
-    { id: 'profile', label: 'Profile', icon: <User className="w-4 h-4"/> },
-    { id: 'account', label: 'Account', icon: <Layout className="w-4 h-4"/> },
-    { id: 'security', label: 'Security', icon: <Lock className="w-4 h-4"/> },
+    { id: 'profile', label: 'User Profile', icon: <User className="w-4 h-4"/> },
+    { id: 'workspace', label: 'Workspace Settings', icon: <Layers className="w-4 h-4"/> },
+    { id: 'security', label: 'Security & Password', icon: <Lock className="w-4 h-4"/> },
     { id: 'notifications', label: 'Notifications', icon: <Bell className="w-4 h-4"/> },
+    { id: 'account', label: 'Account & Privacy', icon: <Layout className="w-4 h-4"/> },
     { id: 'devices', label: 'Devices', icon: <MonitorSmartphone className="w-4 h-4"/> },
-    { id: 'billing', label: 'Billing', icon: <CreditCard className="w-4 h-4"/> },
+    { id: 'billing', label: 'Billing & Plan', icon: <CreditCard className="w-4 h-4"/> },
   ]
 
+  const currentUserWsMember = activeWorkspace?.members?.find((m: any) => (m.user?._id || m.user) === user?._id)
+  const isWsOwner = currentUserWsMember?.role === 'OWNER'
+
   return (
-    <div className="flex-1 overflow-y-auto bg-gradient-to-br from-[#F5F8FF] to-[#E9F0FE] p-8 relative">
+    <div className="flex-1 overflow-y-auto bg-slate-50/60 p-6 lg:p-8 relative">
 
       <div className="max-w-5xl mx-auto space-y-8 relative z-10">
         
         {/* Header */}
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 tracking-tight">Settings</h1>
-          <p className="text-gray-500 mt-1">Manage your account settings and preferences.</p>
+          <h1 className="text-2xl font-bold text-gray-900 tracking-tight">Settings & Preferences</h1>
+          <p className="text-gray-500 text-sm mt-1">Manage user account details, workspace configuration, and permissions.</p>
         </div>
 
         <div className="flex flex-col md:flex-row gap-8">
           
           {/* Sidebar */}
-          <div className="w-full md:w-64 shrink-0 space-y-1">
+          <div className="w-full md:w-60 shrink-0 space-y-1.5">
             {tabs.map((tab) => (
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+                className={`w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all cursor-pointer ${
                   activeTab === tab.id 
-                    ? 'bg-indigo-50 text-[#6366F1]' 
-                    : 'text-gray-600 hover:bg-white/80 hover:text-gray-900'
+                    ? 'bg-indigo-50 text-[#6366F1] shadow-xs' 
+                    : 'text-gray-600 hover:bg-white hover:text-gray-900'
                 }`}
               >
                 {tab.icon}
@@ -165,169 +241,317 @@ function SettingsContent() {
 
           {/* Content Area */}
           <div className="flex-1">
+            
+            {/* USER PROFILE SETTINGS */}
             {activeTab === 'profile' && (
-              <Card className="border-gray-200/60 bg-white/80 backdrop-blur-sm">
-                <CardContent className="p-8">
-                  <h2 className="text-xl font-bold text-gray-900 mb-6">Profile Settings</h2>
+              <Card className="border-gray-200/80 bg-white shadow-sm rounded-2xl">
+                <CardContent className="p-6 md:p-8">
+                  <h2 className="text-lg font-bold text-gray-900 mb-6">User Profile Settings</h2>
                   
-                  <div className="flex items-center gap-6 mb-8">
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-6 mb-8">
                     <UserAvatar name={userName} avatar={avatarPreview || undefined} size="w-20 h-20 text-2xl" />
                     <div>
                       <div className="flex gap-2">
                         <input type="file" className="hidden" ref={fileInputRef} onChange={handleFileChange} accept="image/*" />
-                        <Button variant="outline" className="border-gray-200" onClick={() => fileInputRef.current?.click()}>
+                        <Button variant="outline" className="border-gray-200 rounded-xl text-xs font-semibold" onClick={() => fileInputRef.current?.click()}>
                           Change Avatar
                         </Button>
-                        <Button variant="ghost" className="text-red-600 hover:text-red-700 hover:bg-red-50" onClick={() => { setAvatarFile(null); setAvatarPreview(null); setRemoveAvatar(true); }}>Remove</Button>
+                        <Button variant="ghost" className="text-red-600 hover:text-red-700 hover:bg-red-50 rounded-xl text-xs font-semibold" onClick={() => { setAvatarFile(null); setAvatarPreview(null); setRemoveAvatar(true); }}>
+                          Remove
+                        </Button>
                       </div>
-                      <p className="text-xs text-gray-500 mt-2">Recommended: Square JPG, PNG, or GIF, at least 1,000 pixels per side.</p>
+                      <p className="text-xs text-gray-400 mt-2">Recommended: Square JPG, PNG or GIF image.</p>
                     </div>
                   </div>
 
-                  <div className="space-y-6">
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                      <div className="space-y-2">
-                        <label className="text-sm font-semibold text-gray-900">First Name</label>
-                        <Input value={firstName} onChange={e => setFirstName(e.target.value)} className="bg-gray-50" />
+                  <div className="space-y-5">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                      <div className="space-y-1.5">
+                        <label className="text-xs font-bold uppercase text-gray-500 tracking-wider">First Name</label>
+                        <Input value={firstName} onChange={e => setFirstName(e.target.value)} className="rounded-xl border-gray-200" />
                       </div>
-                      <div className="space-y-2">
-                        <label className="text-sm font-semibold text-gray-900">Last Name</label>
-                        <Input value={lastName} onChange={e => setLastName(e.target.value)} className="bg-gray-50" />
+                      <div className="space-y-1.5">
+                        <label className="text-xs font-bold uppercase text-gray-500 tracking-wider">Last Name</label>
+                        <Input value={lastName} onChange={e => setLastName(e.target.value)} className="rounded-xl border-gray-200" />
                       </div>
                     </div>
-                    <div className="space-y-2">
-                      <label className="text-sm font-semibold text-gray-900">Email Address</label>
-                      <Input value={email} onChange={e => setEmail(e.target.value)} className="bg-gray-50" />
-                    </div>
-                    <div className="space-y-2">
-                      <label className="text-sm font-semibold text-gray-900">Bio</label>
-                      <textarea 
-                        className="w-full h-24 px-3 py-2 border border-gray-200 rounded-md bg-gray-50 text-sm focus:outline-none focus:ring-2 focus:ring-[#6366F1]"
-                        defaultValue="Passionate about creating intuitive, user-centric experiences. Building the future of collaboration at CollabHub."
-                      />
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-bold uppercase text-gray-500 tracking-wider">Email Address</label>
+                      <Input value={email} onChange={e => setEmail(e.target.value)} className="rounded-xl border-gray-200" />
                     </div>
                   </div>
 
                   <div className="mt-8 pt-6 border-t border-gray-100 flex justify-end">
                     <Button 
-                      className="bg-[#6366F1] hover:bg-[#4F46E5] text-white px-6"
-                      onClick={handleSave}
-                      disabled={updateMutation.isPending}
+                      className="bg-[#6366F1] hover:bg-[#4F46E5] text-white px-6 rounded-xl font-semibold cursor-pointer"
+                      onClick={handleSaveProfile}
+                      disabled={updateProfileMutation.isPending}
                     >
-                      {updateMutation.isPending ? "Saving..." : "Save Changes"}
+                      {updateProfileMutation.isPending ? "Saving..." : "Save Profile"}
                     </Button>
                   </div>
                 </CardContent>
               </Card>
             )}
 
-            {activeTab === 'account' && (
-              <Card className="border-gray-200/60 bg-white/80 backdrop-blur-sm">
-                <CardContent className="p-8">
-                  <h2 className="text-xl font-bold text-gray-900 mb-6">Account Settings</h2>
-                  <div className="space-y-6">
-                    <div className="space-y-2">
-                      <label className="text-sm font-semibold text-gray-900">Workspace URL</label>
-                      <Input value="collabhub.com/manas" readOnly className="bg-gray-100 cursor-not-allowed" />
+            {/* WORKSPACE SETTINGS */}
+            {activeTab === 'workspace' && (
+              <Card className="border-gray-200/80 bg-white shadow-sm rounded-2xl">
+                <CardContent className="p-6 md:p-8">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+                    <div>
+                      <h2 className="text-lg font-bold text-gray-900">Workspace Configuration</h2>
+                      <p className="text-xs text-gray-500 mt-0.5">Manage team workspace details and member permissions.</p>
                     </div>
-                    <div className="pt-6 border-t border-gray-100 space-y-2">
-                      <label className="text-sm font-semibold text-red-600">Delete Account</label>
-                      <p className="text-xs text-gray-500">Permanently delete your account and all associated data. This action is irreversible.</p>
-                      <Button variant="destructive" className="mt-2" onClick={() => confirm("Are you sure you want to delete your account?") && alert("Account deletion requested")}>Delete Account</Button>
-                    </div>
+
+                    {/* Workspace Selector */}
+                    {workspaces && workspaces.length > 0 && (
+                      <select
+                        value={selectedWorkspaceId}
+                        onChange={(e) => setSelectedWorkspaceId(e.target.value)}
+                        className="bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 text-xs font-bold text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                      >
+                        {workspaces.map((ws: any) => (
+                          <option key={ws._id} value={ws._id}>{ws.name}</option>
+                        ))}
+                      </select>
+                    )}
                   </div>
+
+                  {activeWorkspace ? (
+                    <div className="space-y-6">
+                      
+                      {/* Workspace Info Form */}
+                      <div className="space-y-4 bg-gray-50/60 p-5 rounded-2xl border border-gray-100">
+                        <div className="space-y-1.5">
+                          <label className="text-xs font-bold uppercase text-gray-500 tracking-wider">Workspace Name</label>
+                          <Input 
+                            value={wsName} 
+                            onChange={(e) => setWsName(e.target.value)} 
+                            className="rounded-xl border-gray-200 bg-white" 
+                          />
+                        </div>
+
+                        <div className="space-y-1.5">
+                          <label className="text-xs font-bold uppercase text-gray-500 tracking-wider">Description</label>
+                          <textarea 
+                            value={wsDesc}
+                            onChange={(e) => setWsDesc(e.target.value)}
+                            rows={3}
+                            placeholder="Enter workspace description..."
+                            className="w-full px-3 py-2 text-sm border border-gray-200 rounded-xl bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                          />
+                        </div>
+
+                        <div className="flex justify-end pt-2">
+                          <Button 
+                            onClick={handleSaveWorkspace}
+                            disabled={updateWorkspaceMutation.isPending}
+                            className="bg-[#6366F1] hover:bg-[#4F46E5] text-white rounded-xl text-xs font-semibold cursor-pointer"
+                          >
+                            {updateWorkspaceMutation.isPending ? "Updating..." : "Save Workspace Details"}
+                          </Button>
+                        </div>
+                      </div>
+
+                      {/* Workspace Members Management */}
+                      <div className="pt-4 border-t border-gray-100">
+                        <h3 className="text-sm font-bold text-gray-900 mb-3 flex items-center gap-2">
+                          Workspace Members ({activeWorkspace.members?.length || 0})
+                        </h3>
+
+                        <div className="space-y-3">
+                          {(activeWorkspace.members || []).map((m: any, i: number) => {
+                            const u = m.user || {}
+                            const uName = u.name || `User ${i}`
+                            const uRole = m.role || 'MEMBER'
+                            const uId = u._id || u
+
+                            return (
+                              <div key={i} className="flex items-center justify-between p-3 rounded-xl border border-gray-100 bg-white hover:bg-gray-50/60 transition-colors">
+                                <div className="flex items-center gap-3">
+                                  <UserAvatar name={uName} avatar={u.avatar} size="w-9 h-9 text-[11px]" />
+                                  <div>
+                                    <div className="text-xs font-bold text-gray-900 flex items-center gap-1.5">
+                                      {uName}
+                                      {uRole === 'OWNER' && <Crown className="w-3.5 h-3.5 text-amber-500 fill-amber-400" />}
+                                      {uRole === 'ADMIN' && <ShieldCheck className="w-3.5 h-3.5 text-indigo-600" />}
+                                    </div>
+                                    <div className="text-[11px] text-gray-400">{u.email || 'Member'}</div>
+                                  </div>
+                                </div>
+
+                                <div className="flex items-center gap-2">
+                                  <span className={`px-2.5 py-1 text-[10px] font-bold rounded-lg uppercase tracking-wider ${
+                                    uRole === 'OWNER' ? 'bg-amber-50 text-amber-700 border border-amber-200' :
+                                    uRole === 'ADMIN' ? 'bg-indigo-50 text-indigo-700 border border-indigo-200' :
+                                    'bg-gray-100 text-gray-600 border border-gray-200'
+                                  }`}>
+                                    {uRole}
+                                  </span>
+
+                                  {isWsOwner && uRole !== 'OWNER' && (
+                                    <div className="flex items-center gap-1">
+                                      {uRole === 'MEMBER' ? (
+                                        <Button 
+                                          variant="outline"
+                                          size="sm"
+                                          onClick={() => updateMemberRoleMutation.mutate({ userId: uId, role: 'ADMIN' })}
+                                          className="text-xs font-semibold border-indigo-200 text-indigo-600 hover:bg-indigo-50 rounded-lg cursor-pointer"
+                                        >
+                                          Promote to Admin
+                                        </Button>
+                                      ) : (
+                                        <Button 
+                                          variant="outline"
+                                          size="sm"
+                                          onClick={() => updateMemberRoleMutation.mutate({ userId: uId, role: 'MEMBER' })}
+                                          className="text-xs font-semibold border-gray-200 text-gray-600 hover:bg-gray-50 rounded-lg cursor-pointer"
+                                        >
+                                          Make Member
+                                        </Button>
+                                      )}
+
+                                      <Button 
+                                        variant="ghost"
+                                        size="sm"
+                                        onClick={() => {
+                                          if (confirm(`Remove ${uName} from workspace?`)) {
+                                            removeMemberMutation.mutate(uId)
+                                          }
+                                        }}
+                                        className="text-red-500 hover:bg-red-50 text-xs rounded-lg cursor-pointer"
+                                      >
+                                        Remove
+                                      </Button>
+                                    </div>
+                                  )}
+                                </div>
+                              </div>
+                            )
+                          })}
+                        </div>
+                      </div>
+
+                    </div>
+                  ) : (
+                    <div className="p-8 text-center text-sm text-gray-500">Select a workspace to configure settings.</div>
+                  )}
+
                 </CardContent>
               </Card>
             )}
 
+            {/* SECURITY SETTINGS */}
             {activeTab === 'security' && (
-              <Card className="border-gray-200/60 bg-white/80 backdrop-blur-sm">
-                <CardContent className="p-8">
-                  <h2 className="text-xl font-bold text-gray-900 mb-6">Security Settings</h2>
-                  <div className="space-y-6">
-                    <div className="space-y-2">
-                      <label className="text-sm font-semibold text-gray-900">New Password</label>
-                      <Input type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder="Minimum 6 characters" className="bg-gray-50" />
+              <Card className="border-gray-200/80 bg-white shadow-sm rounded-2xl">
+                <CardContent className="p-6 md:p-8">
+                  <h2 className="text-lg font-bold text-gray-900 mb-6">Security & Password</h2>
+                  <div className="space-y-4 max-w-md">
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-bold uppercase text-gray-500 tracking-wider">New Password</label>
+                      <Input type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder="Minimum 6 characters" className="rounded-xl border-gray-200" />
                     </div>
-                    <div className="space-y-2">
-                      <label className="text-sm font-semibold text-gray-900">Confirm New Password</label>
-                      <Input type="password" value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} placeholder="Repeat password" className="bg-gray-50" />
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-bold uppercase text-gray-500 tracking-wider">Confirm New Password</label>
+                      <Input type="password" value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} placeholder="Repeat password" className="rounded-xl border-gray-200" />
                     </div>
-                    <Button className="bg-[#6366F1] hover:bg-[#4F46E5] text-white mt-4" onClick={handlePasswordSave} disabled={updateMutation.isPending}>
-                      {updateMutation.isPending ? "Updating..." : "Change Password"}
+                    <Button className="bg-[#6366F1] hover:bg-[#4F46E5] text-white rounded-xl text-xs font-semibold mt-2 cursor-pointer" onClick={handlePasswordSave} disabled={updateProfileMutation.isPending}>
+                      {updateProfileMutation.isPending ? "Updating..." : "Change Password"}
                     </Button>
                   </div>
                 </CardContent>
               </Card>
             )}
 
+            {/* NOTIFICATIONS */}
             {activeTab === 'notifications' && (
-              <Card className="border-gray-200/60 bg-white/80 backdrop-blur-sm">
-                <CardContent className="p-8">
-                  <h2 className="text-xl font-bold text-gray-900 mb-6">Notification Preferences</h2>
-                  <div className="space-y-6">
-                    <div className="flex items-center justify-between py-2 border-b border-gray-100">
+              <Card className="border-gray-200/80 bg-white shadow-sm rounded-2xl">
+                <CardContent className="p-6 md:p-8">
+                  <h2 className="text-lg font-bold text-gray-900 mb-6">Notification Preferences</h2>
+                  <div className="space-y-5">
+                    <div className="flex items-center justify-between py-3 border-b border-gray-100">
                       <div>
                         <h4 className="font-bold text-sm text-gray-900">Email Notifications</h4>
-                        <p className="text-xs text-gray-500">Receive summaries and updates via email.</p>
+                        <p className="text-xs text-gray-500 mt-0.5">Receive invitation updates and workspace activity summaries.</p>
                       </div>
-                      <input type="checkbox" checked={emailNotif} onChange={e => setEmailNotif(e.target.checked)} className="h-4 w-4 rounded text-indigo-600 focus:ring-indigo-500" />
+                      <input type="checkbox" checked={emailNotif} onChange={e => setEmailNotif(e.target.checked)} className="h-4 w-4 rounded text-indigo-600 focus:ring-indigo-500 cursor-pointer" />
                     </div>
-                    <div className="flex items-center justify-between py-2 border-b border-gray-100">
+                    <div className="flex items-center justify-between py-3 border-b border-gray-100">
                       <div>
-                        <h4 className="font-bold text-sm text-gray-900">Push Notifications</h4>
-                        <p className="text-xs text-gray-500">Get alerts for mentions and new tasks in real-time.</p>
+                        <h4 className="font-bold text-sm text-gray-900">Real-time Push Alerts</h4>
+                        <p className="text-xs text-gray-500 mt-0.5">Get instant alerts for mentions and new task assignments.</p>
                       </div>
-                      <input type="checkbox" checked={pushNotif} onChange={e => setPushNotif(e.target.checked)} className="h-4 w-4 rounded text-indigo-600 focus:ring-indigo-500" />
+                      <input type="checkbox" checked={pushNotif} onChange={e => setPushNotif(e.target.checked)} className="h-4 w-4 rounded text-indigo-600 focus:ring-indigo-500 cursor-pointer" />
                     </div>
-                    <Button className="bg-[#6366F1] hover:bg-[#4F46E5] text-white mt-4" onClick={() => alert("Notification settings saved!")}>Save Preferences</Button>
+                    <Button className="bg-[#6366F1] hover:bg-[#4F46E5] text-white rounded-xl text-xs font-semibold cursor-pointer" onClick={() => alert("Preferences saved!")}>Save Preferences</Button>
                   </div>
                 </CardContent>
               </Card>
             )}
 
+            {/* ACCOUNT & PRIVACY */}
+            {activeTab === 'account' && (
+              <Card className="border-gray-200/80 bg-white shadow-sm rounded-2xl">
+                <CardContent className="p-6 md:p-8">
+                  <h2 className="text-lg font-bold text-gray-900 mb-6">Account & Privacy</h2>
+                  <div className="space-y-5">
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-bold uppercase text-gray-500 tracking-wider">User ID / Handle</label>
+                      <Input value={user?._id || ''} readOnly className="bg-gray-50 cursor-not-allowed rounded-xl" />
+                    </div>
+                    <div className="pt-6 border-t border-gray-100 space-y-2">
+                      <label className="text-sm font-bold text-red-600">Delete Account</label>
+                      <p className="text-xs text-gray-500">Permanently delete your user account and all personal data.</p>
+                      <Button variant="destructive" className="rounded-xl text-xs font-semibold mt-2 cursor-pointer" onClick={() => confirm("Are you sure you want to delete your account?") && alert("Account deletion requested")}>
+                        Delete Account
+                      </Button>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* DEVICES */}
             {activeTab === 'devices' && (
-              <Card className="border-gray-200/60 bg-white/80 backdrop-blur-sm">
-                <CardContent className="p-8">
-                  <h2 className="text-xl font-bold text-gray-900 mb-6">Active Sessions</h2>
-                  <div className="space-y-4">
+              <Card className="border-gray-200/80 bg-white shadow-sm rounded-2xl">
+                <CardContent className="p-6 md:p-8">
+                  <h2 className="text-lg font-bold text-gray-900 mb-6">Active Login Sessions</h2>
+                  <div className="space-y-3">
                     {devices.map((device, i) => (
-                      <div key={i} className="flex justify-between items-center p-4 border border-gray-100 rounded-lg bg-gray-50/50">
+                      <div key={i} className="flex justify-between items-center p-4 border border-gray-100 rounded-xl bg-gray-50/60">
                         <div>
                           <h4 className="font-bold text-sm text-gray-900">{device.browser} on {device.os}</h4>
-                          <p className="text-xs text-gray-500 font-medium">Last active: {device.lastActive}</p>
+                          <p className="text-xs text-gray-500 mt-0.5">Last active: {device.lastActive}</p>
                         </div>
-                        <Button variant="outline" size="sm" className="text-red-600 border-red-200 hover:bg-red-50" onClick={() => {
+                        <Button variant="outline" size="sm" className="text-red-600 border-red-200 hover:bg-red-50 rounded-lg text-xs font-semibold cursor-pointer" onClick={() => {
                           setDevices(devices.filter((_, idx) => idx !== i))
                           alert("Session revoked successfully!")
                         }}>Revoke</Button>
                       </div>
                     ))}
-                    {devices.length === 0 && (
-                      <p className="text-center py-6 text-sm text-gray-500 font-medium">No other active sessions.</p>
-                    )}
                   </div>
                 </CardContent>
               </Card>
             )}
 
+            {/* BILLING */}
             {activeTab === 'billing' && (
-              <Card className="border-gray-200/60 bg-white/80 backdrop-blur-sm">
-                <CardContent className="p-8">
-                  <h2 className="text-xl font-bold text-gray-900 mb-6">Billing & Subscription</h2>
-                  <div className="space-y-6">
-                    <div className="p-6 rounded-xl border border-indigo-100 bg-indigo-50/30 flex justify-between items-center">
-                      <div>
-                        <span className="text-xs font-bold text-[#6366F1] uppercase tracking-wider">Current Plan</span>
-                        <h3 className="text-2xl font-black text-gray-900 mt-1">Free Sandbox</h3>
-                        <p className="text-xs text-gray-500 mt-1 font-medium">Up to 3 workspaces and 10 members.</p>
-                      </div>
-                      <Button className="bg-[#6366F1] hover:bg-[#4F46E5] text-white">Upgrade to Pro</Button>
+              <Card className="border-gray-200/80 bg-white shadow-sm rounded-2xl">
+                <CardContent className="p-6 md:p-8">
+                  <h2 className="text-lg font-bold text-gray-900 mb-6">Subscription & Billing</h2>
+                  <div className="p-6 rounded-2xl border border-indigo-100 bg-indigo-50/40 flex justify-between items-center">
+                    <div>
+                      <span className="text-xs font-bold text-[#6366F1] uppercase tracking-wider">Active Plan</span>
+                      <h3 className="text-2xl font-bold text-gray-900 mt-1">CollabHub Free</h3>
+                      <p className="text-xs text-gray-500 mt-1">Includes unlimited workspace channels and team collaboration.</p>
                     </div>
+                    <Button className="bg-[#6366F1] hover:bg-[#4F46E5] text-white rounded-xl text-xs font-semibold cursor-pointer">Upgrade Plan</Button>
                   </div>
                 </CardContent>
               </Card>
             )}
+
           </div>
 
         </div>

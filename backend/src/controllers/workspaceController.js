@@ -142,14 +142,64 @@ const deleteChannel = asyncHandler(
     }
 );
 
+const addMemberToChannel = asyncHandler(
+    async (req, res) => {
+        const workspace =
+            await workspaceService.addMemberToChannel(
+                req.params.workspaceId,
+                req.params.channelName,
+                req.body.userId,
+                req.user
+            );
+
+        res.status(200).json({
+            success: true,
+            data: workspace,
+        });
+    }
+);
+
+const removeMemberFromChannel = asyncHandler(
+    async (req, res) => {
+        const workspace =
+            await workspaceService.removeMemberFromChannel(
+                req.params.workspaceId,
+                req.params.channelName,
+                req.params.userId,
+                req.user
+            );
+
+        res.status(200).json({
+            success: true,
+            data: workspace,
+        });
+    }
+);
+
+const updateWorkspace = asyncHandler(async (req, res) => {
+    const workspace = await workspaceService.updateWorkspace(
+        req.params.workspaceId,
+        req.body,
+        req.user
+    );
+
+    res.status(200).json({
+        success: true,
+        data: workspace,
+    });
+});
+
 module.exports = {
     createWorkspace,
     getMyWorkspaces,
     getWorkspaceById,
+    updateWorkspace,
     addMemberToWorkspace,
     updateMemberRole,
     getWorkspaceStats,
     createChannel,
+    addMemberToChannel,
+    removeMemberFromChannel,
     removeMemberFromWorkspace,
     deleteChannel,
 };

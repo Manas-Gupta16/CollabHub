@@ -44,7 +44,13 @@ const workspaceSchema = new mongoose.Schema(
         channels: [
             {
                 name: { type: String, required: true },
-                isPrivate: { type: Boolean, default: false }
+                isPrivate: { type: Boolean, default: false },
+                members: [
+                    {
+                        type: mongoose.Schema.Types.ObjectId,
+                        ref: "User"
+                    }
+                ]
             }
         ],
 

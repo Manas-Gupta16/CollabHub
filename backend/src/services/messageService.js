@@ -6,18 +6,32 @@ const { getIO } = require("../socket");
 const User = require("../models/User");
 const notificationService = require("./notificationService");
 
-const sendMessage = async (workspaceId, content, currentUser, files = []) => {
+const sendMessage = async (workspaceId, content, currentUser, files = [], channelName = "General") => {
     const workspace = await Workspace.findById(workspaceId);
     if (!workspace) {
         throw new AppError("Workspace not found", 404);
     }
 
-    const isMember = workspace.members.some(
-        (member) => member.user.toString() === currentUser._id.toString() && member.status !== "PENDING"
+    const currentMember = workspace.members.find(
+        (member) => (member.user._id || member.user).toString() === currentUser._id.toString() && member.status !== "PENDING"
     );
 
-    if (!isMember) {
+    if (!currentMember) {
         throw new AppError("You are not a member of this workspace", 403);
+    }
+
+    // Check Channel Privacy
+    const channelObj = workspace.channels.find(
+        (c) => c.name.toLowerCase() === (channelName || "General").toLowerCase()
+    );
+    if (channelObj && channelObj.isPrivate) {
+        const isChannelMember = channelObj.members.some(
+            (m) => m.toString() === currentUser._id.toString()
+        );
+        const isOwnerOrAdmin = currentMember.role === "OWNER" || currentMember.role === "ADMIN";
+        if (!isChannelMember && !isOwnerOrAdmin) {
+            throw new AppError("You do not have access to this private channel", 403);
+        }
     }
 
     // Handle Attachments
@@ -26,51 +40,46 @@ const sendMessage = async (workspaceId, content, currentUser, files = []) => {
     const message = await Message.create({
         content,
         workspace: workspaceId,
+        channel: channelName || "General",
         sender: currentUser._id,
         attachments,
     });
 
-    await message.populate("sender", "name email");
+    await message.populate("sender", "name email avatar profileImage");
 
-    // Extract Mentions
-    const mentionRegex = /@([a-zA-Z0-9_]+)/g;
-    const mentions = content.match(mentionRegex);
-    
-    if (mentions && mentions.length > 0) {
-        const usernames = mentions.map(m => m.substring(1)); // Remove @
-        const mentionedUsers = [];
-        for (const username of usernames) {
-            const matches = await User.find({
-                name: { $regex: new RegExp(`^${username}$|^${username}\\s`, "i") }
+    // Extract & Trigger Mentions for Workspace Members
+    await workspace.populate("members.user", "name email");
+
+    const contentLower = content.toLowerCase();
+
+    for (const member of workspace.members) {
+        if (!member.user || member.status === "PENDING") continue;
+
+        const targetUser = member.user;
+        const targetUserId = (targetUser._id || targetUser).toString();
+
+        // Skip notifying the sender themselves
+        if (targetUserId === currentUser._id.toString()) continue;
+
+        const fullName = (targetUser.name || '').trim().toLowerCase();
+        const firstName = fullName.split(' ')[0] || '';
+        const emailHandle = (targetUser.email || '').split('@')[0]?.toLowerCase() || '';
+        const nameNoSpaces = fullName.replace(/\s+/g, '');
+
+        const isMentioned = 
+            (fullName && contentLower.includes(`@${fullName}`)) ||
+            (firstName && contentLower.includes(`@${firstName}`)) ||
+            (nameNoSpaces && contentLower.includes(`@${nameNoSpaces}`)) ||
+            (emailHandle && contentLower.includes(`@${emailHandle}`));
+
+        if (isMentioned) {
+            await notificationService.createNotification({
+                recipientId: targetUser._id,
+                type: "MENTION",
+                message: `${currentUser.name} mentioned you in #${channelName || "General"} in ${workspace.name}`,
+                workspaceId: workspaceId,
+                relatedEntityId: message._id
             });
-            mentionedUsers.push(...matches);
-        }
-
-        // Deduplicate matched users
-        const uniqueUserIds = new Set();
-        const uniqueMentionedUsers = [];
-        for (const u of mentionedUsers) {
-            if (!uniqueUserIds.has(u._id.toString())) {
-                uniqueUserIds.add(u._id.toString());
-                uniqueMentionedUsers.push(u);
-            }
-        }
-        
-        for (const user of uniqueMentionedUsers) {
-            // Ensure they are in the workspace
-            const isMentionedUserMember = workspace.members.some(
-                m => m.user.toString() === user._id.toString() && m.status !== "PENDING"
-            );
-
-            if (isMentionedUserMember) {
-                await notificationService.createNotification({
-                    recipientId: user._id,
-                    type: "MENTION",
-                    message: `${currentUser.name} mentioned you in a message in ${workspace.name}`,
-                    workspaceId: workspaceId,
-                    relatedEntityId: message._id
-                });
-            }
         }
     }
 
@@ -80,32 +89,48 @@ const sendMessage = async (workspaceId, content, currentUser, files = []) => {
     return message;
 };
 
-const getWorkspaceMessages = async (workspaceId, currentUser, filters) => {
+const getWorkspaceMessages = async (workspaceId, currentUser, filters = {}) => {
     const workspace = await Workspace.findById(workspaceId);
     if (!workspace) {
         throw new AppError("Workspace not found", 404);
     }
 
-    const isMember = workspace.members.some(
-        (member) => member.user.toString() === currentUser._id.toString() && member.status !== "PENDING"
+    const currentMember = workspace.members.find(
+        (member) => (member.user._id || member.user).toString() === currentUser._id.toString() && member.status !== "PENDING"
     );
 
-    if (!isMember) {
+    if (!currentMember) {
         throw new AppError("You are not a member of this workspace", 403);
+    }
+
+    const channelName = filters.channel || "General";
+
+    // Check Channel Privacy
+    const channelObj = workspace.channels.find(
+        (c) => c.name.toLowerCase() === channelName.toLowerCase()
+    );
+    if (channelObj && channelObj.isPrivate) {
+        const isChannelMember = channelObj.members.some(
+            (m) => m.toString() === currentUser._id.toString()
+        );
+        const isOwnerOrAdmin = currentMember.role === "OWNER" || currentMember.role === "ADMIN";
+        if (!isChannelMember && !isOwnerOrAdmin) {
+            throw new AppError("You do not have access to this private channel", 403);
+        }
     }
 
     const page = parseInt(filters.page) || 1;
     const limit = parseInt(filters.limit) || 50;
     const skip = (page - 1) * limit;
 
-    const query = { workspace: workspaceId };
+    const query = { workspace: workspaceId, channel: channelName };
 
     const totalMessages = await Message.countDocuments(query);
     const messages = await Message.find(query)
         .sort({ createdAt: -1 }) // Newest first
         .skip(skip)
         .limit(limit)
-        .populate("sender", "name email");
+        .populate("sender", "name email avatar profileImage");
 
     return {
         messages: messages.reverse(), // Return oldest to newest for chat UI

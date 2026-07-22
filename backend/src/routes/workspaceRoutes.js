@@ -25,10 +25,13 @@ const {
     createWorkspace,
     getMyWorkspaces,
     getWorkspaceById,
+    updateWorkspace,
     addMemberToWorkspace,
     updateMemberRole,
     getWorkspaceStats,
     createChannel,
+    addMemberToChannel,
+    removeMemberFromChannel,
     removeMemberFromWorkspace,
     deleteChannel,
 } = require(
@@ -225,6 +228,8 @@ router.patch("/:workspaceId/members/role", protect, updateMemberRole);
 router.get("/:workspaceId/stats", protect, getWorkspaceStats);
 
 router.post("/:workspaceId/channels", protect, createChannelValidator, validate, createChannel);
+router.post("/:workspaceId/channels/:channelName/members", protect, addMemberToChannel);
+router.delete("/:workspaceId/channels/:channelName/members/:userId", protect, removeMemberFromChannel);
 
 router.delete("/:workspaceId/members/:userId", protect, removeMemberFromWorkspace);
 router.delete("/:workspaceId/channels/:channelName", protect, deleteChannel);

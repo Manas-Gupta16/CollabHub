@@ -17,6 +17,10 @@ const messageSchema = new mongoose.Schema(
             ref: "Workspace",
             required: true,
         },
+        channel: {
+            type: String,
+            default: "General",
+        },
         attachments: [{
             type: String
         }],

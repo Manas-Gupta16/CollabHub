@@ -9,7 +9,8 @@ import {
   FolderKanban,
   Activity,
   Bell,
-  Search
+  Search,
+  Lock
 } from "lucide-react"
 import Link from "next/link"
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
@@ -133,6 +134,17 @@ function DashboardLayoutInner({
   const userSeed = user?.name?.replace(/\s/g, '') || 'Oliver'
   const avatarUrl = user?.avatar ? `http://localhost:5000${user.avatar}` : `https://api.dicebear.com/7.x/initials/svg?seed=${userSeed}&backgroundColor=6366f1&textColor=ffffff`;
 
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+        e.preventDefault()
+        setIsSearchOpen((prev) => !prev)
+      }
+    }
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [])
+
   if (!isMounted) return null
 
   return (
@@ -155,10 +167,13 @@ function DashboardLayoutInner({
           <div className="px-4 mb-4">
             <button 
               onClick={() => setIsSearchOpen(true)}
-              className="w-full flex items-center gap-2 px-3 py-2 bg-gray-50 border border-gray-100 hover:bg-gray-100 hover:border-gray-200 rounded-lg text-left text-xs font-semibold text-gray-500 transition-all shadow-sm"
+              className="w-full flex items-center justify-between px-3 py-2 bg-gray-50 border border-gray-100 hover:bg-gray-100 hover:border-gray-200 rounded-lg text-left text-xs font-semibold text-gray-500 transition-all shadow-xs cursor-pointer"
             >
-              <Search className="w-3.5 h-3.5" />
-              Search workspace...
+              <span className="flex items-center gap-2">
+                <Search className="w-3.5 h-3.5" />
+                Search workspace...
+              </span>
+              <kbd className="px-1.5 py-0.5 text-[10px] font-mono bg-white border border-gray-200 rounded text-gray-400">Ctrl K</kbd>
             </button>
           </div>
         )}
@@ -167,7 +182,11 @@ function DashboardLayoutInner({
           
           {/* Navigation Menu */}
           <div className="mb-6">
-            <div className="text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-2.5 px-2">Menu</div>
+            <Link href="/dashboard">
+              <div className="text-[11px] font-bold text-gray-400 hover:text-indigo-600 uppercase tracking-wider mb-2.5 px-2 cursor-pointer transition-colors flex items-center justify-between group">
+                <span>Menu</span>
+              </div>
+            </Link>
             <div className="space-y-1">
               {[
                 { name: 'Overview', href: '/dashboard', icon: <Layout className="w-4 h-4" /> },
@@ -178,7 +197,7 @@ function DashboardLayoutInner({
                 const isActive = pathname === item.href;
                 return (
                   <Link key={item.href} href={item.href}>
-                    <div className={`flex items-center gap-2.5 px-2 py-1.5 rounded-md text-[13px] font-medium transition-colors cursor-pointer ${isActive ? 'bg-gray-100 text-gray-900' : 'text-gray-700 hover:bg-gray-50'}`}>
+                    <div className={`flex items-center gap-2.5 px-2 py-1.5 rounded-md text-[13px] font-medium transition-colors cursor-pointer ${isActive ? 'bg-gray-100 text-gray-900 font-bold' : 'text-gray-700 hover:bg-gray-50'}`}>
                       {item.icon}
                       {item.name}
                     </div>
@@ -190,13 +209,17 @@ function DashboardLayoutInner({
 
           {/* Workspaces */}
           <div className="mb-6">
-            <div className="text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-2.5 px-2">Workspaces</div>
+            <Link href="/workspaces">
+              <div className="text-[11px] font-bold text-gray-400 hover:text-indigo-600 uppercase tracking-wider mb-2.5 px-2 cursor-pointer transition-colors flex items-center justify-between group">
+                <span>Workspaces</span>
+              </div>
+            </Link>
             <div className="space-y-1">
               {isLoading ? (
                 <div className="px-2 text-xs text-gray-400">Loading workspaces...</div>
               ) : workspaces?.length ? workspaces.map((ws: any) => (
                 <Link key={ws._id} href={`/workspaces/${ws._id}`}>
-                  <div className={`flex items-center gap-2.5 px-2 py-1.5 rounded-md text-[13px] font-medium transition-colors cursor-pointer ${activeWorkspace?._id === ws._id ? 'bg-gray-100 text-gray-900' : 'text-gray-700 hover:bg-gray-50'}`}>
+                  <div className={`flex items-center gap-2.5 px-2 py-1.5 rounded-md text-[13px] font-medium transition-colors cursor-pointer ${activeWorkspace?._id === ws._id ? 'bg-gray-100 text-gray-900 font-bold' : 'text-gray-700 hover:bg-gray-50'}`}>
                     <div className={`w-6 h-6 rounded-md flex items-center justify-center font-bold text-[10px] text-white shrink-0 shadow-sm ${getWsGradient(ws.name || '')}`}>
                       {ws.name?.substring(0, 2).toUpperCase() || 'WS'}
                     </div>
@@ -217,7 +240,8 @@ function DashboardLayoutInner({
             </div>
             <div className="space-y-1">
               {channels.map((channel: any, i: number) => {
-                const isActive = pathname === '/messages' && i === 0;
+                const isPrivate = !!channel.isPrivate;
+                const isActive = pathname === '/messages' && searchParams.get('channel') === channel.name;
                 return (
                   <Link 
                     key={channel._id || i} 
@@ -228,8 +252,12 @@ function DashboardLayoutInner({
                         : 'text-gray-500 hover:bg-gray-50 hover:text-gray-900'
                     }`}
                   >
-                    <Hash className={`w-3.5 h-3.5 ${isActive ? 'text-gray-900' : 'text-gray-400'}`} strokeWidth={isActive ? 2.5 : 2} />
-                    {channel.name}
+                    {isPrivate ? (
+                      <Lock className="w-3.5 h-3.5 text-amber-600 shrink-0" strokeWidth={2} />
+                    ) : (
+                      <Hash className={`w-3.5 h-3.5 shrink-0 ${isActive ? 'text-gray-900' : 'text-gray-400'}`} strokeWidth={isActive ? 2.5 : 2} />
+                    )}
+                    <span className="truncate">{channel.name}</span>
                   </Link>
                 )
               })}

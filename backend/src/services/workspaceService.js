@@ -69,7 +69,9 @@ const getMyWorkspaces = async (
                 status: { $ne: "PENDING" }
             }
         }
-    }).populate("members.user", "name email profileImage");
+    }).populate("members.user", "name email profileImage avatar");
+
+    const result = [];
 
     for (const ws of workspaces) {
         let hasGeneral = false;
@@ -81,11 +83,27 @@ const getMyWorkspaces = async (
         }
         if (!hasGeneral) {
             ws.channels.unshift({ name: "General", isPrivate: false });
+            await ws.save();
         }
-        await ws.save();
+
+        const currentMember = ws.members.find(
+            (m) => (m.user._id || m.user).toString() === currentUser._id.toString()
+        );
+        const isOwner = currentMember && currentMember.role === "OWNER";
+
+        const wsObj = ws.toObject();
+        wsObj.channels = (wsObj.channels || []).filter((c) => {
+            if (!c.isPrivate) return true;
+            if (isOwner) return true;
+            return c.members && c.members.some(
+                (m) => (m._id || m).toString() === currentUser._id.toString()
+            );
+        });
+
+        result.push(wsObj);
     }
 
-    return workspaces;
+    return result;
 };
 
 const getWorkspaceById = async (
@@ -94,7 +112,9 @@ const getWorkspaceById = async (
 ) => {
     const workspace = await Workspace.findById(
         workspaceId
-    ).populate("members.user", "name email profileImage");
+    )
+        .populate("members.user", "name email profileImage avatar")
+        .populate("channels.members", "name email profileImage avatar");
 
     if (!workspace) {
         throw new AppError(
@@ -103,13 +123,13 @@ const getWorkspaceById = async (
         );
     }
 
-    const isMember = workspace.members.some(
+    const currentMember = workspace.members.find(
         (member) =>
             (member.user._id || member.user).toString() ===
             currentUser._id.toString() && member.status !== "PENDING"
     );
 
-    if (!isMember) {
+    if (!currentMember) {
         throw new AppError(
             "You are not authorized to access this workspace",
             403
@@ -125,10 +145,21 @@ const getWorkspaceById = async (
     }
     if (!hasGeneral) {
         workspace.channels.unshift({ name: "General", isPrivate: false });
+        await workspace.save();
     }
-    await workspace.save();
 
-    return workspace;
+    const isOwner = currentMember.role === "OWNER";
+
+    const workspaceObj = workspace.toObject();
+    workspaceObj.channels = (workspaceObj.channels || []).filter((c) => {
+        if (!c.isPrivate) return true;
+        if (isOwner) return true;
+        return c.members && c.members.some(
+            (m) => (m._id || m).toString() === currentUser._id.toString()
+        );
+    });
+
+    return workspaceObj;
 };
 
 const addMemberToWorkspace = async (
@@ -446,7 +477,7 @@ const createChannel = async (workspaceId, channelData, currentUser) => {
         throw new AppError("Only owners and admins can create channels", 403);
     }
 
-    const { name, isPrivate } = channelData;
+    const { name, isPrivate, initialMembers } = channelData;
 
     // Check duplicate channel name
     const channelExists = workspace.channels.some(
@@ -456,7 +487,19 @@ const createChannel = async (workspaceId, channelData, currentUser) => {
         throw new AppError("Channel name already exists in this workspace", 400);
     }
 
-    workspace.channels.push({ name, isPrivate: !!isPrivate });
+    let channelMembers = [];
+    if (isPrivate) {
+        channelMembers = [currentUser._id];
+        if (Array.isArray(initialMembers)) {
+            initialMembers.forEach(memId => {
+                if (memId && !channelMembers.map(id => id.toString()).includes(memId.toString())) {
+                    channelMembers.push(memId);
+                }
+            });
+        }
+    }
+
+    workspace.channels.push({ name, isPrivate: !!isPrivate, members: channelMembers });
     await workspace.save();
 
     await activityService.createActivity({
@@ -469,14 +512,74 @@ const createChannel = async (workspaceId, channelData, currentUser) => {
     return workspace;
 };
 
-module.exports = {
-    createWorkspace,
-    getMyWorkspaces,
-    getWorkspaceById,
-    addMemberToWorkspace,
-    updateMemberRole,
-    getWorkspaceStats,
-    createChannel,
+const addMemberToChannel = async (workspaceId, channelName, userIdToAdd, currentUser) => {
+    const workspace = await Workspace.findById(workspaceId);
+    if (!workspace) throw new AppError("Workspace not found", 404);
+
+    const currentMember = workspace.members.find(
+        (m) => (m.user._id || m.user).toString() === currentUser._id.toString() && m.status !== "PENDING"
+    );
+    if (!currentMember) throw new AppError("You are not a member of this workspace", 403);
+
+    const channel = workspace.channels.find(
+        (c) => c.name.toLowerCase() === channelName.toLowerCase()
+    );
+    if (!channel) throw new AppError("Channel not found", 404);
+
+    if (!channel.isPrivate) throw new AppError("Public channels include all workspace members automatically", 400);
+
+    const isChannelMember = channel.members.some(m => m.toString() === currentUser._id.toString());
+    if (currentMember.role !== "OWNER" && currentMember.role !== "ADMIN" && !isChannelMember) {
+        throw new AppError("Only channel members or workspace admins can add members to a private channel", 403);
+    }
+
+    const isTargetInWorkspace = workspace.members.some(
+        (m) => (m.user._id || m.user).toString() === userIdToAdd.toString() && m.status !== "PENDING"
+    );
+    if (!isTargetInWorkspace) throw new AppError("User is not an active member of this workspace", 400);
+
+    const isAlreadyInChannel = channel.members.some(m => m.toString() === userIdToAdd.toString());
+    if (isAlreadyInChannel) throw new AppError("User is already in this channel", 400);
+
+    channel.members.push(userIdToAdd);
+    await workspace.save();
+
+    await notificationService.createNotification({
+        recipientId: userIdToAdd,
+        type: "SYSTEM",
+        message: `${currentUser.name} added you to private channel #${channel.name} in ${workspace.name}`,
+        workspaceId: workspaceId,
+        relatedEntityId: workspace._id
+    });
+
+    return workspace;
+};
+
+const removeMemberFromChannel = async (workspaceId, channelName, userIdToRemove, currentUser) => {
+    const workspace = await Workspace.findById(workspaceId);
+    if (!workspace) throw new AppError("Workspace not found", 404);
+
+    const currentMember = workspace.members.find(
+        (m) => (m.user._id || m.user).toString() === currentUser._id.toString() && m.status !== "PENDING"
+    );
+    if (!currentMember) throw new AppError("You are not a member of this workspace", 403);
+
+    const channel = workspace.channels.find(
+        (c) => c.name.toLowerCase() === channelName.toLowerCase()
+    );
+    if (!channel) throw new AppError("Channel not found", 404);
+
+    if (!channel.isPrivate) throw new AppError("Cannot remove members from a public channel", 400);
+
+    const isSelf = userIdToRemove.toString() === currentUser._id.toString();
+    if (currentMember.role !== "OWNER" && currentMember.role !== "ADMIN" && !isSelf) {
+        throw new AppError("Only workspace admins or the user themselves can leave/be removed from private channel", 403);
+    }
+
+    channel.members = channel.members.filter(m => m.toString() !== userIdToRemove.toString());
+    await workspace.save();
+
+    return workspace;
 };
 
 const removeMemberFromWorkspace = async (workspaceId, userId, currentUser) => {
@@ -564,14 +667,35 @@ const deleteChannel = async (workspaceId, channelName, currentUser) => {
     return workspace;
 };
 
+const updateWorkspace = async (workspaceId, updateData, currentUser) => {
+    const workspace = await Workspace.findById(workspaceId);
+    if (!workspace) throw new AppError("Workspace not found", 404);
+
+    const currentMember = workspace.members.find(
+        (m) => (m.user._id || m.user).toString() === currentUser._id.toString() && m.status !== "PENDING"
+    );
+    if (!currentMember || (currentMember.role !== ROLES.OWNER && currentMember.role !== ROLES.ADMIN)) {
+        throw new AppError("Only workspace owners and admins can update workspace settings", 403);
+    }
+
+    if (updateData.name) workspace.name = updateData.name;
+    if (updateData.description !== undefined) workspace.description = updateData.description;
+
+    await workspace.save();
+    return workspace;
+};
+
 module.exports = {
     createWorkspace,
     getMyWorkspaces,
     getWorkspaceById,
+    updateWorkspace,
     addMemberToWorkspace,
     updateMemberRole,
     getWorkspaceStats,
     createChannel,
+    addMemberToChannel,
+    removeMemberFromChannel,
     removeMemberFromWorkspace,
     deleteChannel,
 };

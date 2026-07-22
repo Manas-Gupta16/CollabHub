@@ -103,8 +103,18 @@ export const updateProfile = async (data: any) => {
   return response.data.user;
 };
 
-export const createChannel = async (workspaceId: string, data: { name: string; isPrivate?: boolean }) => {
+export const createChannel = async (workspaceId: string, data: { name: string; isPrivate?: boolean; initialMembers?: string[] }) => {
   const response = await api.post(`/workspaces/${workspaceId}/channels`, data);
+  return response.data.data;
+};
+
+export const addMemberToChannel = async (workspaceId: string, channelName: string, userId: string) => {
+  const response = await api.post(`/workspaces/${workspaceId}/channels/${channelName}/members`, { userId });
+  return response.data.data;
+};
+
+export const removeMemberFromChannel = async (workspaceId: string, channelName: string, userId: string) => {
+  const response = await api.delete(`/workspaces/${workspaceId}/channels/${channelName}/members/${userId}`);
   return response.data.data;
 };
 
@@ -150,6 +160,16 @@ export const rejectInvitation = async (notificationId: string) => {
 
 export const removeMemberFromWorkspace = async (workspaceId: string, userId: string) => {
   const response = await api.delete(`/workspaces/${workspaceId}/members/${userId}`);
+  return response.data.data;
+};
+
+export const updateMemberRole = async (workspaceId: string, userId: string, role: string) => {
+  const response = await api.patch(`/workspaces/${workspaceId}/members/role`, { userId, role });
+  return response.data.data;
+};
+
+export const updateWorkspaceInfo = async (workspaceId: string, data: { name?: string; description?: string }) => {
+  const response = await api.patch(`/workspaces/${workspaceId}`, data);
   return response.data.data;
 };
 
