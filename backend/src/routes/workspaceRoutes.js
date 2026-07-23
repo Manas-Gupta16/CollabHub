@@ -34,6 +34,11 @@ const {
     removeMemberFromChannel,
     removeMemberFromWorkspace,
     deleteChannel,
+    addPinnedLink,
+    deletePinnedLink,
+    addTeamGoal,
+    toggleTeamGoal,
+    deleteTeamGoal,
 } = require(
     "../controllers/workspaceController"
 );
@@ -233,5 +238,12 @@ router.delete("/:workspaceId/channels/:channelName/members/:userId", protect, re
 
 router.delete("/:workspaceId/members/:userId", protect, removeMemberFromWorkspace);
 router.delete("/:workspaceId/channels/:channelName", protect, deleteChannel);
+
+// Pinned Links & Team Goals
+router.post("/:workspaceId/pinned-links", protect, addPinnedLink);
+router.delete("/:workspaceId/pinned-links/:linkId", protect, deletePinnedLink);
+router.post("/:workspaceId/team-goals", protect, addTeamGoal);
+router.put("/:workspaceId/team-goals/:goalId", protect, toggleTeamGoal);
+router.delete("/:workspaceId/team-goals/:goalId", protect, deleteTeamGoal);
 
 module.exports = router;

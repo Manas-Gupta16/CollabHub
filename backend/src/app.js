@@ -61,7 +61,7 @@ app.use("/api/workspaces", workspaceRoutes);
 app.use("/api", taskRoutes);
 app.use("/api/workspaces", activityRoutes);
 app.use("/api", commentRoutes);
-app.use("/api/workspaces", messageRoutes);
+app.use("/api", messageRoutes);
 app.use("/api/notifications", notificationRoutes);
 app.use("/api/workspaces", searchRoutes);
 

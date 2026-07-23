@@ -4,12 +4,29 @@ import { useState, useRef, useEffect, Suspense } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
-import { User, Bell, Lock, Layout, MonitorSmartphone, CreditCard, Settings, Layers, Crown, ShieldCheck, Shield, UserX, Check } from "lucide-react"
+import { 
+  User, Bell, Lock, Layout, MonitorSmartphone, CreditCard, Settings, 
+  Layers, Crown, ShieldCheck, Shield, UserX, Check, Monitor, 
+  Smartphone, Laptop, Globe, LogOut, Radio, MapPin, ShieldAlert
+} from "lucide-react"
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 import { updateProfile, getWorkspaces, getWorkspaceById, updateWorkspaceInfo, updateMemberRole, removeMemberFromWorkspace } from "@/lib/api"
 import api from "@/lib/api"
 import { useSearchParams, useRouter } from "next/navigation"
 import { UserAvatar } from "@/components/UserAvatar"
+
+const DEFAULT_AVATARS = [
+  { id: 'peeps-1', name: 'Alex', url: 'https://api.dicebear.com/7.x/open-peeps/svg?seed=Alex&backgroundColor=b6e3f4' },
+  { id: 'peeps-2', name: 'Jordan', url: 'https://api.dicebear.com/7.x/open-peeps/svg?seed=Jordan&backgroundColor=c0aede' },
+  { id: 'peeps-3', name: 'Taylor', url: 'https://api.dicebear.com/7.x/open-peeps/svg?seed=Taylor&backgroundColor=ffd5dc' },
+  { id: 'peeps-4', name: 'Morgan', url: 'https://api.dicebear.com/7.x/open-peeps/svg?seed=Morgan&backgroundColor=d1d4f9' },
+  { id: 'smile-1', name: 'Felix', url: 'https://api.dicebear.com/7.x/big-smile/svg?seed=Felix&backgroundColor=b6e3f4' },
+  { id: 'smile-2', name: 'Charlie', url: 'https://api.dicebear.com/7.x/big-smile/svg?seed=Charlie&backgroundColor=ffd5dc' },
+  { id: 'avataaars-1', name: 'Sam', url: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Sam&backgroundColor=c0aede' },
+  { id: 'avataaars-2', name: 'Riley', url: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Riley&backgroundColor=d1d4f9' },
+  { id: 'micah-1', name: 'Avery', url: 'https://api.dicebear.com/7.x/micah/svg?seed=Avery&backgroundColor=b6e3f4' },
+  { id: 'bottts-1', name: 'Leo', url: 'https://api.dicebear.com/7.x/bottts/svg?seed=Leo&backgroundColor=ffd5dc' },
+]
 
 function SettingsContent() {
   const queryClient = useQueryClient()
@@ -67,6 +84,7 @@ function SettingsContent() {
   const [email, setEmail] = useState('')
   const [avatarFile, setAvatarFile] = useState<File | null>(null)
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null)
+  const [selectedPresetUrl, setSelectedPresetUrl] = useState<string | null>(null)
   const [removeAvatar, setRemoveAvatar] = useState(false)
 
   // Workspace settings state
@@ -80,7 +98,10 @@ function SettingsContent() {
       setLastName(parts.slice(1).join(' ') || '')
       setEmail(user.email || '')
       if (user.avatar) {
-        setAvatarPreview(`http://localhost:5000${user.avatar}`)
+        const url = (user.avatar.startsWith('http') || user.avatar.startsWith('blob:') || user.avatar.startsWith('data:'))
+          ? user.avatar
+          : `http://localhost:5000${user.avatar}`
+        setAvatarPreview(url)
       }
     }
   }, [user])
@@ -146,6 +167,8 @@ function SettingsContent() {
     formData.append('email', email)
     if (avatarFile) {
       formData.append('avatar', avatarFile)
+    } else if (selectedPresetUrl) {
+      formData.append('avatarUrl', selectedPresetUrl)
     }
     if (removeAvatar) {
       formData.append('removeAvatar', 'true')
@@ -171,10 +194,56 @@ function SettingsContent() {
   const [confirmPassword, setConfirmPassword] = useState("")
   const [emailNotif, setEmailNotif] = useState(true)
   const [pushNotif, setPushNotif] = useState(true)
-  const [devices, setDevices] = useState([
-    { browser: "Chrome", os: "Windows 11", lastActive: "Active now" },
-    { browser: "Safari Mobile", os: "iOS 17.4", lastActive: "2 hours ago" }
-  ])
+  const [devices, setDevices] = useState<any[]>([])
+
+  // Dynamically detect active device info from browser navigator.userAgent
+  useEffect(() => {
+    if (typeof window === "undefined") return
+
+    const ua = window.navigator.userAgent
+    let browser = "Web Browser"
+    let os = "Windows"
+    let type: "desktop" | "mobile" = "desktop"
+
+    // OS Detection
+    if (/windows nt 10\.0/i.test(ua)) os = "Windows 11 / 10"
+    else if (/windows nt 6\.3/i.test(ua)) os = "Windows 8.1"
+    else if (/windows nt 6\.1/i.test(ua)) os = "Windows 7"
+    else if (/mac os x/i.test(ua)) {
+      if (/iphone|ipad|ipod/i.test(ua)) os = "iOS"
+      else os = "macOS"
+    } else if (/android/i.test(ua)) os = "Android"
+    else if (/linux/i.test(ua)) os = "Linux"
+    else if (/cros/i.test(ua)) os = "ChromeOS"
+
+    // Browser Detection
+    if (/edg\//i.test(ua)) browser = "Microsoft Edge"
+    else if (/opera|opr\//i.test(ua)) browser = "Opera"
+    else if (/firefox|fxios/i.test(ua)) browser = "Mozilla Firefox"
+    else if (/chrome|crios/i.test(ua)) browser = "Google Chrome"
+    else if (/safari/i.test(ua)) browser = "Apple Safari"
+    else if (/trident/i.test(ua)) browser = "Internet Explorer"
+
+    // Device Type Detection
+    if (/mobile|iphone|ipod|android.*mobile/i.test(ua)) {
+      type = "mobile"
+    } else if (/ipad|android(?!.*mobile)/i.test(ua)) {
+      type = "mobile"
+    }
+
+    setDevices([
+      {
+        id: "current",
+        browser,
+        os,
+        location: "Current Device",
+        ip: "Active Session",
+        lastActive: "Active now",
+        isCurrent: true,
+        type
+      }
+    ])
+  }, [])
 
   const handlePasswordSave = () => {
     if (password.length < 6) {
@@ -248,19 +317,55 @@ function SettingsContent() {
                 <CardContent className="p-6 md:p-8">
                   <h2 className="text-lg font-bold text-gray-900 mb-6">User Profile Settings</h2>
                   
-                  <div className="flex flex-col sm:flex-row sm:items-center gap-6 mb-8">
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-6 mb-6">
                     <UserAvatar name={userName} avatar={avatarPreview || undefined} size="w-20 h-20 text-2xl" />
                     <div>
                       <div className="flex gap-2">
                         <input type="file" className="hidden" ref={fileInputRef} onChange={handleFileChange} accept="image/*" />
                         <Button variant="outline" className="border-gray-200 rounded-xl text-xs font-semibold" onClick={() => fileInputRef.current?.click()}>
-                          Change Avatar
+                          Upload Custom Photo
                         </Button>
-                        <Button variant="ghost" className="text-red-600 hover:text-red-700 hover:bg-red-50 rounded-xl text-xs font-semibold" onClick={() => { setAvatarFile(null); setAvatarPreview(null); setRemoveAvatar(true); }}>
+                        <Button variant="ghost" className="text-red-600 hover:text-red-700 hover:bg-red-50 rounded-xl text-xs font-semibold" onClick={() => { setAvatarFile(null); setSelectedPresetUrl(null); setAvatarPreview(null); setRemoveAvatar(true); }}>
                           Remove
                         </Button>
                       </div>
-                      <p className="text-xs text-gray-400 mt-2">Recommended: Square JPG, PNG or GIF image.</p>
+                      <p className="text-xs text-gray-400 mt-2">Upload your own photo or choose a default avatar character below.</p>
+                    </div>
+                  </div>
+
+                  {/* Default Avatars Character Selection Grid */}
+                  <div className="mb-8 p-4 rounded-2xl bg-gray-50/80 border border-gray-100 space-y-3">
+                    <div className="flex items-center justify-between">
+                      <label className="text-xs font-bold uppercase text-gray-600 tracking-wider">Choose Avatar Character</label>
+                      <span className="text-[11px] text-gray-400 font-medium">Click to select an avatar</span>
+                    </div>
+                    <div className="grid grid-cols-5 sm:grid-cols-10 gap-2.5">
+                      {DEFAULT_AVATARS.map((avatarItem) => {
+                        const isSelected = avatarPreview === avatarItem.url || selectedPresetUrl === avatarItem.url
+                        return (
+                          <button
+                            key={avatarItem.id}
+                            type="button"
+                            onClick={() => {
+                              setSelectedPresetUrl(avatarItem.url)
+                              setAvatarPreview(avatarItem.url)
+                              setAvatarFile(null)
+                              setRemoveAvatar(false)
+                            }}
+                            className={`relative rounded-full overflow-hidden border-2 transition-all p-0.5 cursor-pointer aspect-square group hover:scale-105 ${
+                              isSelected ? 'border-indigo-600 ring-2 ring-indigo-500/30 bg-white shadow-md' : 'border-transparent hover:border-indigo-300 bg-white'
+                            }`}
+                            title={`Select ${avatarItem.name}`}
+                          >
+                            <img src={avatarItem.url} alt={avatarItem.name} className="w-full h-full rounded-full object-cover" />
+                            {isSelected && (
+                              <div className="absolute inset-0 bg-indigo-600/30 flex items-center justify-center rounded-full">
+                                <Check className="w-4 h-4 text-white stroke-[3] drop-shadow-md" />
+                              </div>
+                            )}
+                          </button>
+                        )
+                      })}
                     </div>
                   </div>
 
@@ -514,22 +619,125 @@ function SettingsContent() {
 
             {/* DEVICES */}
             {activeTab === 'devices' && (
-              <Card className="border-gray-200/80 bg-white shadow-sm rounded-2xl">
+              <Card className="border-gray-200/80 bg-white shadow-sm rounded-2xl overflow-hidden">
                 <CardContent className="p-6 md:p-8">
-                  <h2 className="text-lg font-bold text-gray-900 mb-6">Active Login Sessions</h2>
-                  <div className="space-y-3">
-                    {devices.map((device, i) => (
-                      <div key={i} className="flex justify-between items-center p-4 border border-gray-100 rounded-xl bg-gray-50/60">
-                        <div>
-                          <h4 className="font-bold text-sm text-gray-900">{device.browser} on {device.os}</h4>
-                          <p className="text-xs text-gray-500 mt-0.5">Last active: {device.lastActive}</p>
-                        </div>
-                        <Button variant="outline" size="sm" className="text-red-600 border-red-200 hover:bg-red-50 rounded-lg text-xs font-semibold cursor-pointer" onClick={() => {
-                          setDevices(devices.filter((_, idx) => idx !== i))
-                          alert("Session revoked successfully!")
-                        }}>Revoke</Button>
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+                    <div>
+                      <h2 className="text-lg font-bold text-gray-900 flex items-center gap-2">
+                        <MonitorSmartphone className="w-5 h-5 text-indigo-600" /> Active Login Sessions
+                      </h2>
+                      <p className="text-xs text-gray-500 mt-0.5">Manage authorized browsers and logged-in devices attached to your account.</p>
+                    </div>
+
+                    {devices.filter(d => !d.isCurrent).length > 0 && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="text-red-600 border-red-200/80 hover:bg-red-50 hover:border-red-300 rounded-xl text-xs font-bold transition-all shadow-2xs self-start sm:self-auto cursor-pointer"
+                        onClick={() => {
+                          if (confirm("Revoke all other active login sessions?")) {
+                            setDevices(devices.filter(d => d.isCurrent))
+                            alert("All other sessions revoked successfully!")
+                          }
+                        }}
+                      >
+                        <LogOut className="w-3.5 h-3.5 mr-1.5" />
+                        Revoke All Other Sessions
+                      </Button>
+                    )}
+                  </div>
+
+                  {/* Security Overview Banner */}
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 rounded-2xl bg-indigo-50/50 border border-indigo-100/80 mb-6">
+                    <div className="flex items-center gap-3 text-indigo-950 font-semibold text-xs">
+                      <div className="w-8 h-8 rounded-xl bg-indigo-600 text-white flex items-center justify-center shrink-0 shadow-xs">
+                        <ShieldCheck className="w-4 h-4" />
                       </div>
-                    ))}
+                      <div>
+                        <p className="font-bold text-gray-900">{devices.length} Active Session{devices.length > 1 ? 's' : ''} Monitored</p>
+                        <p className="text-[11px] text-gray-500 font-normal mt-0.5">If you see an unfamiliar device, revoke it immediately and change your password.</p>
+                      </div>
+                    </div>
+                    <span className="text-[10px] font-bold text-indigo-700 uppercase tracking-wider bg-white px-2.5 py-1 rounded-lg border border-indigo-100 shadow-2xs self-start sm:self-auto shrink-0">
+                      Verified Secure
+                    </span>
+                  </div>
+
+                  {/* Devices List */}
+                  <div className="space-y-3">
+                    {devices.map((device) => {
+                      const isMobile = device.type === 'mobile' || device.browser.toLowerCase().includes('mobile') || device.os.toLowerCase().includes('ios') || device.os.toLowerCase().includes('android')
+
+                      return (
+                        <div 
+                          key={device.id} 
+                          className={`flex flex-col sm:flex-row sm:items-center justify-between p-4 sm:p-5 rounded-2xl border transition-all gap-4 ${
+                            device.isCurrent 
+                              ? 'bg-gradient-to-r from-white via-indigo-50/20 to-white border-indigo-200/80 shadow-xs' 
+                              : 'bg-white border-gray-200/70 hover:border-gray-300 shadow-2xs'
+                          }`}
+                        >
+                          <div className="flex items-center gap-4 min-w-0">
+                            <div className={`w-11 h-11 rounded-2xl flex items-center justify-center shrink-0 shadow-inner ${
+                              device.isCurrent 
+                                ? 'bg-indigo-600 text-white shadow-indigo-200' 
+                                : 'bg-gray-100 text-gray-600'
+                            }`}>
+                              {isMobile ? <Smartphone className="w-5 h-5" /> : <Laptop className="w-5 h-5" />}
+                            </div>
+
+                            <div className="min-w-0">
+                              <div className="flex items-center gap-2 flex-wrap">
+                                <h4 className="font-bold text-sm text-gray-900 truncate">
+                                  {device.browser} on {device.os}
+                                </h4>
+                                {device.isCurrent && (
+                                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200/80 shrink-0">
+                                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                                    Current Session
+                                  </span>
+                                )}
+                              </div>
+                              <p className="text-xs text-gray-500 font-medium mt-1 flex items-center gap-2 flex-wrap">
+                                <span>Last active: <strong className="text-gray-700">{device.lastActive}</strong></span>
+                                {device.location && (
+                                  <>
+                                    <span>•</span>
+                                    <span className="flex items-center gap-1"><MapPin className="w-3 h-3 text-gray-400" /> {device.location}</span>
+                                  </>
+                                )}
+                                {device.ip && (
+                                  <>
+                                    <span>•</span>
+                                    <span className="text-gray-400 font-mono text-[11px]">({device.ip})</span>
+                                  </>
+                                )}
+                              </p>
+                            </div>
+                          </div>
+
+                          <div className="shrink-0 self-end sm:self-auto">
+                            {device.isCurrent ? (
+                              <span className="text-xs font-bold text-emerald-700 bg-emerald-50 px-3 py-1.5 rounded-xl border border-emerald-200/80 flex items-center gap-1.5 shadow-2xs">
+                                <Check className="w-3.5 h-3.5 stroke-[3]" /> This Device
+                              </span>
+                            ) : (
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                className="text-red-600 border-red-200 hover:bg-red-50 hover:border-red-300 rounded-xl text-xs font-bold cursor-pointer transition-all shadow-2xs"
+                                onClick={() => {
+                                  setDevices(devices.filter((d) => d.id !== device.id))
+                                  alert("Session revoked successfully!")
+                                }}
+                              >
+                                Revoke Session
+                              </Button>
+                            )}
+                          </div>
+                        </div>
+                      )
+                    })}
                   </div>
                 </CardContent>
               </Card>

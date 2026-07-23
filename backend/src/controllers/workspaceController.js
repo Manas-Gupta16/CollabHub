@@ -189,6 +189,51 @@ const updateWorkspace = asyncHandler(async (req, res) => {
     });
 });
 
+const addPinnedLink = asyncHandler(async (req, res) => {
+    const workspace = await workspaceService.addPinnedLink(
+        req.params.workspaceId,
+        req.body,
+        req.user
+    );
+    res.status(201).json({ success: true, data: workspace });
+});
+
+const deletePinnedLink = asyncHandler(async (req, res) => {
+    const workspace = await workspaceService.deletePinnedLink(
+        req.params.workspaceId,
+        req.params.linkId,
+        req.user
+    );
+    res.status(200).json({ success: true, data: workspace });
+});
+
+const addTeamGoal = asyncHandler(async (req, res) => {
+    const workspace = await workspaceService.addTeamGoal(
+        req.params.workspaceId,
+        req.body,
+        req.user
+    );
+    res.status(201).json({ success: true, data: workspace });
+});
+
+const toggleTeamGoal = asyncHandler(async (req, res) => {
+    const workspace = await workspaceService.toggleTeamGoal(
+        req.params.workspaceId,
+        req.params.goalId,
+        req.user
+    );
+    res.status(200).json({ success: true, data: workspace });
+});
+
+const deleteTeamGoal = asyncHandler(async (req, res) => {
+    const workspace = await workspaceService.deleteTeamGoal(
+        req.params.workspaceId,
+        req.params.goalId,
+        req.user
+    );
+    res.status(200).json({ success: true, data: workspace });
+});
+
 module.exports = {
     createWorkspace,
     getMyWorkspaces,
@@ -202,4 +247,9 @@ module.exports = {
     removeMemberFromChannel,
     removeMemberFromWorkspace,
     deleteChannel,
+    addPinnedLink,
+    deletePinnedLink,
+    addTeamGoal,
+    toggleTeamGoal,
+    deleteTeamGoal,
 };

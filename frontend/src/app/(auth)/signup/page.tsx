@@ -4,7 +4,8 @@ import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { useState } from "react"
 import { useRouter } from "next/navigation"
-import api from "@/lib/api"
+import api, { googleLogin } from "@/lib/api"
+import { GoogleLogin } from "@react-oauth/google"
 
 export default function Signup() {
   const [name, setName] = useState("")
@@ -30,7 +31,6 @@ export default function Signup() {
         localStorage.setItem("token", token)
         window.location.href = "/dashboard"
       } else {
-        // Registration succeeded but auto-login failed — go to login page
         router.push("/login")
       }
     } catch (err: any) {
@@ -39,6 +39,31 @@ export default function Signup() {
     } finally {
       setLoading(false)
     }
+  }
+
+  const handleGoogleSuccess = async (credentialResponse: any) => {
+    if (!credentialResponse.credential) return
+    setError("")
+    setLoading(true)
+
+    try {
+      const data = await googleLogin(credentialResponse.credential)
+      if (data?.token) {
+        localStorage.setItem("token", data.token)
+        window.location.href = "/dashboard"
+      } else {
+        setError("Google Sign-Up failed. Please try again.")
+      }
+    } catch (err: any) {
+      const msg = err?.response?.data?.message || "Google Sign-Up failed."
+      setError(msg)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleGoogleError = () => {
+    setError("Google Authentication was unsuccessful. Please try again.")
   }
 
   return (
@@ -86,10 +111,30 @@ export default function Signup() {
           />
         </div>
         
-        <Button type="submit" className="w-full bg-[#5C55E6] hover:bg-[#4F46E5] text-white mt-4" disabled={loading}>
+        <Button type="submit" className="w-full bg-[#5C55E6] hover:bg-[#4F46E5] text-white mt-4 cursor-pointer" disabled={loading}>
           {loading ? "Creating account..." : "Create Account"}
         </Button>
       </form>
+
+      <div className="relative my-6">
+        <div className="absolute inset-0 flex items-center">
+          <div className="w-full border-t border-gray-200" />
+        </div>
+        <div className="relative flex justify-center text-xs uppercase">
+          <span className="bg-white px-3 text-gray-500 font-semibold">Or continue with</span>
+        </div>
+      </div>
+
+      <div className="flex justify-center">
+        <GoogleLogin
+          onSuccess={handleGoogleSuccess}
+          onError={handleGoogleError}
+          theme="outline"
+          shape="pill"
+          width="100%"
+        />
+      </div>
+
       <div className="mt-6 text-center text-sm text-gray-600">
         Already have an account?{" "}
         <Link href="/login" className="font-medium text-indigo-600 hover:text-indigo-500">

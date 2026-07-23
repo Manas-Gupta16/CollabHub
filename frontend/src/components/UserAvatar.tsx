@@ -1,4 +1,4 @@
-import React from "react"
+import React, { useState, useEffect } from "react"
 
 interface UserAvatarProps {
   name?: string
@@ -7,6 +7,12 @@ interface UserAvatarProps {
 }
 
 export function UserAvatar({ name, avatar, size = "w-8 h-8 text-[12px] font-bold" }: UserAvatarProps) {
+  const [hasError, setHasError] = useState(false)
+
+  useEffect(() => {
+    setHasError(false)
+  }, [avatar])
+
   const initials = (name || "?")
     .trim()
     .split(/\s+/)
@@ -21,22 +27,6 @@ export function UserAvatar({ name, avatar, size = "w-8 h-8 text-[12px] font-bold
       ? avatar
       : `http://localhost:5000${avatar}`
     : null
-
-  if (avatarUrl) {
-    return (
-      <div className={`${size} rounded-full overflow-hidden border border-gray-200 shrink-0 bg-gray-100 flex items-center justify-center shadow-sm`}>
-        <img
-          src={avatarUrl}
-          className="w-full h-full object-cover"
-          alt={userName}
-          onError={(e) => {
-            // Fallback to initials if the image fails to load
-            (e.target as HTMLImageElement).style.display = "none"
-          }}
-        />
-      </div>
-    )
-  }
 
   // Generate a premium soft color gradient based on name hash
   const colors = [
@@ -53,6 +43,19 @@ export function UserAvatar({ name, avatar, size = "w-8 h-8 text-[12px] font-bold
     hash = userName.charCodeAt(i) + ((hash << 5) - hash)
   }
   const colorClass = colors[Math.abs(hash) % colors.length]
+
+  if (avatarUrl && !hasError) {
+    return (
+      <div className={`${size} rounded-full overflow-hidden border border-gray-200 shrink-0 bg-gray-100 flex items-center justify-center shadow-sm`}>
+        <img
+          src={avatarUrl}
+          className="w-full h-full object-cover"
+          alt={userName}
+          onError={() => setHasError(true)}
+        />
+      </div>
+    )
+  }
 
   return (
     <div className={`${size} rounded-full border flex items-center justify-center shrink-0 shadow-sm ${colorClass}`}>

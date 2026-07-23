@@ -65,3 +65,5 @@ temp/
 
 .env
 node_modules
+uploads/*
+!uploads/.gitkeep

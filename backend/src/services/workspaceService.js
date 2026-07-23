@@ -678,6 +678,96 @@ const updateWorkspace = async (workspaceId, updateData, currentUser) => {
     return workspace;
 };
 
+const addPinnedLink = async (workspaceId, linkData, currentUser) => {
+    const workspace = await Workspace.findById(workspaceId);
+    if (!workspace) throw new AppError("Workspace not found", 404);
+
+    const isMember = workspace.members.some(
+        (m) => (m.user._id || m.user).toString() === currentUser._id.toString() && m.status !== "PENDING"
+    );
+    if (!isMember) throw new AppError("You are not a member of this workspace", 403);
+
+    workspace.pinnedLinks.push({
+        title: linkData.title,
+        url: linkData.url
+    });
+
+    await workspace.save();
+    return workspace;
+};
+
+const deletePinnedLink = async (workspaceId, linkId, currentUser) => {
+    const workspace = await Workspace.findById(workspaceId);
+    if (!workspace) throw new AppError("Workspace not found", 404);
+
+    const isMember = workspace.members.some(
+        (m) => (m.user._id || m.user).toString() === currentUser._id.toString() && m.status !== "PENDING"
+    );
+    if (!isMember) throw new AppError("You are not a member of this workspace", 403);
+
+    workspace.pinnedLinks = workspace.pinnedLinks.filter(
+        (l) => (l._id || l).toString() !== linkId.toString()
+    );
+
+    await workspace.save();
+    return workspace;
+};
+
+const addTeamGoal = async (workspaceId, goalData, currentUser) => {
+    const workspace = await Workspace.findById(workspaceId);
+    if (!workspace) throw new AppError("Workspace not found", 404);
+
+    const isMember = workspace.members.some(
+        (m) => (m.user._id || m.user).toString() === currentUser._id.toString() && m.status !== "PENDING"
+    );
+    if (!isMember) throw new AppError("You are not a member of this workspace", 403);
+
+    workspace.teamGoals.push({
+        title: goalData.title,
+        isCompleted: false
+    });
+
+    await workspace.save();
+    return workspace;
+};
+
+const toggleTeamGoal = async (workspaceId, goalId, currentUser) => {
+    const workspace = await Workspace.findById(workspaceId);
+    if (!workspace) throw new AppError("Workspace not found", 404);
+
+    const isMember = workspace.members.some(
+        (m) => (m.user._id || m.user).toString() === currentUser._id.toString() && m.status !== "PENDING"
+    );
+    if (!isMember) throw new AppError("You are not a member of this workspace", 403);
+
+    const goal = workspace.teamGoals.find(
+        (g) => (g._id || g).toString() === goalId.toString()
+    );
+    if (goal) {
+        goal.isCompleted = !goal.isCompleted;
+    }
+
+    await workspace.save();
+    return workspace;
+};
+
+const deleteTeamGoal = async (workspaceId, goalId, currentUser) => {
+    const workspace = await Workspace.findById(workspaceId);
+    if (!workspace) throw new AppError("Workspace not found", 404);
+
+    const isMember = workspace.members.some(
+        (m) => (m.user._id || m.user).toString() === currentUser._id.toString() && m.status !== "PENDING"
+    );
+    if (!isMember) throw new AppError("You are not a member of this workspace", 403);
+
+    workspace.teamGoals = workspace.teamGoals.filter(
+        (g) => (g._id || g).toString() !== goalId.toString()
+    );
+
+    await workspace.save();
+    return workspace;
+};
+
 module.exports = {
     createWorkspace,
     getMyWorkspaces,
@@ -691,4 +781,9 @@ module.exports = {
     removeMemberFromChannel,
     removeMemberFromWorkspace,
     deleteChannel,
+    addPinnedLink,
+    deletePinnedLink,
+    addTeamGoal,
+    toggleTeamGoal,
+    deleteTeamGoal,
 };

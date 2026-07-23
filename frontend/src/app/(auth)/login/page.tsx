@@ -4,7 +4,8 @@ import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { useState } from "react"
 import { useRouter } from "next/navigation"
-import api from "@/lib/api"
+import api, { googleLogin } from "@/lib/api"
+import { GoogleLogin } from "@react-oauth/google"
 
 export default function Login() {
   const [email, setEmail] = useState("")
@@ -33,6 +34,31 @@ export default function Login() {
     } finally {
       setLoading(false)
     }
+  }
+
+  const handleGoogleSuccess = async (credentialResponse: any) => {
+    if (!credentialResponse.credential) return
+    setError("")
+    setLoading(true)
+
+    try {
+      const data = await googleLogin(credentialResponse.credential)
+      if (data?.token) {
+        localStorage.setItem("token", data.token)
+        window.location.href = "/dashboard"
+      } else {
+        setError("Google Sign-In failed. Please try again.")
+      }
+    } catch (err: any) {
+      const msg = err?.response?.data?.message || "Google Sign-In failed."
+      setError(msg)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleGoogleError = () => {
+    setError("Google Authentication was unsuccessful. Please try again.")
   }
 
   return (
@@ -74,13 +100,33 @@ export default function Login() {
             <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-900">Remember me</label>
           </div>
           <div className="text-sm">
-            <Link href="#" className="font-medium text-indigo-600 hover:text-indigo-500">Forgot your password?</Link>
+            <Link href="/forgot-password" className="font-medium text-indigo-600 hover:text-indigo-500">Forgot your password?</Link>
           </div>
         </div>
-        <Button type="submit" className="w-full bg-[#5C55E6] hover:bg-[#4F46E5] text-white" disabled={loading}>
+        <Button type="submit" className="w-full bg-[#5C55E6] hover:bg-[#4F46E5] text-white cursor-pointer" disabled={loading}>
           {loading ? "Signing in..." : "Sign in"}
         </Button>
       </form>
+
+      <div className="relative my-6">
+        <div className="absolute inset-0 flex items-center">
+          <div className="w-full border-t border-gray-200" />
+        </div>
+        <div className="relative flex justify-center text-xs uppercase">
+          <span className="bg-white px-3 text-gray-500 font-semibold">Or continue with</span>
+        </div>
+      </div>
+
+      <div className="flex justify-center">
+        <GoogleLogin
+          onSuccess={handleGoogleSuccess}
+          onError={handleGoogleError}
+          theme="outline"
+          shape="pill"
+          width="100%"
+        />
+      </div>
+
       <div className="mt-6 text-center text-sm text-gray-600">
         Don't have an account?{" "}
         <Link href="/signup" className="font-medium text-indigo-600 hover:text-indigo-500">

@@ -143,7 +143,54 @@ const getWorkspaceMessages = async (workspaceId, currentUser, filters = {}) => {
     };
 };
 
+const updateMessage = async (messageId, content, currentUser) => {
+    const message = await Message.findById(messageId);
+    if (!message) {
+        throw new AppError("Message not found", 404);
+    }
+
+    if (message.sender.toString() !== currentUser._id.toString()) {
+        throw new AppError("You can only edit your own messages", 403);
+    }
+
+    message.content = content;
+    message.isEdited = true;
+    await message.save();
+    await message.populate("sender", "name email avatar profileImage");
+
+    getIO().to(message.workspace.toString()).emit("message_updated", message);
+
+    return message;
+};
+
+const deleteMessage = async (messageId, currentUser) => {
+    const message = await Message.findById(messageId);
+    if (!message) {
+        throw new AppError("Message not found", 404);
+    }
+
+    const workspace = await Workspace.findById(message.workspace);
+    const currentMember = workspace?.members.find(
+        (m) => (m.user._id || m.user).toString() === currentUser._id.toString()
+    );
+
+    const isSender = message.sender.toString() === currentUser._id.toString();
+    const isOwnerOrAdmin = currentMember && (currentMember.role === "OWNER" || currentMember.role === "ADMIN");
+
+    if (!isSender && !isOwnerOrAdmin) {
+        throw new AppError("You do not have permission to delete this message", 403);
+    }
+
+    await Message.findByIdAndDelete(messageId);
+
+    getIO().to(message.workspace.toString()).emit("message_deleted", { messageId, workspaceId: message.workspace });
+
+    return { messageId };
+};
+
 module.exports = {
     sendMessage,
     getWorkspaceMessages,
+    updateMessage,
+    deleteMessage,
 };

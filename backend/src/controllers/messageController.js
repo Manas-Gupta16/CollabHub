@@ -29,7 +29,34 @@ const getWorkspaceMessages = asyncHandler(async (req, res) => {
     });
 });
 
+const updateMessage = asyncHandler(async (req, res) => {
+    const message = await messageService.updateMessage(
+        req.params.messageId,
+        req.body.content,
+        req.user
+    );
+
+    res.status(200).json({
+        success: true,
+        data: message,
+    });
+});
+
+const deleteMessage = asyncHandler(async (req, res) => {
+    const data = await messageService.deleteMessage(
+        req.params.messageId,
+        req.user
+    );
+
+    res.status(200).json({
+        success: true,
+        data,
+    });
+});
+
 module.exports = {
     sendMessage,
     getWorkspaceMessages,
+    updateMessage,
+    deleteMessage,
 };

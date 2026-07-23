@@ -105,5 +105,41 @@ describe("Auth Routes", () => {
             expect(response.status).toBe(401);
             expect(response.body.success).toBe(false);
         });
+
+        test("10. Update Profile - Success", async () => {
+            const response = await request(app)
+                .put("/api/auth/profile")
+                .set("Authorization", `Bearer ${token}`)
+                .send({ name: "Updated User", password: "newpassword123" });
+            expect(response.status).toBe(200);
+            expect(response.body.success).toBe(true);
+            expect(response.body.user).toHaveProperty("name", "Updated User");
+        });
+    });
+
+    describe("POST /api/auth/forgot-password & /api/auth/reset-password", () => {
+        beforeEach(async () => {
+            await request(app).post("/api/auth/register").send(testUser);
+        });
+
+        test("11. Forgot Password - Success", async () => {
+            const response = await request(app)
+                .post("/api/auth/forgot-password")
+                .send({ email: testUser.email });
+            expect(response.status).toBe(200);
+            expect(response.body.success).toBe(true);
+
+            const userInDb = await User.findOne({ email: testUser.email });
+            expect(userInDb.resetPasswordToken).toBeTruthy();
+            expect(userInDb.resetPasswordExpire).toBeTruthy();
+        });
+
+        test("12. Forgot Password - Fail (Invalid email)", async () => {
+            const response = await request(app)
+                .post("/api/auth/forgot-password")
+                .send({ email: "nonexistent@example.com" });
+            expect(response.status).toBe(404);
+            expect(response.body.success).toBe(false);
+        });
     });
 });

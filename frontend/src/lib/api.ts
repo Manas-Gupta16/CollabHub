@@ -17,6 +17,21 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
+export const googleLogin = async (idToken: string) => {
+  const response = await api.post('/auth/google', { idToken });
+  return response.data.data;
+};
+
+export const forgotPassword = async (email: string) => {
+  const response = await api.post('/auth/forgot-password', { email });
+  return response.data.data;
+};
+
+export const resetPassword = async (data: { token: string; password: string }) => {
+  const response = await api.post('/auth/reset-password', data);
+  return response.data.data;
+};
+
 export const getWorkspaces = async () => {
   const response = await api.get('/workspaces');
   return response.data.data;
@@ -77,6 +92,16 @@ export const getWorkspaceMessages = async (workspaceId: string, channel: string 
 export const sendMessage = async (workspaceId: string, data: any) => {
   // data can be FormData if it contains attachments
   const response = await api.post(`/workspaces/${workspaceId}/messages`, data)
+  return response.data.data
+}
+
+export const updateMessage = async (messageId: string, content: string) => {
+  const response = await api.patch(`/messages/${messageId}`, { content })
+  return response.data.data
+}
+
+export const deleteMessage = async (messageId: string) => {
+  const response = await api.delete(`/messages/${messageId}`)
   return response.data.data
 }
 
@@ -175,6 +200,31 @@ export const updateWorkspaceInfo = async (workspaceId: string, data: { name?: st
 
 export const deleteChannel = async (workspaceId: string, channelName: string) => {
   const response = await api.delete(`/workspaces/${workspaceId}/channels/${channelName}`);
+  return response.data.data;
+};
+
+export const addPinnedLink = async (workspaceId: string, data: { title: string; url: string }) => {
+  const response = await api.post(`/workspaces/${workspaceId}/pinned-links`, data);
+  return response.data.data;
+};
+
+export const deletePinnedLink = async (workspaceId: string, linkId: string) => {
+  const response = await api.delete(`/workspaces/${workspaceId}/pinned-links/${linkId}`);
+  return response.data.data;
+};
+
+export const addTeamGoal = async (workspaceId: string, data: { title: string }) => {
+  const response = await api.post(`/workspaces/${workspaceId}/team-goals`, data);
+  return response.data.data;
+};
+
+export const toggleTeamGoal = async (workspaceId: string, goalId: string) => {
+  const response = await api.put(`/workspaces/${workspaceId}/team-goals/${goalId}`);
+  return response.data.data;
+};
+
+export const deleteTeamGoal = async (workspaceId: string, goalId: string) => {
+  const response = await api.delete(`/workspaces/${workspaceId}/team-goals/${goalId}`);
   return response.data.data;
 };
 

@@ -217,9 +217,12 @@ export default function Dashboard() {
   const doneTasks = tasks?.filter((t: any) => t.status === 'DONE').length || 0
   const pendingTasks = tasks?.filter((t: any) => t.status !== 'DONE').length || 0
 
-  const highPriorityCount = tasks?.filter((t: any) => t.priority === 'High').length || 0
-  const mediumPriorityCount = tasks?.filter((t: any) => t.priority === 'Medium').length || 0
-  const lowPriorityCount = tasks?.filter((t: any) => t.priority === 'Low' || !t.priority).length || 0
+  const highPriorityCount = tasks?.filter((t: any) => (t.priority || '').toUpperCase() === 'HIGH').length || 0
+  const mediumPriorityCount = tasks?.filter((t: any) => {
+    const p = (t.priority || '').toUpperCase()
+    return p === 'MEDIUM' || !t.priority
+  }).length || 0
+  const lowPriorityCount = tasks?.filter((t: any) => (t.priority || '').toUpperCase() === 'LOW').length || 0
 
   // Point 2: Filtered tasks list (including "Assigned to Me")
   const filteredTasksList = useMemo(() => {
@@ -435,9 +438,15 @@ export default function Dashboard() {
             </div>
           </div>
           <div className="w-full bg-gray-100 h-2.5 rounded-full overflow-hidden flex">
-            <div className="bg-red-500 h-full" style={{ width: `${totalTasks > 0 ? (highPriorityCount / totalTasks) * 100 : 0}%` }} title="High Priority" />
-            <div className="bg-amber-500 h-full" style={{ width: `${totalTasks > 0 ? (mediumPriorityCount / totalTasks) * 100 : 0}%` }} title="Medium Priority" />
-            <div className="bg-blue-500 h-full" style={{ width: `${totalTasks > 0 ? (lowPriorityCount / totalTasks) * 100 : 0}%` }} title="Low Priority" />
+            {totalTasks > 0 ? (
+              <>
+                <div className="bg-red-500 h-full transition-all duration-500" style={{ width: `${(highPriorityCount / totalTasks) * 100}%` }} title={`High Priority: ${highPriorityCount}`} />
+                <div className="bg-amber-500 h-full transition-all duration-500" style={{ width: `${(mediumPriorityCount / totalTasks) * 100}%` }} title={`Medium Priority: ${mediumPriorityCount}`} />
+                <div className="bg-blue-500 h-full transition-all duration-500" style={{ width: `${(lowPriorityCount / totalTasks) * 100}%` }} title={`Low Priority: ${lowPriorityCount}`} />
+              </>
+            ) : (
+              <div className="w-full h-full bg-gray-200/80 transition-all" title="No tasks in selected workspace" />
+            )}
           </div>
         </Card>
 
@@ -493,6 +502,7 @@ export default function Dashboard() {
                   filteredTasksList.slice(0, 6).map((task: any) => {
                     const assignee = task.assignee || {}
                     const isDone = task.status === 'DONE'
+                    const p = (task.priority || '').toUpperCase()
 
                     return (
                       <div 
@@ -528,11 +538,11 @@ export default function Dashboard() {
                         </div>
 
                         <span className={`px-2.5 py-1 text-[10px] font-bold uppercase rounded-lg border shrink-0 ${
-                          task.priority === 'High' ? 'bg-red-50 text-red-700 border-red-200/60' :
-                          task.priority === 'Medium' ? 'bg-amber-50 text-amber-700 border-amber-200/60' :
-                          'bg-blue-50 text-blue-700 border-blue-200/60'
+                          p === 'HIGH' ? 'bg-red-50 text-red-700 border-red-200/60' :
+                          p === 'LOW' ? 'bg-blue-50 text-blue-700 border-blue-200/60' :
+                          'bg-amber-50 text-amber-700 border-amber-200/60'
                         }`}>
-                          {task.priority || 'Medium'}
+                          {task.priority || 'MEDIUM'}
                         </span>
                       </div>
                     )

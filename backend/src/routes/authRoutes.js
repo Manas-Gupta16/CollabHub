@@ -16,8 +16,11 @@ const validate = require(
 const {
     register,
     login,
+    googleLogin,
     getProfile,
     updateProfile,
+    forgotPassword,
+    resetPassword,
 } = require("../controllers/authController");
 
 const upload = require("../middleware/uploadMiddleware");
@@ -94,6 +97,21 @@ router.post(
     loginValidator,
     validate,
     login
+);
+
+router.post(
+    "/google",
+    googleLogin
+);
+
+router.post(
+    "/forgot-password",
+    forgotPassword
+);
+
+router.post(
+    "/reset-password",
+    resetPassword
 );
 
 /**

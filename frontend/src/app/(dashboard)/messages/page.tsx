@@ -1,9 +1,17 @@
 "use client"
 
-import { Plus, Search, CheckCircle2, Pin, Calendar, Send, Lock, Hash, Users, UserPlus, Sparkles, MessageSquare, ShieldCheck } from "lucide-react"
+import { 
+  Plus, Search, CheckCircle2, Pin, Calendar, Send, Lock, Hash, 
+  Users, UserPlus, Sparkles, MessageSquare, ShieldCheck, Trash2, 
+  ExternalLink, Circle, Pencil, Check, X 
+} from "lucide-react"
 import { useSearchParams } from "next/navigation"
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
-import { getWorkspaces, getWorkspaceMessages, sendMessage, getWorkspaceById, addMemberToChannel } from "@/lib/api"
+import api, { 
+  getWorkspaces, getWorkspaceMessages, sendMessage, getWorkspaceById, 
+  addMemberToChannel, addPinnedLink, deletePinnedLink, addTeamGoal, 
+  toggleTeamGoal, deleteTeamGoal, updateMessage, deleteMessage 
+} from "@/lib/api"
 import { useState, useMemo, Suspense } from "react"
 import { UserAvatar } from "@/components/UserAvatar"
 
@@ -20,6 +28,14 @@ function MessagesContent() {
 
   const [showMentionPopup, setShowMentionPopup] = useState(false)
   const [mentionQuery, setMentionQuery] = useState("")
+
+  // Pinned Links & Team Goals state
+  const [isAddLinkOpen, setIsAddLinkOpen] = useState(false)
+  const [linkTitle, setLinkTitle] = useState("")
+  const [linkUrl, setLinkUrl] = useState("")
+
+  const [isAddGoalOpen, setIsAddGoalOpen] = useState(false)
+  const [goalTitle, setGoalTitle] = useState("")
 
   const { data: workspaces } = useQuery({ queryKey: ['workspaces'], queryFn: getWorkspaces })
   const activeWorkspaceId = queryWorkspaceId || workspaces?.[0]?._id
@@ -65,6 +81,94 @@ function MessagesContent() {
     }
   })
 
+  // Pinned Links Mutations
+  const addPinnedLinkMutation = useMutation({
+    mutationFn: (data: { title: string; url: string }) => addPinnedLink(activeWorkspaceId, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['workspace', activeWorkspaceId] })
+      setIsAddLinkOpen(false)
+      setLinkTitle("")
+      setLinkUrl("")
+    },
+    onError: (err: any) => {
+      alert(err.response?.data?.message || "Failed to add link.")
+    }
+  })
+
+  const deletePinnedLinkMutation = useMutation({
+    mutationFn: (linkId: string) => deletePinnedLink(activeWorkspaceId, linkId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['workspace', activeWorkspaceId] })
+    }
+  })
+
+  // Team Goals Mutations
+  const addTeamGoalMutation = useMutation({
+    mutationFn: (data: { title: string }) => addTeamGoal(activeWorkspaceId, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['workspace', activeWorkspaceId] })
+      setIsAddGoalOpen(false)
+      setGoalTitle("")
+    },
+    onError: (err: any) => {
+      alert(err.response?.data?.message || "Failed to add goal.")
+    }
+  })
+
+  const toggleTeamGoalMutation = useMutation({
+    mutationFn: (goalId: string) => toggleTeamGoal(activeWorkspaceId, goalId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['workspace', activeWorkspaceId] })
+    }
+  })
+
+  const deleteTeamGoalMutation = useMutation({
+    mutationFn: (goalId: string) => deleteTeamGoal(activeWorkspaceId, goalId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['workspace', activeWorkspaceId] })
+    }
+  })
+
+  // Logged in user profile & permissions
+  const { data: currentUser } = useQuery({
+    queryKey: ['profile'],
+    queryFn: async () => {
+      const res = await api.get('/auth/profile')
+      return res.data?.user
+    }
+  })
+
+  const currentMember = activeWorkspace?.members?.find(
+    (m: any) => (m.user?._id || m.user)?.toString() === currentUser?._id?.toString()
+  )
+  const isOwnerOrAdmin = currentMember?.role === 'OWNER' || currentMember?.role === 'ADMIN'
+
+  // Edit Message State & Mutations
+  const [editingMessageId, setEditingMessageId] = useState<string | null>(null)
+  const [editingContent, setEditingContent] = useState("")
+
+  const updateMessageMutation = useMutation({
+    mutationFn: ({ messageId, content }: { messageId: string; content: string }) => updateMessage(messageId, content),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['messages', activeWorkspaceId, queryChannel] })
+      setEditingMessageId(null)
+      setEditingContent("")
+    },
+    onError: (err: any) => {
+      alert(err.response?.data?.message || "Failed to update message.")
+    }
+  })
+
+  const deleteMessageMutation = useMutation({
+    mutationFn: (messageId: string) => deleteMessage(messageId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['messages', activeWorkspaceId, queryChannel] })
+    },
+    onError: (err: any) => {
+      alert(err.response?.data?.message || "Failed to delete message.")
+    }
+  })
+
   const handleSend = (e: React.FormEvent) => {
     e.preventDefault()
     if (!newMessage.trim() || !activeWorkspaceId) return
@@ -106,11 +210,25 @@ function MessagesContent() {
 
   const renderMessageContent = (content: string) => {
     if (!content) return null
-    const parts = content.split(/(@[a-zA-Z0-9_\s]+?\b|@[a-zA-Z0-9_]+)/g)
+    const parts = content.split(/(https?:\/\/[^\s]+|@[a-zA-Z0-9_\s]+?\b|@[a-zA-Z0-9_]+)/g)
     return parts.map((part, i) => {
+      if (part.startsWith('http://') || part.startsWith('https://')) {
+        return (
+          <a
+            key={i}
+            href={part}
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={(e) => e.stopPropagation()}
+            className="text-indigo-600 underline hover:text-indigo-800 font-semibold break-all"
+          >
+            {part}
+          </a>
+        )
+      }
       if (part.startsWith('@')) {
         return (
-          <span key={i} className="font-bold text-indigo-600 bg-indigo-50 px-1.5 py-0.5 rounded-md border border-indigo-100/60 inline-block my-0.5">
+          <span key={i} className="font-bold text-indigo-600 bg-indigo-50 px-1.5 py-0.5 rounded-md border border-indigo-100/60 inline-block my-0.5 break-all">
             {part}
           </span>
         )
@@ -127,7 +245,7 @@ function MessagesContent() {
     <div className="flex-1 flex overflow-hidden bg-white">
       
       {/* Center Chat Area */}
-      <div className="flex-1 flex flex-col border-r border-gray-100">
+      <div className="flex-1 min-w-0 flex flex-col border-r border-gray-100">
         
         {/* Header */}
         <div className="h-14 border-b border-gray-100 flex items-center justify-between px-6 shrink-0 bg-white shadow-2xs z-10">
@@ -216,19 +334,98 @@ function MessagesContent() {
             </div>
           ) : (
             filteredMessages.map((msg: any) => {
-              const senderName = msg.sender?.name || 'Unknown'
-              
+              const sender = msg.sender || {}
+              const senderName = sender.name || 'Unknown'
+              const senderId = (sender._id || sender)?.toString()
+              const isSender = senderId && senderId === currentUser?._id?.toString()
+              const canDelete = isSender || isOwnerOrAdmin
+              const isEditing = editingMessageId === msg._id
+
               return (
-                <div key={msg._id} className="flex gap-3.5 p-3 rounded-2xl hover:bg-white hover:shadow-xs transition-all border border-transparent hover:border-gray-100 group">
-                  <UserAvatar name={senderName} avatar={msg.sender?.avatar || msg.sender?.profileImage} size="w-9 h-9 text-[11px]" />
+                <div key={msg._id} className="flex gap-3.5 p-3 rounded-2xl hover:bg-white hover:shadow-xs transition-all border border-transparent hover:border-gray-100 group relative">
+                  <UserAvatar name={senderName} avatar={sender.avatar || sender.profileImage} size="w-9 h-9 text-[11px]" />
+                  
                   <div className="min-w-0 flex-1">
-                    <div className="flex gap-2 items-baseline mb-0.5">
-                       <span className="font-bold text-[14px] text-gray-900">{senderName}</span>
-                       <span className="text-gray-400 text-[11px] font-medium">{new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                    <div className="flex gap-2 items-center justify-between mb-0.5">
+                      <div className="flex items-center gap-2">
+                        <span className="font-bold text-[14px] text-gray-900">{senderName}</span>
+                        <span className="text-gray-400 text-[11px] font-medium">
+                          {new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                          {msg.isEdited && <span className="text-[10px] text-gray-400 italic ml-1">(edited)</span>}
+                        </span>
+                      </div>
+
+                      {/* Action buttons on hover */}
+                      {!isEditing && (canDelete || isSender) && (
+                        <div className="opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1 bg-white border border-gray-200/80 shadow-2xs rounded-lg px-1 py-0.5 shrink-0">
+                          {isSender && (
+                            <button
+                              onClick={() => {
+                                setEditingMessageId(msg._id)
+                                setEditingContent(msg.content)
+                              }}
+                              className="p-1 text-gray-400 hover:text-indigo-600 rounded hover:bg-indigo-50 transition-colors cursor-pointer"
+                              title="Edit message"
+                            >
+                              <Pencil className="w-3.5 h-3.5" />
+                            </button>
+                          )}
+                          {canDelete && (
+                            <button
+                              onClick={() => {
+                                if (confirm("Delete this message?")) {
+                                  deleteMessageMutation.mutate(msg._id)
+                                }
+                              }}
+                              className="p-1 text-gray-400 hover:text-red-600 rounded hover:bg-red-50 transition-colors cursor-pointer"
+                              title="Delete message"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          )}
+                        </div>
+                      )}
                     </div>
-                    <div className="text-gray-700 leading-relaxed text-[14px] font-medium whitespace-pre-wrap break-words">
-                       {renderMessageContent(msg.content)}
-                    </div>
+
+                    {isEditing ? (
+                      <form 
+                        onSubmit={(e) => {
+                          e.preventDefault()
+                          if (editingContent.trim()) {
+                            updateMessageMutation.mutate({ messageId: msg._id, content: editingContent.trim() })
+                          }
+                        }}
+                        className="mt-1 space-y-2"
+                      >
+                        <input
+                          type="text"
+                          value={editingContent}
+                          onChange={(e) => setEditingContent(e.target.value)}
+                          className="w-full text-xs border border-indigo-300 rounded-xl px-3 py-2 bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 font-medium"
+                          autoFocus
+                        />
+                        <div className="flex items-center gap-2">
+                          <button
+                            type="submit"
+                            disabled={!editingContent.trim() || updateMessageMutation.isPending}
+                            className="px-2.5 py-1 text-[11px] font-bold bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:opacity-50 cursor-pointer"
+                          >
+                            {updateMessageMutation.isPending ? "Saving..." : "Save"}
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setEditingMessageId(null)}
+                            className="px-2.5 py-1 text-[11px] font-semibold text-gray-600 hover:bg-gray-100 rounded-lg cursor-pointer"
+                          >
+                            Cancel
+                          </button>
+                        </div>
+                      </form>
+                    ) : (
+                      <div className="text-gray-700 leading-relaxed text-[14px] font-medium whitespace-pre-wrap break-words break-all min-w-0">
+                         {renderMessageContent(msg.content)}
+                      </div>
+                    )}
                   </div>
                 </div>
               )
@@ -352,44 +549,110 @@ function MessagesContent() {
                })}
              </div>
            </div>
-
+           
            {/* Workspace Links & Goals */}
-           <div className="pt-3 border-t border-gray-100 space-y-4">
-             <div>
-               <div className="text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-2">Pinned Links</div>
-               {activeWorkspace?.pinnedLinks && activeWorkspace.pinnedLinks.length > 0 ? (
-                 <div className="space-y-1.5">
-                   {activeWorkspace.pinnedLinks.map((link: any, i: number) => (
-                     <a key={i} href={link.url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-gray-600 truncate text-[12px] font-medium hover:text-[#6366F1] transition-colors p-1.5 rounded-lg hover:bg-gray-50">
-                       <Pin className="w-3.5 h-3.5 text-red-500 shrink-0"/>
-                       <span className="truncate">{link.title || link.url}</span>
-                     </a>
-                   ))}
-                 </div>
-               ) : (
-                 <div className="text-[12px] text-gray-400 font-medium italic px-1">No pinned links</div>
-               )}
-             </div>
+            <div className="pt-3 border-t border-gray-100 space-y-5">
+              
+              {/* Pinned Links Section */}
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <div className="text-[11px] font-bold text-gray-400 uppercase tracking-wider flex items-center gap-1">
+                    <Pin className="w-3 h-3 text-red-500" /> Pinned Links
+                  </div>
+                  <button
+                    onClick={() => setIsAddLinkOpen(true)}
+                    className="text-[10px] font-bold text-indigo-600 hover:text-indigo-800 hover:bg-indigo-50 px-1.5 py-0.5 rounded transition-all cursor-pointer"
+                  >
+                    + Add Link
+                  </button>
+                </div>
+                
+                {activeWorkspace?.pinnedLinks && activeWorkspace.pinnedLinks.length > 0 ? (
+                  <div className="space-y-1.5">
+                    {activeWorkspace.pinnedLinks.map((link: any, i: number) => {
+                      const linkId = link._id || link.id || i
+                      return (
+                        <div key={linkId} className="flex items-center justify-between group/link p-1.5 rounded-lg hover:bg-gray-50 transition-colors">
+                          <a 
+                            href={link.url.startsWith('http') ? link.url : `https://${link.url}`} 
+                            target="_blank" 
+                            rel="noopener noreferrer" 
+                            className="flex items-center gap-2 text-gray-700 truncate text-[12px] font-medium hover:text-[#6366F1] transition-colors min-w-0"
+                          >
+                            <ExternalLink className="w-3.5 h-3.5 text-indigo-500 shrink-0"/>
+                            <span className="truncate">{link.title || link.url}</span>
+                          </a>
+                          <button
+                            onClick={() => deletePinnedLinkMutation.mutate(linkId)}
+                            className="opacity-0 group-hover/link:opacity-100 text-gray-400 hover:text-red-600 transition-opacity p-0.5 cursor-pointer"
+                            title="Delete link"
+                          >
+                            <Trash2 className="w-3 h-3" />
+                          </button>
+                        </div>
+                      )
+                    })}
+                  </div>
+                ) : (
+                  <div className="text-[12px] text-gray-400 font-medium italic px-1">No pinned links</div>
+                )}
+              </div>
 
-             <div>
-               <div className="text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-2">Team Goals</div>
-               {activeWorkspace?.teamGoals && activeWorkspace.teamGoals.length > 0 ? (
-                 <div className="space-y-2">
-                   {activeWorkspace.teamGoals.map((goal: any, i: number) => (
-                     <div key={i} className="flex gap-2 text-gray-700 items-center text-[12px] font-medium">
-                       <CheckCircle2 className={`w-4 h-4 shrink-0 ${goal.isCompleted ? 'text-emerald-500' : 'text-gray-300'}`}/>
-                       <span className={goal.isCompleted ? 'line-through text-gray-400' : ''}>{goal.title}</span>
-                     </div>
-                   ))}
-                 </div>
-               ) : (
-                 <div className="text-[12px] text-gray-400 font-medium italic px-1">No team goals set</div>
-               )}
-             </div>
-           </div>
+              {/* Team Goals Section */}
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <div className="text-[11px] font-bold text-gray-400 uppercase tracking-wider flex items-center gap-1">
+                    <CheckCircle2 className="w-3 h-3 text-emerald-500" /> Team Goals
+                  </div>
+                  <button
+                    onClick={() => setIsAddGoalOpen(true)}
+                    className="text-[10px] font-bold text-indigo-600 hover:text-indigo-800 hover:bg-indigo-50 px-1.5 py-0.5 rounded transition-all cursor-pointer"
+                  >
+                    + Add Goal
+                  </button>
+                </div>
+                
+                {activeWorkspace?.teamGoals && activeWorkspace.teamGoals.length > 0 ? (
+                  <div className="space-y-1.5">
+                    {activeWorkspace.teamGoals.map((goal: any, i: number) => {
+                      const goalId = goal._id || goal.id || i
+                      const isDone = !!goal.isCompleted
 
-        </div>
-      </div>
+                      return (
+                        <div key={goalId} className="flex items-center justify-between group/goal p-1.5 rounded-lg hover:bg-gray-50 transition-colors">
+                          <button
+                            onClick={() => toggleTeamGoalMutation.mutate(goalId)}
+                            className="flex items-center gap-2 text-left min-w-0 flex-1 cursor-pointer"
+                          >
+                            {isDone ? (
+                              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
+                            ) : (
+                              <Circle className="w-3.5 h-3.5 text-gray-300 hover:text-indigo-500 shrink-0" />
+                            )}
+                            <span className={`text-[12px] font-medium truncate ${isDone ? 'line-through text-gray-400' : 'text-gray-700'}`}>
+                              {goal.title}
+                            </span>
+                          </button>
+                          <button
+                            onClick={() => deleteTeamGoalMutation.mutate(goalId)}
+                            className="opacity-0 group-hover/goal:opacity-100 text-gray-400 hover:text-red-600 transition-opacity p-0.5 cursor-pointer ml-1"
+                            title="Delete goal"
+                          >
+                            <Trash2 className="w-3 h-3" />
+                          </button>
+                        </div>
+                      )
+                    })}
+                  </div>
+                ) : (
+                  <div className="text-[12px] text-gray-400 font-medium italic px-1">No team goals set</div>
+                )}
+              </div>
+
+            </div>
+
+         </div>
+       </div>
 
       {/* Add Member Modal for Chat */}
       {isAddChannelMemberOpen && (
@@ -439,6 +702,100 @@ function MessagesContent() {
                   {addMemberToChannelMutation.isPending ? "Adding..." : "Add to Channel"}
                 </button>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Add Pinned Link Modal */}
+      {isAddLinkOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-xs p-4 animate-in fade-in">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-6 border border-gray-100 space-y-4">
+            <h2 className="text-lg font-bold text-gray-900 flex items-center gap-2">
+              <Pin className="w-5 h-5 text-red-500" /> Pin Resource Link
+            </h2>
+            <p className="text-xs text-gray-500">Add useful doc, Figma, or GitHub URLs for your team.</p>
+            
+            <div className="space-y-3">
+              <div>
+                <label className="text-xs font-bold uppercase text-gray-500">Link Title</label>
+                <input
+                  type="text"
+                  value={linkTitle}
+                  onChange={(e) => setLinkTitle(e.target.value)}
+                  placeholder="e.g. Project Specs Docs"
+                  className="w-full bg-white border border-gray-200 rounded-xl px-3 py-2 text-sm mt-1 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                />
+              </div>
+              <div>
+                <label className="text-xs font-bold uppercase text-gray-500">Resource URL</label>
+                <input
+                  type="text"
+                  value={linkUrl}
+                  onChange={(e) => setLinkUrl(e.target.value)}
+                  placeholder="https://..."
+                  className="w-full bg-white border border-gray-200 rounded-xl px-3 py-2 text-sm mt-1 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                />
+              </div>
+            </div>
+
+            <div className="flex justify-end gap-3 pt-2">
+              <button
+                onClick={() => setIsAddLinkOpen(false)}
+                className="px-4 py-2 text-xs font-semibold text-gray-600 hover:bg-gray-100 rounded-xl cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                disabled={!linkTitle.trim() || !linkUrl.trim() || addPinnedLinkMutation.isPending}
+                onClick={() => {
+                  addPinnedLinkMutation.mutate({ title: linkTitle.trim(), url: linkUrl.trim() })
+                }}
+                className="px-4 py-2 text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-700 rounded-xl disabled:opacity-50 cursor-pointer"
+              >
+                {addPinnedLinkMutation.isPending ? "Pinning..." : "Pin Link"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Add Team Goal Modal */}
+      {isAddGoalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-xs p-4 animate-in fade-in">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-6 border border-gray-100 space-y-4">
+            <h2 className="text-lg font-bold text-gray-900 flex items-center gap-2">
+              <CheckCircle2 className="w-5 h-5 text-emerald-500" /> New Team Goal
+            </h2>
+            <p className="text-xs text-gray-500">Define a milestone or goal for this workspace.</p>
+            
+            <div>
+              <label className="text-xs font-bold uppercase text-gray-500">Goal Description</label>
+              <input
+                type="text"
+                value={goalTitle}
+                onChange={(e) => setGoalTitle(e.target.value)}
+                placeholder="e.g. Complete v1.0 Release"
+                className="w-full bg-white border border-gray-200 rounded-xl px-3 py-2 text-sm mt-1 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              />
+            </div>
+
+            <div className="flex justify-end gap-3 pt-2">
+              <button
+                onClick={() => setIsAddGoalOpen(false)}
+                className="px-4 py-2 text-xs font-semibold text-gray-600 hover:bg-gray-100 rounded-xl cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                disabled={!goalTitle.trim() || addTeamGoalMutation.isPending}
+                onClick={() => {
+                  addTeamGoalMutation.mutate({ title: goalTitle.trim() })
+                }}
+                className="px-4 py-2 text-xs font-semibold text-white bg-emerald-600 hover:bg-emerald-700 rounded-xl disabled:opacity-50 cursor-pointer"
+              >
+                {addTeamGoalMutation.isPending ? "Adding..." : "Add Goal"}
+              </button>
             </div>
           </div>
         </div>

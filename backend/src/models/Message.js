@@ -24,6 +24,10 @@ const messageSchema = new mongoose.Schema(
         attachments: [{
             type: String
         }],
+        isEdited: {
+            type: Boolean,
+            default: false
+        }
     },
     {
         timestamps: true,

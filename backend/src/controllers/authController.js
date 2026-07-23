@@ -1,6 +1,7 @@
 const authService = require("../services/authService");
 const asyncHandler = require("../middleware/asyncHandler");
 const bcrypt = require("bcrypt");
+const User = require("../models/User");
 
 const register = asyncHandler(
     async (req, res) => {
@@ -51,6 +52,8 @@ const updateProfile = asyncHandler(
             user.avatar = "";
         } else if (req.file) {
             user.avatar = `/uploads/${req.file.filename}`;
+        } else if (req.body.avatarUrl || req.body.avatar) {
+            user.avatar = req.body.avatarUrl || req.body.avatar;
         }
         
         await user.save();
@@ -62,9 +65,43 @@ const updateProfile = asyncHandler(
     }
 );
 
+const googleLogin = asyncHandler(
+    async (req, res) => {
+        const result = await authService.googleAuth(req.body.idToken);
+
+        res.status(200).json({
+            success: true,
+            data: result,
+        });
+    }
+);
+
+const forgotPassword = asyncHandler(
+    async (req, res) => {
+        const result = await authService.forgotPassword(req.body.email);
+        res.status(200).json({
+            success: true,
+            data: result,
+        });
+    }
+);
+
+const resetPassword = asyncHandler(
+    async (req, res) => {
+        const result = await authService.resetPassword(req.body.token, req.body.password);
+        res.status(200).json({
+            success: true,
+            data: result,
+        });
+    }
+);
+
 module.exports = {
     register,
     login,
+    googleLogin,
     getProfile,
     updateProfile,
+    forgotPassword,
+    resetPassword,
 };
