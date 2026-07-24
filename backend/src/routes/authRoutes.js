@@ -44,10 +44,10 @@ const upload = require("../middleware/uploadMiddleware");
  *             properties:
  *               name:
  *                 type: string
- *                 example: Manas
+ *                 example: Alex Morgan
  *               email:
  *                 type: string
- *                 example: manas@gmail.com
+ *                 example: alex@example.com
  *               password:
  *                 type: string
  *                 example: password123
@@ -82,7 +82,7 @@ router.post(
  *             properties:
  *               email:
  *                 type: string
- *                 example: manas@gmail.com
+ *                 example: alex@example.com
  *               password:
  *                 type: string
  *                 example: password123

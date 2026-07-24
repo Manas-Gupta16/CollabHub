@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useMemo, useEffect } from "react"
+import { motion, AnimatePresence } from "framer-motion"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { 
   CheckCircle2, 
@@ -37,6 +38,7 @@ import api, {
 } from "@/lib/api"
 import Link from "next/link"
 import { UserAvatar } from "@/components/UserAvatar"
+import { getSocket } from "@/lib/socket"
 import { useRouter } from "next/navigation"
 
 const wsGradients = [
@@ -74,6 +76,25 @@ export default function Dashboard() {
   // Point 1: Inline Quick Task Bar state
   const [quickTaskTitle, setQuickTaskTitle] = useState("")
   const [quickTaskWsId, setQuickTaskWsId] = useState("")
+
+  // Real-time Socket Presence
+  const [onlineUserIds, setOnlineUserIds] = useState<string[]>([])
+
+  useEffect(() => {
+    const socket = getSocket()
+    if (!socket) return
+
+    const handleOnlineList = (ids: string[]) => {
+      setOnlineUserIds(ids || [])
+    }
+
+    socket.emit("get_online_users")
+    socket.on("online_users_list", handleOnlineList)
+
+    return () => {
+      socket.off("online_users_list", handleOnlineList)
+    }
+  }, [])
 
   // Fetch workspaces
   const { data: workspaces } = useQuery({
@@ -279,10 +300,20 @@ export default function Dashboard() {
 
   return (
     <div className="flex-1 overflow-y-auto bg-[#FAFAFA] p-6 lg:p-8">
-      <div className="max-w-6xl mx-auto space-y-6">
+      <motion.div 
+        initial={{ opacity: 0, y: 15 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4 }}
+        className="max-w-6xl mx-auto space-y-6"
+      >
 
         {/* Header Section */}
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-6 rounded-2xl border border-gray-200/80 shadow-xs">
+        <motion.div 
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4 }}
+          className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-6 rounded-2xl border border-gray-200/80 shadow-xs"
+        >
           <div>
             <h1 className="text-2xl font-bold text-gray-900 tracking-tight">{getGreeting()}, {userName}</h1>
             <p className="text-xs text-gray-500 mt-1 font-medium">
@@ -301,20 +332,28 @@ export default function Dashboard() {
               ))}
             </select>
             <Link href="/tasks">
-              <button className="px-4 py-2 bg-[#6366F1] hover:bg-[#4F46E5] rounded-xl text-xs font-semibold text-white transition-all flex items-center gap-1.5 shadow-md shadow-indigo-500/20 cursor-pointer">
+              <motion.button 
+                whileHover={{ scale: 1.03 }}
+                whileTap={{ scale: 0.97 }}
+                className="px-4 py-2 bg-[#6366F1] hover:bg-[#4F46E5] rounded-xl text-xs font-semibold text-white transition-all flex items-center gap-1.5 shadow-md shadow-indigo-500/20 cursor-pointer"
+              >
                 <Plus className="w-4 h-4" />
                 New Task
-              </button>
+              </motion.button>
             </Link>
           </div>
-        </div>
+        </motion.div>
 
-        {/* Point 1: Inline Quick-Task Creation Bar */}
-        <div className="bg-gradient-to-r from-indigo-900 via-slate-900 to-indigo-950 p-4 sm:p-5 rounded-2xl text-white shadow-md relative overflow-hidden">
-          <div className="absolute -right-8 -bottom-8 w-36 h-36 bg-indigo-500/20 rounded-full blur-2xl pointer-events-none" />
+        {/* Inline Quick-Task Creation Bar (Clean Theme Matched) */}
+        <motion.div 
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, delay: 0.1 }}
+          className="bg-white p-4 sm:p-5 rounded-2xl border border-gray-200/80 shadow-xs relative overflow-hidden"
+        >
           <form onSubmit={handleQuickTaskSubmit} className="relative z-10 flex flex-col sm:flex-row items-center gap-3">
-            <div className="flex items-center gap-2 text-indigo-300 font-bold text-xs shrink-0">
-              <Sparkles className="w-4 h-4 text-indigo-400" />
+            <div className="flex items-center gap-2 text-indigo-600 font-bold text-xs shrink-0">
+              <Sparkles className="w-4 h-4 text-indigo-600" />
               <span>Quick Add:</span>
             </div>
             <input 
@@ -322,84 +361,92 @@ export default function Dashboard() {
               value={quickTaskTitle}
               onChange={(e) => setQuickTaskTitle(e.target.value)}
               placeholder="What are you working on today? (Type task title and press Enter...)"
-              className="flex-1 bg-white/10 backdrop-blur-md border border-white/15 rounded-xl px-4 py-2 text-xs text-white placeholder:text-indigo-200/60 focus:outline-none focus:ring-2 focus:ring-indigo-400 w-full"
+              className="flex-1 bg-gray-50/70 border border-gray-200/80 rounded-xl px-4 py-2 text-xs text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white w-full font-medium"
             />
             {workspaces && workspaces.length > 0 && (
               <select
                 value={quickTaskWsId}
                 onChange={(e) => setQuickTaskWsId(e.target.value)}
-                className="bg-white/10 backdrop-blur-md border border-white/15 rounded-xl px-3 py-2 text-xs text-indigo-100 focus:outline-none focus:ring-2 focus:ring-indigo-400 shrink-0 w-full sm:w-auto"
+                className="bg-gray-50/70 border border-gray-200/80 rounded-xl px-3 py-2 text-xs text-gray-700 font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-500 shrink-0 w-full sm:w-auto cursor-pointer"
               >
                 {workspaces.map((ws: any) => (
-                  <option key={ws._id} value={ws._id} className="text-gray-900">{ws.name}</option>
+                  <option key={ws._id} value={ws._id}>{ws.name}</option>
                 ))}
               </select>
             )}
-            <button
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
               type="submit"
               disabled={!quickTaskTitle.trim() || createQuickTaskMutation.isPending}
-              className="w-full sm:w-auto px-4 py-2 bg-white text-indigo-900 hover:bg-indigo-50 disabled:opacity-50 font-bold text-xs rounded-xl shadow-xs transition-all shrink-0 cursor-pointer"
+              className="w-full sm:w-auto px-4 py-2 bg-[#6366F1] hover:bg-[#4F46E5] text-white disabled:opacity-50 font-semibold text-xs rounded-xl shadow-xs transition-all shrink-0 cursor-pointer"
             >
               {createQuickTaskMutation.isPending ? "Adding..." : "+ Add Task"}
-            </button>
+            </motion.button>
           </form>
-        </div>
+        </motion.div>
 
         {/* Sleek Metric Cards Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <Card 
-            onClick={() => setDashboardTaskFilter('ALL')}
-            className={`border-gray-200/80 shadow-sm hover:shadow-md hover:border-indigo-300 transition-all rounded-2xl bg-white cursor-pointer group active:scale-[0.99] ${
-              dashboardTaskFilter === 'ALL' ? 'ring-2 ring-indigo-500' : ''
-            }`}
-            title="Click to view all tasks"
-          >
-            <CardContent className="p-5 flex items-center justify-between">
-              <div>
-                <p className="text-xs font-semibold text-gray-400 group-hover:text-indigo-600 uppercase tracking-wider transition-colors">Total Tasks</p>
-                <h3 className="text-2xl font-bold text-gray-900 mt-1">{totalTasks}</h3>
-              </div>
-              <div className="w-11 h-11 rounded-xl bg-indigo-50 text-[#6366F1] group-hover:bg-indigo-600 group-hover:text-white transition-all flex items-center justify-center shrink-0 shadow-inner">
-                <FolderKanban className="w-5 h-5" />
-              </div>
-            </CardContent>
-          </Card>
+          <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3, delay: 0.15 }} whileHover={{ y: -4 }}>
+            <Card 
+              onClick={() => setDashboardTaskFilter('ALL')}
+              className={`border-gray-200/80 shadow-sm hover:shadow-md hover:border-indigo-300 transition-all rounded-2xl bg-white cursor-pointer group active:scale-[0.99] ${
+                dashboardTaskFilter === 'ALL' ? 'ring-2 ring-indigo-500' : ''
+              }`}
+              title="Click to view all tasks"
+            >
+              <CardContent className="p-5 flex items-center justify-between">
+                <div>
+                  <p className="text-xs font-semibold text-gray-400 group-hover:text-indigo-600 uppercase tracking-wider transition-colors">Total Tasks</p>
+                  <h3 className="text-2xl font-bold text-gray-900 mt-1">{totalTasks}</h3>
+                </div>
+                <div className="w-11 h-11 rounded-xl bg-indigo-50 text-[#6366F1] group-hover:bg-indigo-600 group-hover:text-white transition-all flex items-center justify-center shrink-0 shadow-inner">
+                  <FolderKanban className="w-5 h-5" />
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
 
-          <Card 
-            onClick={() => setDashboardTaskFilter('IN_PROGRESS')}
-            className={`border-gray-200/80 shadow-sm hover:shadow-md hover:border-amber-300 transition-all rounded-2xl bg-white cursor-pointer group active:scale-[0.99] ${
-              dashboardTaskFilter === 'IN_PROGRESS' ? 'ring-2 ring-amber-500' : ''
-            }`}
-            title="Click to filter In Progress tasks"
-          >
-            <CardContent className="p-5 flex items-center justify-between">
-              <div>
-                <p className="text-xs font-semibold text-gray-400 group-hover:text-amber-600 uppercase tracking-wider transition-colors">In Progress</p>
-                <h3 className="text-2xl font-bold text-gray-900 mt-1">{inProgressTasks}</h3>
-              </div>
-              <div className="w-11 h-11 rounded-xl bg-amber-50 text-amber-600 group-hover:bg-amber-600 group-hover:text-white transition-all flex items-center justify-center shrink-0 shadow-inner">
-                <Clock className="w-5 h-5" />
-              </div>
-            </CardContent>
-          </Card>
+          <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3, delay: 0.2 }} whileHover={{ y: -4 }}>
+            <Card 
+              onClick={() => setDashboardTaskFilter('IN_PROGRESS')}
+              className={`border-gray-200/80 shadow-sm hover:shadow-md hover:border-amber-300 transition-all rounded-2xl bg-white cursor-pointer group active:scale-[0.99] ${
+                dashboardTaskFilter === 'IN_PROGRESS' ? 'ring-2 ring-amber-500' : ''
+              }`}
+              title="Click to filter In Progress tasks"
+            >
+              <CardContent className="p-5 flex items-center justify-between">
+                <div>
+                  <p className="text-xs font-semibold text-gray-400 group-hover:text-amber-600 uppercase tracking-wider transition-colors">In Progress</p>
+                  <h3 className="text-2xl font-bold text-gray-900 mt-1">{inProgressTasks}</h3>
+                </div>
+                <div className="w-11 h-11 rounded-xl bg-amber-50 text-amber-600 group-hover:bg-amber-600 group-hover:text-white transition-all flex items-center justify-center shrink-0 shadow-inner">
+                  <Clock className="w-5 h-5" />
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
 
-          <Card 
-            onClick={() => setDashboardTaskFilter('DONE')}
-            className={`border-gray-200/80 shadow-sm hover:shadow-md hover:border-emerald-300 transition-all rounded-2xl bg-white cursor-pointer group active:scale-[0.99] ${
-              dashboardTaskFilter === 'DONE' ? 'ring-2 ring-emerald-500' : ''
-            }`}
-            title="Click to filter Done tasks"
-          >
-            <CardContent className="p-5 flex items-center justify-between">
-              <div>
-                <p className="text-xs font-semibold text-gray-400 group-hover:text-emerald-600 uppercase tracking-wider transition-colors">Done Tasks</p>
-                <h3 className="text-2xl font-bold text-gray-900 mt-1">{doneTasks}</h3>
-              </div>
-              <div className="w-11 h-11 rounded-xl bg-emerald-50 text-emerald-600 group-hover:bg-emerald-600 group-hover:text-white transition-all flex items-center justify-center shrink-0 shadow-inner">
-                <CheckCircle2 className="w-5 h-5" />
-              </div>
-            </CardContent>
-          </Card>
+          <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3, delay: 0.25 }} whileHover={{ y: -4 }}>
+            <Card 
+              onClick={() => setDashboardTaskFilter('DONE')}
+              className={`border-gray-200/80 shadow-sm hover:shadow-md hover:border-emerald-300 transition-all rounded-2xl bg-white cursor-pointer group active:scale-[0.99] ${
+                dashboardTaskFilter === 'DONE' ? 'ring-2 ring-emerald-500' : ''
+              }`}
+              title="Click to filter Done tasks"
+            >
+              <CardContent className="p-5 flex items-center justify-between">
+                <div>
+                  <p className="text-xs font-semibold text-gray-400 group-hover:text-emerald-600 uppercase tracking-wider transition-colors">Done Tasks</p>
+                  <h3 className="text-2xl font-bold text-gray-900 mt-1">{doneTasks}</h3>
+                </div>
+                <div className="w-11 h-11 rounded-xl bg-emerald-50 text-emerald-600 group-hover:bg-emerald-600 group-hover:text-white transition-all flex items-center justify-center shrink-0 shadow-inner">
+                  <CheckCircle2 className="w-5 h-5" />
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
 
           <Card 
             onClick={() => router.push('/workspaces')}
@@ -656,7 +703,7 @@ export default function Dashboard() {
             <Card className="border-gray-200/80 shadow-sm rounded-2xl bg-white p-5">
               <div className="flex items-center justify-between mb-3">
                 <h3 className="text-sm font-bold text-gray-900 flex items-center gap-2">
-                  <Users className="w-4 h-4 text-indigo-600" /> Team Online ({activeWorkspace?.members?.length || 0})
+                  <Users className="w-4 h-4 text-indigo-600" /> Workspace Team ({activeWorkspace?.members?.length || 0})
                 </h3>
               </div>
 
@@ -664,15 +711,20 @@ export default function Dashboard() {
                 {(activeWorkspace?.members || []).map((m: any, i: number) => {
                   const u = m.user || {}
                   const uName = u.name || 'Member'
+                  const userIdStr = (u._id || u.id || u).toString()
+                  const isOnline = onlineUserIds.includes(userIdStr) || (user?._id && userIdStr === user._id.toString())
                   
                   return (
                     <div key={i} className="flex items-center justify-between p-1.5 rounded-xl hover:bg-gray-50 transition-colors">
                       <div className="flex items-center gap-2.5 min-w-0">
                         <div className="relative">
                           <UserAvatar name={uName} avatar={u.avatar} size="w-7 h-7 text-[9px]" />
-                          <span className="absolute bottom-0 right-0 w-2 h-2 rounded-full bg-emerald-500 border border-white" />
+                          <span className={`absolute bottom-0 right-0 w-2 h-2 rounded-full border border-white ${isOnline ? 'bg-emerald-500' : 'bg-gray-300'}`} />
                         </div>
-                        <span className="text-xs font-semibold text-gray-800 truncate">{uName}</span>
+                        <div>
+                          <span className="text-xs font-semibold text-gray-800 truncate block leading-tight">{uName}</span>
+                          <span className="text-[10px] text-gray-400 font-medium block">{isOnline ? 'Online' : 'Offline'}</span>
+                        </div>
                       </div>
                       <button 
                         onClick={() => router.push(`/messages?workspace=${activeWorkspace?._id}&channel=General`)}
@@ -780,7 +832,7 @@ export default function Dashboard() {
 
         </div>
 
-      </div>
+      </motion.div>
     </div>
   )
 }

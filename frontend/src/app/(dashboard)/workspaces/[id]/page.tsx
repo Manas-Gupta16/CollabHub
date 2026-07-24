@@ -40,6 +40,7 @@ import api, {
 } from "@/lib/api"
 import { useRouter } from "next/navigation"
 import { Input } from "@/components/ui/input"
+import { getSocket } from "@/lib/socket"
 
 function Dropdown({ trigger, children, align = "left" }: {
   trigger: React.ReactNode
@@ -85,6 +86,25 @@ export default function WorkspaceOverview({ params }: { params: Promise<{ id: st
   const [newTaskTitle, setNewTaskTitle] = useState("")
   const [newTaskAssignee, setNewTaskAssignee] = useState("")
   const [taskFilter, setTaskFilter] = useState<'ALL' | 'TODO' | 'IN_PROGRESS' | 'DONE'>('ALL')
+
+  // Real-time Socket Presence
+  const [onlineUserIds, setOnlineUserIds] = useState<string[]>([])
+
+  useEffect(() => {
+    const socket = getSocket()
+    if (!socket) return
+
+    const handleOnlineList = (ids: string[]) => {
+      setOnlineUserIds(ids || [])
+    }
+
+    socket.emit("get_online_users")
+    socket.on("online_users_list", handleOnlineList)
+
+    return () => {
+      socket.off("online_users_list", handleOnlineList)
+    }
+  }, [])
 
   const { data: workspace, isLoading } = useQuery({
     queryKey: ['workspace', id],
@@ -250,63 +270,51 @@ export default function WorkspaceOverview({ params }: { params: Promise<{ id: st
           <span className="text-gray-900 font-semibold">{workspace.name}</span>
         </div>
 
-        {/* Hero Banner Card */}
-        <div className="relative overflow-hidden bg-white rounded-2xl border border-gray-200/80 shadow-sm transition-all hover:shadow-md">
-          {/* Top Banner Accent Pattern */}
-          <div className={`h-28 w-full bg-gradient-to-r ${headerGradient} relative opacity-90`}>
-            <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_30%,rgba(255,255,255,0.2),transparent_60%)]" />
-            <div className="absolute top-4 right-4 flex items-center gap-2">
-              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-white/90 backdrop-blur-sm text-gray-800 shadow-sm border border-white/40">
-                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                Active Project
-              </span>
+        {/* Workspace Header Card (Theme Matched) */}
+        <div className="bg-white p-6 rounded-2xl border border-gray-200/80 shadow-xs flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+          <div className="flex items-center gap-4">
+            <div className="w-14 h-14 rounded-2xl bg-indigo-50 text-[#6366F1] border border-indigo-100/80 flex items-center justify-center font-bold text-xl shadow-xs shrink-0">
+              {initials}
+            </div>
+            <div>
+              <div className="flex items-center gap-2.5 flex-wrap">
+                <h1 className="text-2xl font-bold text-gray-900 tracking-tight">{workspace.name}</h1>
+                <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-indigo-50 text-indigo-700 border border-indigo-100">
+                  {members.length} {members.length === 1 ? 'member' : 'members'}
+                </span>
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-100">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                  Active Project
+                </span>
+              </div>
+              <p className="text-gray-500 text-xs mt-1 font-medium max-w-xl">
+                {workspace.description || 'Main workspace for team collaboration and project deliverables.'}
+              </p>
             </div>
           </div>
 
-          {/* Banner Details Body */}
-          <div className="px-6 pb-6 pt-0 relative flex flex-col md:flex-row justify-between items-start md:items-end gap-6 -mt-10">
-            <div className="flex items-end gap-4">
-              <div className={`w-20 h-20 rounded-2xl flex items-center justify-center font-bold text-3xl text-white shadow-xl bg-gradient-to-br ${headerGradient} ring-4 ring-white shrink-0`}>
-                {initials}
-              </div>
-              <div className="pt-2">
-                <div className="flex items-center gap-2.5 flex-wrap">
-                  <h1 className="text-2xl font-bold text-gray-900 tracking-tight">{workspace.name}</h1>
-                  <span className="px-2.5 py-0.5 rounded-full text-xs font-medium bg-indigo-50 text-indigo-700 border border-indigo-100">
-                    {members.length} {members.length === 1 ? 'member' : 'members'}
-                  </span>
-                </div>
-                <p className="text-gray-500 text-sm mt-1 max-w-xl">
-                  {workspace.description || 'Main workspace for team collaboration and project deliverables.'}
-                </p>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-2.5 w-full md:w-auto shrink-0 pt-2">
+          <div className="flex items-center gap-2.5 w-full md:w-auto shrink-0">
+            <Button 
+              variant="outline" 
+              className="border-gray-200 hover:bg-gray-50/80 rounded-xl font-semibold text-xs text-gray-700 shadow-2xs cursor-pointer" 
+              onClick={() => setIsInviteModalOpen(true)}
+            >
+              <UserPlus className="w-4 h-4 mr-1.5 text-gray-500" /> Invite Team
+            </Button>
+            {isOwner && (
               <Button 
                 variant="outline" 
-                className="border-gray-200 hover:bg-gray-50/80 rounded-xl font-medium text-gray-700 shadow-sm flex-1 md:flex-none cursor-pointer" 
-                onClick={() => setIsInviteModalOpen(true)}
+                className="border-gray-200 hover:bg-gray-50/80 rounded-xl p-2.5 text-gray-500 cursor-pointer"
+                onClick={() => alert("Workspace Settings modal")}
               >
-                <UserPlus className="w-4 h-4 mr-2 text-gray-500" />
-                Invite Team
+                <Settings className="w-4 h-4" />
               </Button>
-              <Button 
-                variant="outline" 
-                className="border-gray-200 hover:bg-gray-50/80 rounded-xl font-medium text-gray-700 shadow-sm cursor-pointer" 
-                onClick={() => router.push(`/settings?workspace=${workspace._id}&tab=workspace`)}
-                title="Workspace Settings"
-              >
-                <Settings className="w-4 h-4 text-gray-500" />
+            )}
+            <Link href={`/messages?workspace=${id}&channel=${defaultChannel}`}>
+              <Button className="bg-[#6366F1] hover:bg-[#4F46E5] text-white rounded-xl font-semibold text-xs shadow-md shadow-indigo-500/20 cursor-pointer flex items-center gap-1.5">
+                <MessageSquare className="w-4 h-4" /> Open Chat
               </Button>
-              <Button 
-                className="bg-[#6366F1] hover:bg-[#4F46E5] text-white shadow-md shadow-indigo-500/20 rounded-xl font-semibold px-5 flex-1 md:flex-none cursor-pointer"
-                onClick={() => router.push(`/messages?workspace=${workspace._id}&channel=${defaultChannel}`)}
-              >
-                <MessageSquare className="w-4 h-4 mr-2" />
-                Open Chat
-              </Button>
-            </div>
+            </Link>
           </div>
         </div>
 
@@ -589,14 +597,15 @@ export default function WorkspaceOverview({ params }: { params: Promise<{ id: st
                     const user = member.user || {}
                     const userName = user.name || `User ${i}`
                     const role = member.role || 'MEMBER'
-                    const uId = user._id || user
+                    const uId = (user._id || user).toString()
+                    const isOnline = onlineUserIds.includes(uId) || (userProfile?._id && uId === userProfile._id.toString())
                     
                     return (
                       <div key={i} className="flex items-center justify-between p-2 rounded-xl hover:bg-gray-50/80 transition-colors">
                         <div className="flex items-center gap-3 min-w-0">
                           <div className="relative">
                             <UserAvatar name={userName} avatar={user.avatar} size="w-9 h-9 text-[11px]" />
-                            <span className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-emerald-500 border-2 border-white rounded-full" />
+                            <span className={`absolute bottom-0 right-0 w-2.5 h-2.5 border-2 border-white rounded-full ${isOnline ? 'bg-emerald-500' : 'bg-gray-300'}`} title={isOnline ? 'Online' : 'Offline'} />
                           </div>
                           <div className="min-w-0">
                             <div className="text-sm font-bold text-gray-900 truncate flex items-center gap-1.5">
@@ -604,8 +613,10 @@ export default function WorkspaceOverview({ params }: { params: Promise<{ id: st
                               {role === 'OWNER' && <Crown className="w-3.5 h-3.5 text-amber-500 fill-amber-400 shrink-0" />}
                               {role === 'ADMIN' && <ShieldCheck className="w-3.5 h-3.5 text-indigo-600 shrink-0" />}
                             </div>
-                            <div className="text-xs text-gray-400 truncate">
-                              {user.email || 'Member'}
+                            <div className="text-xs text-gray-400 truncate flex items-center gap-1">
+                              <span>{user.email || 'Member'}</span>
+                              <span>•</span>
+                              <span className={isOnline ? 'text-emerald-600 font-semibold' : 'text-gray-400'}>{isOnline ? 'Online' : 'Offline'}</span>
                             </div>
                           </div>
                         </div>

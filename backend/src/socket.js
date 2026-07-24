@@ -3,11 +3,15 @@ const jwt = require("jsonwebtoken");
 const User = require("./models/User");
 
 let io;
+// Track active socket connections per user ID
+const userSocketsMap = new Map(); // userId string -> Set of socket IDs
+
+const getOnlineUserIds = () => Array.from(userSocketsMap.keys());
 
 const initSocket = (server) => {
     io = new Server(server, {
         cors: {
-            origin: "*", // Allow all origins for now, can be restricted to frontend URL later
+            origin: "*",
             methods: ["GET", "POST"]
         }
     });
@@ -36,10 +40,23 @@ const initSocket = (server) => {
     });
 
     io.on("connection", (socket) => {
+        const userIdStr = socket.user._id.toString();
         console.log(`User connected via socket: ${socket.user.name} (${socket.id})`);
 
-        // Automatically join a room named after the user's ID for direct messages/notifications
-        socket.join(socket.user._id.toString());
+        if (!userSocketsMap.has(userIdStr)) {
+            userSocketsMap.set(userIdStr, new Set());
+        }
+        userSocketsMap.get(userIdStr).add(socket.id);
+
+        // Join room for direct notifications
+        socket.join(userIdStr);
+
+        // Broadcast current online user list to all connected clients
+        io.emit("online_users_list", getOnlineUserIds());
+
+        socket.on("get_online_users", () => {
+            socket.emit("online_users_list", getOnlineUserIds());
+        });
 
         // Join a specific workspace room
         socket.on("join_workspace", (workspaceId) => {
@@ -55,6 +72,14 @@ const initSocket = (server) => {
 
         socket.on("disconnect", () => {
             console.log(`User disconnected via socket: ${socket.user.name} (${socket.id})`);
+            if (userSocketsMap.has(userIdStr)) {
+                const userSockets = userSocketsMap.get(userIdStr);
+                userSockets.delete(socket.id);
+                if (userSockets.size === 0) {
+                    userSocketsMap.delete(userIdStr);
+                }
+            }
+            io.emit("online_users_list", getOnlineUserIds());
         });
     });
 
@@ -68,4 +93,4 @@ const getIO = () => {
     return io;
 };
 
-module.exports = { initSocket, getIO };
+module.exports = { initSocket, getIO, getOnlineUserIds };

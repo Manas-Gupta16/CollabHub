@@ -12,8 +12,9 @@ import api, {
   addMemberToChannel, addPinnedLink, deletePinnedLink, addTeamGoal, 
   toggleTeamGoal, deleteTeamGoal, updateMessage, deleteMessage 
 } from "@/lib/api"
-import { useState, useMemo, Suspense } from "react"
+import { useState, useMemo, useEffect, Suspense } from "react"
 import { UserAvatar } from "@/components/UserAvatar"
+import { getSocket } from "@/lib/socket"
 
 function MessagesContent() {
   const searchParams = useSearchParams()
@@ -29,6 +30,25 @@ function MessagesContent() {
   const [showMentionPopup, setShowMentionPopup] = useState(false)
   const [mentionQuery, setMentionQuery] = useState("")
 
+  // Real-time Socket Presence
+  const [onlineUserIds, setOnlineUserIds] = useState<string[]>([])
+
+  useEffect(() => {
+    const socket = getSocket()
+    if (!socket) return
+
+    const handleOnlineList = (ids: string[]) => {
+      setOnlineUserIds(ids || [])
+    }
+
+    socket.emit("get_online_users")
+    socket.on("online_users_list", handleOnlineList)
+
+    return () => {
+      socket.off("online_users_list", handleOnlineList)
+    }
+  }, [])
+
   // Pinned Links & Team Goals state
   const [isAddLinkOpen, setIsAddLinkOpen] = useState(false)
   const [linkTitle, setLinkTitle] = useState("")
@@ -36,6 +56,14 @@ function MessagesContent() {
 
   const [isAddGoalOpen, setIsAddGoalOpen] = useState(false)
   const [goalTitle, setGoalTitle] = useState("")
+
+  const { data: userProfile } = useQuery({
+    queryKey: ['profile'],
+    queryFn: async () => {
+      const res = await api.get('/auth/profile')
+      return res.data?.user
+    }
+  })
 
   const { data: workspaces } = useQuery({ queryKey: ['workspaces'], queryFn: getWorkspaces })
   const activeWorkspaceId = queryWorkspaceId || workspaces?.[0]?._id
@@ -559,13 +587,24 @@ function MessagesContent() {
                {(activeWorkspace?.members || []).map((member: any, i: number) => {
                  const u = member.user || {}
                  const name = u.name || 'Unknown'
+                 const userIdStr = (u._id || u.id || u).toString()
+                 
+                 // Check if member is online via socket or current logged in user
+                 const isOnline = onlineUserIds.includes(userIdStr) || (userProfile?._id && userIdStr === userProfile._id.toString())
+
                  return (
                    <div key={i} className="flex justify-between items-center cursor-pointer group hover:bg-gray-50 p-1.5 rounded-xl transition-colors">
                      <div className="flex items-center gap-2.5 min-w-0">
                        <UserAvatar name={name} avatar={u.avatar} size="w-7 h-7 text-[9px]" />
-                       <span className="font-semibold text-gray-700 text-[12px] group-hover:text-gray-900 transition-colors truncate">{name}</span>
+                       <div className="min-w-0">
+                         <span className="font-semibold text-gray-700 text-[12px] group-hover:text-gray-900 transition-colors truncate block leading-tight">{name}</span>
+                         <span className="text-[10px] text-gray-400 font-medium block">{isOnline ? 'Online' : 'Offline'}</span>
+                       </div>
                      </div>
-                     <div className="w-2 h-2 rounded-full bg-emerald-500 shadow-xs shrink-0"></div>
+                     <div 
+                       className={`w-2.5 h-2.5 rounded-full shrink-0 ${isOnline ? 'bg-emerald-500 shadow-xs ring-2 ring-white' : 'bg-gray-300'}`} 
+                       title={isOnline ? 'Online' : 'Offline'}
+                     ></div>
                    </div>
                  )
                })}
