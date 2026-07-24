@@ -80,7 +80,7 @@ export const updateTaskStatus = async (taskId: string, status: string) => {
 };
 
 export const markAllNotificationsRead = async () => {
-  const response = await api.put(`/notifications/read-all`)
+  const response = await api.patch(`/notifications/read-all`)
   return response.data
 }
 

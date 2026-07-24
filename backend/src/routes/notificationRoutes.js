@@ -14,6 +14,7 @@ router.use(protect);
 
 router.get("/", getUserNotifications);
 router.patch("/read-all", markAllAsRead);
+router.put("/read-all", markAllAsRead);
 router.patch("/:id/read", markAsRead);
 router.post("/:id/accept", acceptInvitation);
 router.post("/:id/reject", rejectInvitation);

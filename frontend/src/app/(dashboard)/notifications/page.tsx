@@ -60,6 +60,25 @@ export default function NotificationsPage() {
     }
   })
 
+  const handleNotificationClick = (item: any) => {
+    if (!item.isRead && item.type !== 'WORKSPACE_INVITATION') {
+      markReadMutation.mutate(item._id)
+    }
+
+    const workspaceId = typeof item.workspace === 'object' ? item.workspace?._id : item.workspace
+    if (!workspaceId) return
+
+    if (item.type === 'MENTION') {
+      const match = item.message?.match(/#([a-zA-Z0-9_-]+)/)
+      const channelName = match ? match[1] : 'General'
+      router.push(`/messages?workspace=${workspaceId}&channel=${channelName}`)
+    } else if (item.type === 'TASK_ASSIGNED' || item.type === 'NEW_COMMENT' || item.type === 'TASK_UPDATED') {
+      router.push(`/tasks?workspace=${workspaceId}`)
+    } else if (item.type !== 'WORKSPACE_INVITATION') {
+      router.push(`/workspaces/${workspaceId}`)
+    }
+  }
+
   const notifications = notificationsData || []
   const unreadCount = notifications.filter((n: any) => !n.isRead).length
 
@@ -82,9 +101,9 @@ export default function NotificationsPage() {
               </div>
             </div>
             <div className="flex gap-2">
-              <Button variant="outline" className="h-8 text-[12px] border-gray-200 px-3" onClick={() => markAllReadMutation.mutate()} disabled={unreadCount === 0 || markAllReadMutation.isPending}>
+              <Button variant="outline" className="h-8 text-[12px] border-gray-200 px-3 cursor-pointer" onClick={() => markAllReadMutation.mutate()} disabled={unreadCount === 0 || markAllReadMutation.isPending}>
                 <Check className="w-3.5 h-3.5 mr-1.5" />
-                Mark all as read
+                {markAllReadMutation.isPending ? "Marking..." : "Mark all as read"}
               </Button>
             </div>
           </div>
@@ -130,9 +149,13 @@ export default function NotificationsPage() {
                 }
 
                 return (
-                  <div key={item._id} className={`flex items-center gap-3 px-4 py-3 bg-white rounded-lg border border-gray-100 transition-all group ${
-                    !item.isRead ? "border-indigo-100 bg-indigo-50/10" : ""
-                  }`}>
+                  <div 
+                    key={item._id} 
+                    onClick={() => handleNotificationClick(item)}
+                    className={`flex items-center gap-3 px-4 py-3.5 bg-white rounded-xl border transition-all cursor-pointer group hover:border-indigo-200 hover:shadow-xs ${
+                      !item.isRead ? "border-indigo-100 bg-indigo-50/15" : "border-gray-100"
+                    }`}
+                  >
                      {/* Icon */}
                      <div className={`w-8 h-8 rounded-lg ${iconBg} flex items-center justify-center shrink-0`}>
                         <IconComponent className="w-4 h-4" strokeWidth={2}/>
@@ -148,8 +171,11 @@ export default function NotificationsPage() {
                          <div className="flex gap-2 mt-2">
                            <Button 
                              size="sm" 
-                             className="bg-[#6366F1] hover:bg-[#4F46E5] text-white text-[11px] h-7 px-3 rounded-md shadow-sm"
-                             onClick={() => acceptMutation.mutate(item._id)}
+                             className="bg-[#6366F1] hover:bg-[#4F46E5] text-white text-[11px] h-7 px-3 rounded-md shadow-sm cursor-pointer"
+                             onClick={(e) => {
+                               e.stopPropagation()
+                               acceptMutation.mutate(item._id)
+                             }}
                              disabled={acceptMutation.isPending || rejectMutation.isPending}
                            >
                              {acceptMutation.isPending ? 'Accepting...' : 'Accept'}
@@ -157,8 +183,11 @@ export default function NotificationsPage() {
                            <Button 
                              size="sm" 
                              variant="outline" 
-                             className="border-gray-200 text-gray-600 text-[11px] h-7 px-3 rounded-md hover:bg-red-50 hover:text-red-600 hover:border-red-100"
-                             onClick={() => rejectMutation.mutate(item._id)}
+                             className="border-gray-200 text-gray-600 text-[11px] h-7 px-3 rounded-md hover:bg-red-50 hover:text-red-600 hover:border-red-100 cursor-pointer"
+                             onClick={(e) => {
+                               e.stopPropagation()
+                               rejectMutation.mutate(item._id)
+                             }}
                              disabled={acceptMutation.isPending || rejectMutation.isPending}
                            >
                              {rejectMutation.isPending ? 'Declining...' : 'Decline'}
@@ -175,8 +204,11 @@ export default function NotificationsPage() {
                      {/* Action dot */}
                      {!item.isRead && item.type !== 'WORKSPACE_INVITATION' && (
                        <button 
-                         onClick={() => markReadMutation.mutate(item._id)} 
-                         className="w-2 h-2 rounded-full bg-[#6366F1] shrink-0 shadow-sm hover:ring-4 ring-indigo-100 transition-all cursor-pointer" 
+                         onClick={(e) => {
+                           e.stopPropagation()
+                           markReadMutation.mutate(item._id)
+                         }} 
+                         className="w-2.5 h-2.5 rounded-full bg-[#6366F1] shrink-0 shadow-sm hover:ring-4 ring-indigo-100 transition-all cursor-pointer" 
                          title="Mark as read"
                        />
                      )}

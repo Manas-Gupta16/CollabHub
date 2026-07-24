@@ -25,6 +25,7 @@ const createNotification = async ({ recipientId, type, message, workspaceId, rel
 
 const getUserNotifications = async (userId) => {
     const notifications = await Notification.find({ recipient: userId })
+        .populate("workspace", "name description channels")
         .sort({ createdAt: -1 })
         .limit(50);
     return notifications;

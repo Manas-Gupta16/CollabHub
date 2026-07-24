@@ -182,7 +182,13 @@ function MessagesContent() {
     const lastAtIndex = val.lastIndexOf('@')
     if (lastAtIndex !== -1 && (lastAtIndex === 0 || val[lastAtIndex - 1] === ' ')) {
       const query = val.slice(lastAtIndex + 1)
-      if (!query.includes(' ')) {
+      const matchesAnyMember = (activeWorkspace?.members || []).some((m: any) => {
+        const uName = (m.user?.name || '').toLowerCase()
+        const uEmail = (m.user?.email || '').toLowerCase()
+        return uName.includes(query.toLowerCase()) || uEmail.includes(query.toLowerCase())
+      })
+
+      if (query.length > 0 && matchesAnyMember) {
         setMentionQuery(query.toLowerCase())
         setShowMentionPopup(true)
         return
@@ -203,14 +209,30 @@ function MessagesContent() {
   const matchingMembers = useMemo(() => {
     if (!activeWorkspace?.members) return []
     return activeWorkspace.members.filter((m: any) => {
-      const name = m.user?.name?.toLowerCase() || ''
-      return name.includes(mentionQuery)
+      const name = (m.user?.name || '').toLowerCase()
+      const email = (m.user?.email || '').toLowerCase()
+      return name.includes(mentionQuery) || email.includes(mentionQuery)
     })
   }, [activeWorkspace, mentionQuery])
 
   const renderMessageContent = (content: string) => {
     if (!content) return null
-    const parts = content.split(/(https?:\/\/[^\s]+|@[a-zA-Z0-9_\s]+?\b|@[a-zA-Z0-9_]+)/g)
+
+    // Extract member names from active workspace
+    const memberNames = (activeWorkspace?.members || [])
+      .map((m: any) => m.user?.name)
+      .filter(Boolean)
+      .sort((a: string, b: string) => b.length - a.length)
+
+    // Build regex pattern for matching mentions: match known full names first, or fallback to single word mentions
+    const escapedNames = memberNames.map((n: string) => n.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'))
+    const mentionPattern = escapedNames.length > 0 
+      ? `@(?:${escapedNames.join('|')}|[a-zA-Z0-9_]+)`
+      : `@[a-zA-Z0-9_]+`
+
+    const regex = new RegExp(`(https?:\\/\\/[^\\s]+|${mentionPattern})`, 'gi')
+    const parts = content.split(regex)
+
     return parts.map((part, i) => {
       if (part.startsWith('http://') || part.startsWith('https://')) {
         return (
