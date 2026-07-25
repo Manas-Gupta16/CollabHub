@@ -299,7 +299,7 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="flex-1 overflow-y-auto bg-[#FAFAFA] p-6 lg:p-8">
+    <div className="flex-1 overflow-y-auto bg-slate-50/60 dark:bg-slate-950 text-gray-900 dark:text-gray-100 min-h-screen p-6 lg:p-8 transition-colors duration-200">
       <motion.div 
         initial={{ opacity: 0, y: 15 }}
         animate={{ opacity: 1, y: 0 }}
@@ -312,11 +312,11 @@ export default function Dashboard() {
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4 }}
-          className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-6 rounded-2xl border border-gray-200/80 shadow-xs"
+          className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white dark:bg-slate-900 p-6 rounded-2xl border border-gray-200 dark:border-slate-800 shadow-xs"
         >
           <div>
-            <h1 className="text-2xl font-bold text-gray-900 tracking-tight">{getGreeting()}, {userName}</h1>
-            <p className="text-xs text-gray-500 mt-1 font-medium">
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100 tracking-tight">{getGreeting()}, {userName}</h1>
+            <p className="text-xs text-gray-500 dark:text-slate-400 mt-1 font-medium">
               {summaryText}
             </p>
           </div>
@@ -324,7 +324,7 @@ export default function Dashboard() {
             <select
               value={selectedWorkspaceId}
               onChange={(e) => setSelectedWorkspaceId(e.target.value)}
-              className="bg-white border border-gray-200/80 rounded-xl px-3 py-2 text-xs font-semibold text-gray-700 shadow-2xs focus:outline-none focus:ring-2 focus:ring-indigo-500 cursor-pointer"
+              className="bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800/80 rounded-xl px-3 py-2 text-xs font-semibold text-gray-700 dark:text-gray-300 shadow-2xs focus:outline-none focus:ring-2 focus:ring-indigo-500 cursor-pointer"
             >
               <option value="ALL">All Workspaces</option>
               {workspaces?.map((ws: any) => (
@@ -349,7 +349,7 @@ export default function Dashboard() {
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4, delay: 0.1 }}
-          className="bg-white p-4 sm:p-5 rounded-2xl border border-gray-200/80 shadow-xs relative overflow-hidden"
+          className="bg-white dark:bg-slate-900 p-4 sm:p-5 rounded-2xl border border-gray-200 dark:border-slate-800/80 shadow-xs relative overflow-hidden"
         >
           <form onSubmit={handleQuickTaskSubmit} className="relative z-10 flex flex-col sm:flex-row items-center gap-3">
             <div className="flex items-center gap-2 text-indigo-600 font-bold text-xs shrink-0">
@@ -361,13 +361,13 @@ export default function Dashboard() {
               value={quickTaskTitle}
               onChange={(e) => setQuickTaskTitle(e.target.value)}
               placeholder="What are you working on today? (Type task title and press Enter...)"
-              className="flex-1 bg-gray-50/70 border border-gray-200/80 rounded-xl px-4 py-2 text-xs text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white w-full font-medium"
+              className="flex-1 bg-gray-50 dark:bg-slate-900/70 border border-gray-200 dark:border-slate-800/80 rounded-xl px-4 py-2 text-xs text-gray-900 dark:text-gray-100 placeholder:text-gray-400 dark:text-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white dark:bg-slate-900 w-full font-medium"
             />
             {workspaces && workspaces.length > 0 && (
               <select
                 value={quickTaskWsId}
                 onChange={(e) => setQuickTaskWsId(e.target.value)}
-                className="bg-gray-50/70 border border-gray-200/80 rounded-xl px-3 py-2 text-xs text-gray-700 font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-500 shrink-0 w-full sm:w-auto cursor-pointer"
+                className="bg-gray-50 dark:bg-slate-900/70 border border-gray-200 dark:border-slate-800/80 rounded-xl px-3 py-2 text-xs text-gray-700 dark:text-gray-300 font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-500 shrink-0 w-full sm:w-auto cursor-pointer"
               >
                 {workspaces.map((ws: any) => (
                   <option key={ws._id} value={ws._id}>{ws.name}</option>
@@ -391,17 +391,17 @@ export default function Dashboard() {
           <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3, delay: 0.15 }} whileHover={{ y: -4 }}>
             <Card 
               onClick={() => setDashboardTaskFilter('ALL')}
-              className={`border-gray-200/80 shadow-sm hover:shadow-md hover:border-indigo-300 transition-all rounded-2xl bg-white cursor-pointer group active:scale-[0.99] ${
+              className={`border-gray-200 dark:border-slate-800/80 shadow-sm hover:shadow-md hover:border-indigo-300 transition-all rounded-2xl bg-white dark:bg-slate-900 cursor-pointer group active:scale-[0.99] ${
                 dashboardTaskFilter === 'ALL' ? 'ring-2 ring-indigo-500' : ''
               }`}
               title="Click to view all tasks"
             >
               <CardContent className="p-5 flex items-center justify-between">
                 <div>
-                  <p className="text-xs font-semibold text-gray-400 group-hover:text-indigo-600 uppercase tracking-wider transition-colors">Total Tasks</p>
-                  <h3 className="text-2xl font-bold text-gray-900 mt-1">{totalTasks}</h3>
+                  <p className="text-xs font-semibold text-gray-400 dark:text-slate-500 group-hover:text-indigo-600 uppercase tracking-wider transition-colors">Total Tasks</p>
+                  <h3 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mt-1">{totalTasks}</h3>
                 </div>
-                <div className="w-11 h-11 rounded-xl bg-indigo-50 text-[#6366F1] group-hover:bg-indigo-600 group-hover:text-white transition-all flex items-center justify-center shrink-0 shadow-inner">
+                <div className="w-11 h-11 rounded-xl bg-indigo-50 dark:bg-indigo-950/60 text-[#6366F1] group-hover:bg-indigo-600 group-hover:text-white transition-all flex items-center justify-center shrink-0 shadow-inner">
                   <FolderKanban className="w-5 h-5" />
                 </div>
               </CardContent>
@@ -411,17 +411,17 @@ export default function Dashboard() {
           <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3, delay: 0.2 }} whileHover={{ y: -4 }}>
             <Card 
               onClick={() => setDashboardTaskFilter('IN_PROGRESS')}
-              className={`border-gray-200/80 shadow-sm hover:shadow-md hover:border-amber-300 transition-all rounded-2xl bg-white cursor-pointer group active:scale-[0.99] ${
+              className={`border-gray-200 dark:border-slate-800/80 shadow-sm hover:shadow-md hover:border-amber-300 transition-all rounded-2xl bg-white dark:bg-slate-900 cursor-pointer group active:scale-[0.99] ${
                 dashboardTaskFilter === 'IN_PROGRESS' ? 'ring-2 ring-amber-500' : ''
               }`}
               title="Click to filter In Progress tasks"
             >
               <CardContent className="p-5 flex items-center justify-between">
                 <div>
-                  <p className="text-xs font-semibold text-gray-400 group-hover:text-amber-600 uppercase tracking-wider transition-colors">In Progress</p>
-                  <h3 className="text-2xl font-bold text-gray-900 mt-1">{inProgressTasks}</h3>
+                  <p className="text-xs font-semibold text-gray-400 dark:text-slate-500 group-hover:text-amber-600 uppercase tracking-wider transition-colors">In Progress</p>
+                  <h3 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mt-1">{inProgressTasks}</h3>
                 </div>
-                <div className="w-11 h-11 rounded-xl bg-amber-50 text-amber-600 group-hover:bg-amber-600 group-hover:text-white transition-all flex items-center justify-center shrink-0 shadow-inner">
+                <div className="w-11 h-11 rounded-xl bg-amber-50 dark:bg-amber-950/60 text-amber-600 group-hover:bg-amber-600 group-hover:text-white transition-all flex items-center justify-center shrink-0 shadow-inner">
                   <Clock className="w-5 h-5" />
                 </div>
               </CardContent>
@@ -431,17 +431,17 @@ export default function Dashboard() {
           <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3, delay: 0.25 }} whileHover={{ y: -4 }}>
             <Card 
               onClick={() => setDashboardTaskFilter('DONE')}
-              className={`border-gray-200/80 shadow-sm hover:shadow-md hover:border-emerald-300 transition-all rounded-2xl bg-white cursor-pointer group active:scale-[0.99] ${
+              className={`border-gray-200 dark:border-slate-800/80 shadow-sm hover:shadow-md hover:border-emerald-300 transition-all rounded-2xl bg-white dark:bg-slate-900 cursor-pointer group active:scale-[0.99] ${
                 dashboardTaskFilter === 'DONE' ? 'ring-2 ring-emerald-500' : ''
               }`}
               title="Click to filter Done tasks"
             >
               <CardContent className="p-5 flex items-center justify-between">
                 <div>
-                  <p className="text-xs font-semibold text-gray-400 group-hover:text-emerald-600 uppercase tracking-wider transition-colors">Done Tasks</p>
-                  <h3 className="text-2xl font-bold text-gray-900 mt-1">{doneTasks}</h3>
+                  <p className="text-xs font-semibold text-gray-400 dark:text-slate-500 group-hover:text-emerald-600 uppercase tracking-wider transition-colors">Done Tasks</p>
+                  <h3 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mt-1">{doneTasks}</h3>
                 </div>
-                <div className="w-11 h-11 rounded-xl bg-emerald-50 text-emerald-600 group-hover:bg-emerald-600 group-hover:text-white transition-all flex items-center justify-center shrink-0 shadow-inner">
+                <div className="w-11 h-11 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 group-hover:bg-emerald-600 group-hover:text-white transition-all flex items-center justify-center shrink-0 shadow-inner">
                   <CheckCircle2 className="w-5 h-5" />
                 </div>
               </CardContent>
@@ -450,15 +450,15 @@ export default function Dashboard() {
 
           <Card 
             onClick={() => router.push('/workspaces')}
-            className="border-gray-200/80 shadow-sm hover:shadow-md hover:border-blue-300 transition-all rounded-2xl bg-white cursor-pointer group active:scale-[0.99]"
+            className="border-gray-200 dark:border-slate-800/80 shadow-sm hover:shadow-md hover:border-blue-300 transition-all rounded-2xl bg-white dark:bg-slate-900 cursor-pointer group active:scale-[0.99]"
             title="Click to view workspace members"
           >
             <CardContent className="p-5 flex items-center justify-between">
               <div>
-                <p className="text-xs font-semibold text-gray-400 group-hover:text-blue-600 uppercase tracking-wider transition-colors">Total Members</p>
-                <h3 className="text-2xl font-bold text-gray-900 mt-1">{totalMembers}</h3>
+                <p className="text-xs font-semibold text-gray-400 dark:text-slate-500 group-hover:text-blue-600 uppercase tracking-wider transition-colors">Total Members</p>
+                <h3 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mt-1">{totalMembers}</h3>
               </div>
-              <div className="w-11 h-11 rounded-xl bg-blue-50 text-blue-600 group-hover:bg-blue-600 group-hover:text-white transition-all flex items-center justify-center shrink-0 shadow-inner">
+              <div className="w-11 h-11 rounded-xl bg-blue-50 dark:bg-blue-950/60 text-blue-600 group-hover:bg-blue-600 group-hover:text-white transition-all flex items-center justify-center shrink-0 shadow-inner">
                 <Users className="w-5 h-5" />
               </div>
             </CardContent>
@@ -466,33 +466,33 @@ export default function Dashboard() {
         </div>
 
         {/* Point 4: Task Priority & Health Breakdown Bar */}
-        <Card className="border-gray-200/80 shadow-sm rounded-2xl bg-white p-5">
+        <Card className="border-gray-200 dark:border-slate-800/80 shadow-sm rounded-2xl bg-white dark:bg-slate-900 p-5">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-3">
             <div>
-              <h3 className="text-xs font-bold uppercase tracking-wider text-gray-500">Project Health & Priority Breakdown</h3>
-              <p className="text-xs text-gray-400 mt-0.5">Task distribution by urgency across {activeWorkspaceName}</p>
+              <h3 className="text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-slate-400">Project Health & Priority Breakdown</h3>
+              <p className="text-xs text-gray-400 dark:text-slate-500 mt-0.5">Task distribution by urgency across {activeWorkspaceName}</p>
             </div>
             <div className="flex items-center gap-3 text-xs font-semibold">
               <span className="flex items-center gap-1.5 text-red-600">
-                <span className="w-2.5 h-2.5 rounded-full bg-red-500" /> High: {highPriorityCount}
+                <span className="w-2.5 h-2.5 rounded-full bg-red-50 dark:bg-red-950/600" /> High: {highPriorityCount}
               </span>
               <span className="flex items-center gap-1.5 text-amber-600">
-                <span className="w-2.5 h-2.5 rounded-full bg-amber-500" /> Medium: {mediumPriorityCount}
+                <span className="w-2.5 h-2.5 rounded-full bg-amber-50 dark:bg-amber-950/600" /> Medium: {mediumPriorityCount}
               </span>
               <span className="flex items-center gap-1.5 text-blue-600">
-                <span className="w-2.5 h-2.5 rounded-full bg-blue-500" /> Low: {lowPriorityCount}
+                <span className="w-2.5 h-2.5 rounded-full bg-blue-50 dark:bg-blue-950/600" /> Low: {lowPriorityCount}
               </span>
             </div>
           </div>
-          <div className="w-full bg-gray-100 h-2.5 rounded-full overflow-hidden flex">
+          <div className="w-full bg-gray-100 dark:bg-slate-800 h-2.5 rounded-full overflow-hidden flex">
             {totalTasks > 0 ? (
               <>
-                <div className="bg-red-500 h-full transition-all duration-500" style={{ width: `${(highPriorityCount / totalTasks) * 100}%` }} title={`High Priority: ${highPriorityCount}`} />
-                <div className="bg-amber-500 h-full transition-all duration-500" style={{ width: `${(mediumPriorityCount / totalTasks) * 100}%` }} title={`Medium Priority: ${mediumPriorityCount}`} />
-                <div className="bg-blue-500 h-full transition-all duration-500" style={{ width: `${(lowPriorityCount / totalTasks) * 100}%` }} title={`Low Priority: ${lowPriorityCount}`} />
+                <div className="bg-red-50 dark:bg-red-950/600 h-full transition-all duration-500" style={{ width: `${(highPriorityCount / totalTasks) * 100}%` }} title={`High Priority: ${highPriorityCount}`} />
+                <div className="bg-amber-50 dark:bg-amber-950/600 h-full transition-all duration-500" style={{ width: `${(mediumPriorityCount / totalTasks) * 100}%` }} title={`Medium Priority: ${mediumPriorityCount}`} />
+                <div className="bg-blue-50 dark:bg-blue-950/600 h-full transition-all duration-500" style={{ width: `${(lowPriorityCount / totalTasks) * 100}%` }} title={`Low Priority: ${lowPriorityCount}`} />
               </>
             ) : (
-              <div className="w-full h-full bg-gray-200/80 transition-all" title="No tasks in selected workspace" />
+              <div className="w-full h-full bg-gray-200 dark:bg-slate-700/80 transition-all" title="No tasks in selected workspace" />
             )}
           </div>
         </Card>
@@ -504,28 +504,28 @@ export default function Dashboard() {
           <div className="lg:col-span-2 space-y-6">
             
             {/* Point 2: Recent Tasks with Filter Tabs */}
-            <Card className="border-gray-200/80 shadow-sm rounded-2xl bg-white overflow-hidden">
-              <div className="p-5 border-b border-gray-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <Card className="border-gray-200 dark:border-slate-800/80 shadow-sm rounded-2xl bg-white dark:bg-slate-900 overflow-hidden">
+              <div className="p-5 border-b border-gray-100 dark:border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                 <div>
-                  <h3 className="text-base font-bold text-gray-900 flex items-center gap-2">
+                  <h3 className="text-base font-bold text-gray-900 dark:text-gray-100 flex items-center gap-2">
                     Recent Tasks
-                    <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-gray-100 text-gray-600">
+                    <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-gray-100 dark:bg-slate-800 text-gray-600 dark:text-slate-300">
                       {filteredTasksList.length}
                     </span>
                   </h3>
-                  <p className="text-xs text-gray-500 font-medium mt-0.5">Manage deliverables across {activeWorkspaceName}</p>
+                  <p className="text-xs text-gray-500 dark:text-slate-400 font-medium mt-0.5">Manage deliverables across {activeWorkspaceName}</p>
                 </div>
 
                 {/* Point 2: Task Filter Tabs */}
-                <div className="flex items-center bg-gray-100 p-1 rounded-xl text-xs font-medium self-start sm:self-auto">
+                <div className="flex items-center bg-gray-100 dark:bg-slate-800 p-1 rounded-xl text-xs font-medium self-start sm:self-auto">
                   {(['ALL', 'MY_TASKS', 'IN_PROGRESS', 'DONE'] as const).map((filter) => (
                     <button
                       key={filter}
                       onClick={() => setDashboardTaskFilter(filter)}
                       className={`px-2.5 py-1 rounded-lg transition-all cursor-pointer ${
                         dashboardTaskFilter === filter 
-                          ? 'bg-white text-gray-900 font-semibold shadow-xs' 
-                          : 'text-gray-500 hover:text-gray-800'
+                          ? 'bg-white dark:bg-slate-900 text-gray-900 dark:text-gray-100 font-semibold shadow-xs' 
+                          : 'text-gray-500 dark:text-slate-400 hover:text-gray-800 dark:text-gray-200'
                       }`}
                     >
                       {filter === 'ALL' ? 'All' : filter === 'MY_TASKS' ? 'My Tasks' : filter === 'IN_PROGRESS' ? 'In Progress' : 'Done'}
@@ -534,16 +534,16 @@ export default function Dashboard() {
                 </div>
               </div>
 
-              <div className="divide-y divide-gray-100">
+              <div className="divide-y divide-gray-100 dark:divide-slate-800">
                 {isTasksLoading ? (
-                  <div className="text-center py-12 text-xs text-gray-400">Loading tasks...</div>
+                  <div className="text-center py-12 text-xs text-gray-400 dark:text-slate-500">Loading tasks...</div>
                 ) : filteredTasksList.length === 0 ? (
                   <div className="p-8 text-center">
-                    <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-gray-400 mx-auto mb-2">
+                    <div className="w-10 h-10 rounded-full bg-gray-100 dark:bg-slate-800 flex items-center justify-center text-gray-400 dark:text-slate-500 mx-auto mb-2">
                       <ListTodo className="w-5 h-5" />
                     </div>
-                    <p className="text-xs font-semibold text-gray-700">No tasks found</p>
-                    <p className="text-[11px] text-gray-400 mt-0.5">No tasks match your selected filter.</p>
+                    <p className="text-xs font-semibold text-gray-700 dark:text-gray-300">No tasks found</p>
+                    <p className="text-[11px] text-gray-400 dark:text-slate-500 mt-0.5">No tasks match your selected filter.</p>
                   </div>
                 ) : (
                   filteredTasksList.slice(0, 6).map((task: any) => {
@@ -554,7 +554,7 @@ export default function Dashboard() {
                     return (
                       <div 
                         key={task._id} 
-                        className="flex items-center justify-between p-4 hover:bg-gray-50/80 transition-colors group cursor-pointer"
+                        className="flex items-center justify-between p-4 hover:bg-gray-50 dark:bg-slate-800/80 dark:hover:bg-slate-800 transition-colors group cursor-pointer"
                         onClick={() => updateStatusMutation.mutate({ taskId: task._id, status: isDone ? 'TODO' : 'DONE' })}
                       >
                         <div className="flex items-center gap-3.5 min-w-0 pr-4">
@@ -564,7 +564,7 @@ export default function Dashboard() {
                               updateStatusMutation.mutate({ taskId: task._id, status: isDone ? 'TODO' : 'DONE' })
                             }}
                             className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 transition-all cursor-pointer ${
-                              isDone ? "bg-emerald-500 border-emerald-500 text-white" : "border-gray-300 text-transparent hover:border-indigo-400"
+                              isDone ? "bg-emerald-50 dark:bg-emerald-950/600 border-emerald-500 text-white" : "border-gray-300 text-transparent hover:border-indigo-400"
                             }`}
                             title={isDone ? "Mark as To Do" : "Mark as Done"}
                           >
@@ -574,10 +574,10 @@ export default function Dashboard() {
                           <div className="flex items-center gap-2.5 min-w-0">
                             <UserAvatar name={assignee.name || 'Unassigned'} avatar={assignee.avatar} size="w-6 h-6 text-[8px]" />
                             <div className="min-w-0">
-                              <h4 className={`font-semibold text-sm truncate ${isDone ? "line-through text-gray-400" : "text-gray-900"}`}>
+                              <h4 className={`font-semibold text-sm truncate ${isDone ? "line-through text-gray-400 dark:text-slate-500" : "text-gray-900 dark:text-gray-100"}`}>
                                 {task.title}
                               </h4>
-                              <p className="text-xs text-gray-400 mt-0.5 truncate">
+                              <p className="text-xs text-gray-400 dark:text-slate-500 mt-0.5 truncate">
                                 {task.status === 'TODO' ? 'To Do' : task.status === 'IN_PROGRESS' ? 'In Progress' : 'Done'} · <span className="font-semibold text-indigo-600">{task.workspaceName}</span>
                               </p>
                             </div>
@@ -585,9 +585,9 @@ export default function Dashboard() {
                         </div>
 
                         <span className={`px-2.5 py-1 text-[10px] font-bold uppercase rounded-lg border shrink-0 ${
-                          p === 'HIGH' ? 'bg-red-50 text-red-700 border-red-200/60' :
-                          p === 'LOW' ? 'bg-blue-50 text-blue-700 border-blue-200/60' :
-                          'bg-amber-50 text-amber-700 border-amber-200/60'
+                          p === 'HIGH' ? 'bg-red-50 dark:bg-red-950/60 text-red-700 border-red-200/60' :
+                          p === 'LOW' ? 'bg-blue-50 dark:bg-blue-950/60 text-blue-700 border-blue-200/60' :
+                          'bg-amber-50 dark:bg-amber-950/60 text-amber-700 border-amber-200/60'
                         }`}>
                           {task.priority || 'MEDIUM'}
                         </span>
@@ -599,13 +599,13 @@ export default function Dashboard() {
             </Card>
 
             {/* Point 3: Active Workspace Channels Preview Card */}
-            <Card className="border-gray-200/80 shadow-sm rounded-2xl bg-white overflow-hidden">
-              <div className="p-5 border-b border-gray-100 flex items-center justify-between">
+            <Card className="border-gray-200 dark:border-slate-800/80 shadow-sm rounded-2xl bg-white dark:bg-slate-900 overflow-hidden">
+              <div className="p-5 border-b border-gray-100 dark:border-slate-800 flex items-center justify-between">
                 <div>
-                  <h3 className="text-base font-bold text-gray-900 flex items-center gap-2">
+                  <h3 className="text-base font-bold text-gray-900 dark:text-gray-100 flex items-center gap-2">
                     <MessageSquare className="w-4 h-4 text-indigo-600" /> Active Channels
                   </h3>
-                  <p className="text-xs text-gray-500 font-medium mt-0.5">Jump directly into topic discussions</p>
+                  <p className="text-xs text-gray-500 dark:text-slate-400 font-medium mt-0.5">Jump directly into topic discussions</p>
                 </div>
                 {activeWorkspace && (
                   <Link href={`/messages?workspace=${activeWorkspace._id}&channel=General`} className="text-xs font-semibold text-indigo-600 hover:text-indigo-700">
@@ -614,37 +614,37 @@ export default function Dashboard() {
                 )}
               </div>
 
-              <div className="divide-y divide-gray-100">
+              <div className="divide-y divide-gray-100 dark:divide-slate-800">
                 {(activeWorkspace?.channels || [{ name: 'General', isPrivate: false }]).map((channel: any, i: number) => {
                   const isPrivate = !!channel.isPrivate
                   return (
                     <div 
                       key={i} 
                       onClick={() => router.push(`/messages?workspace=${activeWorkspace?._id}&channel=${channel.name}`)}
-                      className="p-4 flex items-center justify-between hover:bg-indigo-50/40 transition-colors cursor-pointer group"
+                      className="p-4 flex items-center justify-between hover:bg-indigo-50 dark:bg-indigo-950/60/40 transition-colors cursor-pointer group"
                     >
                       <div className="flex items-center gap-3">
                         <div className={`w-8 h-8 rounded-xl flex items-center justify-center font-bold text-xs ${
-                          isPrivate ? 'bg-amber-50 text-amber-600' : 'bg-indigo-50 text-indigo-600'
+                          isPrivate ? 'bg-amber-50 dark:bg-amber-950/60 text-amber-600' : 'bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600'
                         }`}>
                           {isPrivate ? <Lock className="w-4 h-4" /> : <Hash className="w-4 h-4" />}
                         </div>
                         <div>
-                          <div className="text-xs font-bold text-gray-900 flex items-center gap-1.5">
+                          <div className="text-xs font-bold text-gray-900 dark:text-gray-100 flex items-center gap-1.5">
                             #{channel.name}
                             <span className={`text-[9px] font-bold px-1.5 py-0.2 rounded uppercase ${
-                              isPrivate ? 'bg-amber-50 text-amber-700 border border-amber-200/60' : 'bg-indigo-50 text-indigo-700 border border-indigo-200/60'
+                              isPrivate ? 'bg-amber-50 dark:bg-amber-950/60 text-amber-700 border border-amber-200/60' : 'bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 border border-indigo-200/60'
                             }`}>
                               {isPrivate ? 'Private' : 'Public'}
                             </span>
                           </div>
-                          <p className="text-[11px] text-gray-400 mt-0.5">
+                          <p className="text-[11px] text-gray-400 dark:text-slate-500 mt-0.5">
                             {isPrivate ? 'Invited members only' : 'Open team discussion'}
                           </p>
                         </div>
                       </div>
 
-                      <button className="px-3 py-1 bg-indigo-50 text-indigo-600 hover:bg-indigo-600 hover:text-white rounded-lg text-xs font-semibold transition-all">
+                      <button className="px-3 py-1 bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 hover:bg-indigo-600 hover:text-white rounded-lg text-xs font-semibold transition-all">
                         Chat &rarr;
                       </button>
                     </div>
@@ -655,41 +655,41 @@ export default function Dashboard() {
 
             {/* Point 5: Key Deadlines & Pinned Links Widget */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <Card className="border-gray-200/80 shadow-sm rounded-2xl bg-white p-5">
-                <h4 className="text-xs font-bold uppercase tracking-wider text-gray-400 mb-3 flex items-center gap-1.5">
+              <Card className="border-gray-200 dark:border-slate-800/80 shadow-sm rounded-2xl bg-white dark:bg-slate-900 p-5">
+                <h4 className="text-xs font-bold uppercase tracking-wider text-gray-400 dark:text-slate-500 mb-3 flex items-center gap-1.5">
                   <Calendar className="w-4 h-4 text-indigo-600" /> Key Deadlines
                 </h4>
                 {activeWorkspace?.keyDeadlines && activeWorkspace.keyDeadlines.length > 0 ? (
                   <div className="space-y-2">
                     {activeWorkspace.keyDeadlines.map((dl: any, i: number) => (
-                      <div key={i} className="flex justify-between items-center p-2 rounded-xl bg-gray-50 text-xs">
-                        <span className="font-semibold text-gray-800">{dl.title}</span>
-                        <span className="font-bold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-md">
+                      <div key={i} className="flex justify-between items-center p-2 rounded-xl bg-gray-50 dark:bg-slate-900 text-xs">
+                        <span className="font-semibold text-gray-800 dark:text-gray-200">{dl.title}</span>
+                        <span className="font-bold text-indigo-600 bg-indigo-50 dark:bg-indigo-950/60 px-2 py-0.5 rounded-md">
                           {new Date(dl.date).toLocaleDateString()}
                         </span>
                       </div>
                     ))}
                   </div>
                 ) : (
-                  <p className="text-xs text-gray-400 italic">No key deadlines set for this workspace.</p>
+                  <p className="text-xs text-gray-400 dark:text-slate-500 italic">No key deadlines set for this workspace.</p>
                 )}
               </Card>
 
-              <Card className="border-gray-200/80 shadow-sm rounded-2xl bg-white p-5">
-                <h4 className="text-xs font-bold uppercase tracking-wider text-gray-400 mb-3 flex items-center gap-1.5">
+              <Card className="border-gray-200 dark:border-slate-800/80 shadow-sm rounded-2xl bg-white dark:bg-slate-900 p-5">
+                <h4 className="text-xs font-bold uppercase tracking-wider text-gray-400 dark:text-slate-500 mb-3 flex items-center gap-1.5">
                   <Pin className="w-4 h-4 text-red-500" /> Pinned Resources
                 </h4>
                 {activeWorkspace?.pinnedLinks && activeWorkspace.pinnedLinks.length > 0 ? (
                   <div className="space-y-2">
                     {activeWorkspace.pinnedLinks.map((link: any, i: number) => (
-                      <a key={i} href={link.url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-xs font-semibold text-indigo-600 hover:underline truncate p-1.5 rounded-lg hover:bg-indigo-50">
+                      <a key={i} href={link.url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-xs font-semibold text-indigo-600 hover:underline truncate p-1.5 rounded-lg hover:bg-indigo-50 dark:bg-indigo-950/60">
                         <Pin className="w-3.5 h-3.5 text-red-500 shrink-0" />
                         <span className="truncate">{link.title || link.url}</span>
                       </a>
                     ))}
                   </div>
                 ) : (
-                  <p className="text-xs text-gray-400 italic">No pinned resource links.</p>
+                  <p className="text-xs text-gray-400 dark:text-slate-500 italic">No pinned resource links.</p>
                 )}
               </Card>
             </div>
@@ -700,9 +700,9 @@ export default function Dashboard() {
           <div className="space-y-6">
 
             {/* Point 7: Live Team Presence Roster */}
-            <Card className="border-gray-200/80 shadow-sm rounded-2xl bg-white p-5">
+            <Card className="border-gray-200 dark:border-slate-800/80 shadow-sm rounded-2xl bg-white dark:bg-slate-900 p-5">
               <div className="flex items-center justify-between mb-3">
-                <h3 className="text-sm font-bold text-gray-900 flex items-center gap-2">
+                <h3 className="text-sm font-bold text-gray-900 dark:text-gray-100 flex items-center gap-2">
                   <Users className="w-4 h-4 text-indigo-600" /> Workspace Team ({activeWorkspace?.members?.length || 0})
                 </h3>
               </div>
@@ -715,20 +715,20 @@ export default function Dashboard() {
                   const isOnline = onlineUserIds.includes(userIdStr) || (user?._id && userIdStr === user._id.toString())
                   
                   return (
-                    <div key={i} className="flex items-center justify-between p-1.5 rounded-xl hover:bg-gray-50 transition-colors">
+                    <div key={i} className="flex items-center justify-between p-1.5 rounded-xl hover:bg-gray-50 dark:bg-slate-900 transition-colors">
                       <div className="flex items-center gap-2.5 min-w-0">
                         <div className="relative">
                           <UserAvatar name={uName} avatar={u.avatar} size="w-7 h-7 text-[9px]" />
-                          <span className={`absolute bottom-0 right-0 w-2 h-2 rounded-full border border-white ${isOnline ? 'bg-emerald-500' : 'bg-gray-300'}`} />
+                          <span className={`absolute bottom-0 right-0 w-2 h-2 rounded-full border border-white ${isOnline ? 'bg-emerald-50 dark:bg-emerald-950/600' : 'bg-gray-300'}`} />
                         </div>
                         <div>
-                          <span className="text-xs font-semibold text-gray-800 truncate block leading-tight">{uName}</span>
-                          <span className="text-[10px] text-gray-400 font-medium block">{isOnline ? 'Online' : 'Offline'}</span>
+                          <span className="text-xs font-semibold text-gray-800 dark:text-gray-200 truncate block leading-tight">{uName}</span>
+                          <span className="text-[10px] text-gray-400 dark:text-slate-500 font-medium block">{isOnline ? 'Online' : 'Offline'}</span>
                         </div>
                       </div>
                       <button 
                         onClick={() => router.push(`/messages?workspace=${activeWorkspace?._id}&channel=General`)}
-                        className="px-2.5 py-1 text-[10px] font-bold text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors cursor-pointer"
+                        className="px-2.5 py-1 text-[10px] font-bold text-indigo-600 hover:bg-indigo-50 dark:bg-indigo-950/60 rounded-lg transition-colors cursor-pointer"
                       >
                         Chat
                       </button>
@@ -739,13 +739,13 @@ export default function Dashboard() {
             </Card>
 
             {/* Point 8: Live Notification Feed Card */}
-            <Card className="border-gray-200/80 shadow-sm rounded-2xl bg-white p-5">
+            <Card className="border-gray-200 dark:border-slate-800/80 shadow-sm rounded-2xl bg-white dark:bg-slate-900 p-5">
               <div className="flex items-center justify-between mb-3">
-                <h3 className="text-sm font-bold text-gray-900 flex items-center gap-2">
+                <h3 className="text-sm font-bold text-gray-900 dark:text-gray-100 flex items-center gap-2">
                   <Bell className="w-4 h-4 text-amber-500" /> Notifications
                 </h3>
                 {notifications && notifications.length > 0 && (
-                  <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-amber-50 text-amber-700">
+                  <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-amber-50 dark:bg-amber-950/60 text-amber-700">
                     {notifications.filter((n: any) => !n.isRead).length} new
                   </span>
                 )}
@@ -755,12 +755,12 @@ export default function Dashboard() {
                 {notifications && notifications.length > 0 ? (
                   notifications.slice(0, 5).map((notif: any) => (
                     <div key={notif._id} className={`p-3 rounded-xl border text-xs space-y-2 ${
-                      notif.isRead ? 'bg-white border-gray-100 text-gray-600' : 'bg-amber-50/30 border-amber-200/60 text-gray-900 font-medium'
+                      notif.isRead ? 'bg-white dark:bg-slate-900 border-gray-100 dark:border-slate-800 text-gray-600 dark:text-slate-300' : 'bg-amber-50 dark:bg-amber-950/60/30 border-amber-200/60 text-gray-900 dark:text-gray-100 font-medium'
                     }`}>
                       <p className="leading-snug">{notif.message}</p>
                       
-                      <div className="flex items-center justify-between pt-1 border-t border-gray-100">
-                        <span className="text-[10px] text-gray-400">{relativeTime(notif.createdAt)}</span>
+                      <div className="flex items-center justify-between pt-1 border-t border-gray-100 dark:border-slate-800">
+                        <span className="text-[10px] text-gray-400 dark:text-slate-500">{relativeTime(notif.createdAt)}</span>
                         
                         <div className="flex items-center gap-2">
                           {notif.type === 'INVITATION' && !notif.isRead && (
@@ -774,7 +774,7 @@ export default function Dashboard() {
                           {!notif.isRead && (
                             <button
                               onClick={() => markReadMutation.mutate(notif._id)}
-                              className="text-[10px] font-bold text-gray-500 hover:text-gray-800"
+                              className="text-[10px] font-bold text-gray-500 dark:text-slate-400 hover:text-gray-800 dark:text-gray-200"
                             >
                               Mark Read
                             </button>
@@ -784,40 +784,40 @@ export default function Dashboard() {
                     </div>
                   ))
                 ) : (
-                  <p className="text-xs text-gray-400 italic text-center py-4">No recent notifications.</p>
+                  <p className="text-xs text-gray-400 dark:text-slate-500 italic text-center py-4">No recent notifications.</p>
                 )}
               </div>
             </Card>
 
             {/* Recent Activity Feed */}
-            <Card className="border-gray-200/80 shadow-sm rounded-2xl bg-white flex flex-col overflow-hidden">
-              <div className="p-5 border-b border-gray-100">
-                <h3 className="text-sm font-bold text-gray-900 flex items-center gap-2">
+            <Card className="border-gray-200 dark:border-slate-800/80 shadow-sm rounded-2xl bg-white dark:bg-slate-900 flex flex-col overflow-hidden">
+              <div className="p-5 border-b border-gray-100 dark:border-slate-800">
+                <h3 className="text-sm font-bold text-gray-900 dark:text-gray-100 flex items-center gap-2">
                   <Activity className="w-4 h-4 text-indigo-600" /> Recent Activity
                 </h3>
-                <p className="text-xs text-gray-500 font-medium mt-0.5">Timeline for {activeWorkspaceName}</p>
+                <p className="text-xs text-gray-500 dark:text-slate-400 font-medium mt-0.5">Timeline for {activeWorkspaceName}</p>
               </div>
 
               <div className="p-5 space-y-4 overflow-y-auto max-h-[380px] custom-scrollbar flex-1">
                 {isActivityLoading ? (
-                  <div className="text-center text-xs text-gray-400 py-10">Loading activity...</div>
+                  <div className="text-center text-xs text-gray-400 dark:text-slate-500 py-10">Loading activity...</div>
                 ) : !activityList || activityList.length === 0 ? (
-                  <div className="text-center text-xs text-gray-400 py-10">No recent activity.</div>
+                  <div className="text-center text-xs text-gray-400 dark:text-slate-500 py-10">No recent activity.</div>
                 ) : (
                   activityList.slice(0, 8).map((act: any, i: number) => {
                     const user = act.user || {}
                     const actionText = act.details || (act.action ? act.action.replace(/_/g, ' ').toLowerCase() : '')
 
                     return (
-                      <div key={act._id || i} className="flex gap-3 relative before:absolute before:left-3.5 before:top-8 before:bottom-[-20px] before:w-px before:bg-gray-200/80 last:before:hidden">
+                      <div key={act._id || i} className="flex gap-3 relative before:absolute before:left-3.5 before:top-8 before:bottom-[-20px] before:w-px before:bg-gray-200 dark:bg-slate-700/80 last:before:hidden">
                         <div className="z-10 shrink-0">
                           <UserAvatar name={user.name} avatar={user.avatar} size="w-7 h-7 text-[9px]" />
                         </div>
                         <div className="min-w-0 flex-1">
-                          <p className="text-xs text-gray-700 font-medium leading-relaxed">
-                            <span className="font-bold text-gray-900">{user.name || 'Someone'}</span> {actionText}
+                          <p className="text-xs text-gray-700 dark:text-gray-300 font-medium leading-relaxed">
+                            <span className="font-bold text-gray-900 dark:text-gray-100">{user.name || 'Someone'}</span> {actionText}
                           </p>
-                          <p className="text-[11px] text-gray-400 mt-1 flex items-center gap-1">
+                          <p className="text-[11px] text-gray-400 dark:text-slate-500 mt-1 flex items-center gap-1">
                             <Clock className="w-3 h-3" /> {relativeTime(act.createdAt)}
                           </p>
                         </div>

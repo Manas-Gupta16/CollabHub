@@ -12,16 +12,16 @@ import Link from "next/link"
 
 // Map activity action strings to icons & colors
 function getActivityMeta(action: string) {
-  if (action.includes("created task")) return { icon: Plus, color: "text-indigo-500", bg: "bg-indigo-50", label: "Task created" }
-  if (action.includes("assigned task")) return { icon: UserPlus, color: "text-blue-500", bg: "bg-blue-50", label: "Task assigned" }
-  if (action.includes("updated task status") || action.includes("Updated task")) return { icon: CheckCircle2, color: "text-emerald-500", bg: "bg-emerald-50", label: "Status updated" }
-  if (action.includes("commented")) return { icon: MessageSquare, color: "text-amber-500", bg: "bg-amber-50", label: "Comment added" }
-  if (action.includes("deleted task")) return { icon: Trash2, color: "text-red-400", bg: "bg-red-50", label: "Task deleted" }
+  if (action.includes("created task")) return { icon: Plus, color: "text-indigo-500", bg: "bg-indigo-50 dark:bg-indigo-950/60", label: "Task created" }
+  if (action.includes("assigned task")) return { icon: UserPlus, color: "text-blue-500", bg: "bg-blue-50 dark:bg-blue-950/60", label: "Task assigned" }
+  if (action.includes("updated task status") || action.includes("Updated task")) return { icon: CheckCircle2, color: "text-emerald-500", bg: "bg-emerald-50 dark:bg-emerald-950/60", label: "Status updated" }
+  if (action.includes("commented")) return { icon: MessageSquare, color: "text-amber-500", bg: "bg-amber-50 dark:bg-amber-950/60", label: "Comment added" }
+  if (action.includes("deleted task")) return { icon: Trash2, color: "text-red-400", bg: "bg-red-50 dark:bg-red-950/60", label: "Task deleted" }
   if (action.includes("added member")) return { icon: UserPlus, color: "text-violet-500", bg: "bg-violet-50", label: "Member added" }
-  if (action.includes("created workspace")) return { icon: FolderPlus, color: "text-indigo-500", bg: "bg-indigo-50", label: "Workspace created" }
+  if (action.includes("created workspace")) return { icon: FolderPlus, color: "text-indigo-500", bg: "bg-indigo-50 dark:bg-indigo-950/60", label: "Workspace created" }
   if (action.includes("updated role")) return { icon: Users, color: "text-orange-500", bg: "bg-orange-50", label: "Role updated" }
   if (action.includes("created channel")) return { icon: Hash, color: "text-pink-500", bg: "bg-pink-50", label: "Channel created" }
-  return { icon: Clock, color: "text-gray-400", bg: "bg-gray-50", label: "Activity" }
+  return { icon: Clock, color: "text-gray-400 dark:text-slate-500", bg: "bg-gray-50 dark:bg-slate-900", label: "Activity" }
 }
 
 // Build a link for the activity
@@ -157,19 +157,19 @@ export default function ActivityPage() {
   const totalCount = allActivities?.length || 0
 
   return (
-    <div className="flex-1 flex flex-col overflow-hidden bg-[#FAFAFA]">
+    <div className="flex-1 flex flex-col overflow-hidden bg-[#FAFAFA] dark:bg-slate-950 text-gray-900 dark:text-gray-100">
 
       {/* Header */}
-      <div className="px-8 py-5 border-b border-gray-100 bg-white shrink-0">
+      <div className="px-8 py-5 border-b border-gray-100 dark:border-slate-800 bg-white dark:bg-slate-900 shrink-0">
         <div className="max-w-4xl mx-auto">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
             <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-lg bg-gray-100 border border-gray-200 flex items-center justify-center">
-                <ListTodo className="w-4 h-4 text-gray-600" strokeWidth={2.5} />
+              <div className="w-8 h-8 rounded-lg bg-gray-100 dark:bg-slate-800 border border-gray-200 dark:border-slate-800 flex items-center justify-center">
+                <ListTodo className="w-4 h-4 text-gray-600 dark:text-slate-300" strokeWidth={2.5} />
               </div>
               <div>
-                <h1 className="text-lg font-bold text-gray-900 tracking-tight">Activity</h1>
-                <p className="text-[12px] text-gray-500 font-medium">
+                <h1 className="text-lg font-bold text-gray-900 dark:text-gray-100 tracking-tight">Activity</h1>
+                <p className="text-[12px] text-gray-500 dark:text-slate-400 font-medium">
                   {totalCount} events across your workspaces
                 </p>
               </div>
@@ -181,7 +181,7 @@ export default function ActivityPage() {
             <select
               value={selectedWorkspace}
               onChange={(e) => setSelectedWorkspace(e.target.value)}
-              className="h-7 bg-white border border-gray-200 rounded-md px-2 text-[12px] font-semibold text-gray-700 focus:outline-none focus:ring-1 focus:ring-[#6366F1]"
+              className="h-7 bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 rounded-md px-2 text-[12px] font-semibold text-gray-700 dark:text-gray-300 focus:outline-none focus:ring-1 focus:ring-[#6366F1]"
             >
               <option value="ALL">All Workspaces</option>
               {workspaces?.map((ws: any) => (
@@ -189,10 +189,10 @@ export default function ActivityPage() {
               ))}
             </select>
 
-            <div className="w-px h-5 bg-gray-200" />
+            <div className="w-px h-5 bg-gray-200 dark:bg-slate-700" />
 
             {/* Type filter */}
-            <div className="flex items-center bg-gray-100 rounded-md p-0.5">
+            <div className="flex items-center bg-gray-100 dark:bg-slate-800 rounded-md p-0.5">
               {[
                 { value: "ALL", label: "All" },
                 { value: "TASK", label: "Tasks" },
@@ -203,8 +203,8 @@ export default function ActivityPage() {
                   onClick={() => setFilterType(opt.value)}
                   className={`px-2.5 py-1 rounded text-[11px] font-semibold transition-colors ${
                     filterType === opt.value
-                      ? "bg-white text-gray-900 shadow-sm"
-                      : "text-gray-500 hover:text-gray-700"
+                      ? "bg-white dark:bg-slate-900 text-gray-900 dark:text-gray-100 shadow-sm"
+                      : "text-gray-500 dark:text-slate-400 hover:text-gray-700 dark:text-gray-300"
                   }`}
                 >
                   {opt.label}
@@ -216,12 +216,12 @@ export default function ActivityPage() {
 
             {/* Search */}
             <div className="relative">
-              <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400" />
+              <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400 dark:text-slate-500" />
               <input
                 value={searchText}
                 onChange={(e) => setSearchText(e.target.value)}
                 placeholder="Search activity..."
-                className="h-7 pl-8 pr-3 bg-white border border-gray-200 rounded-md text-[12px] font-medium text-gray-700 placeholder:text-gray-400 focus:outline-none focus:ring-1 focus:ring-[#6366F1] w-48"
+                className="h-7 pl-8 pr-3 bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 rounded-md text-[12px] font-medium text-gray-700 dark:text-gray-300 placeholder:text-gray-400 dark:text-slate-500 focus:outline-none focus:ring-1 focus:ring-[#6366F1] w-48"
               />
             </div>
           </div>
@@ -232,14 +232,14 @@ export default function ActivityPage() {
       <div className="flex-1 overflow-y-auto">
         <div className="max-w-4xl mx-auto px-8 py-6 space-y-6">
           {isLoading ? (
-            <div className="text-center py-16 text-sm text-gray-400 font-medium">Loading activity...</div>
+            <div className="text-center py-16 text-sm text-gray-400 dark:text-slate-500 font-medium">Loading activity...</div>
           ) : groupedActivities.length === 0 ? (
             <div className="text-center py-16">
-              <div className="w-12 h-12 rounded-xl bg-gray-100 border border-gray-200 flex items-center justify-center mx-auto mb-3">
-                <Clock className="w-5 h-5 text-gray-400" />
+              <div className="w-12 h-12 rounded-xl bg-gray-100 dark:bg-slate-800 border border-gray-200 dark:border-slate-800 flex items-center justify-center mx-auto mb-3">
+                <Clock className="w-5 h-5 text-gray-400 dark:text-slate-500" />
               </div>
-              <p className="text-sm font-semibold text-gray-600">No activity found</p>
-              <p className="text-xs text-gray-400 mt-1">
+              <p className="text-sm font-semibold text-gray-600 dark:text-slate-300">No activity found</p>
+              <p className="text-xs text-gray-400 dark:text-slate-500 mt-1">
                 {searchText || filterType !== "ALL" ? "Try adjusting your filters." : "Activity will show up here as you work."}
               </p>
             </div>
@@ -248,9 +248,9 @@ export default function ActivityPage() {
               <div key={group.date}>
                 {/* Date header */}
                 <div className="flex items-center gap-3 mb-3">
-                  <span className="text-[12px] font-bold text-gray-900">{group.dateLabel}</span>
-                  <div className="h-px bg-gray-200 flex-1" />
-                  <span className="text-[11px] text-gray-400 font-medium">{group.items.length} events</span>
+                  <span className="text-[12px] font-bold text-gray-900 dark:text-gray-100">{group.dateLabel}</span>
+                  <div className="h-px bg-gray-200 dark:bg-slate-700 flex-1" />
+                  <span className="text-[11px] text-gray-400 dark:text-slate-500 font-medium">{group.items.length} events</span>
                 </div>
 
                 {/* Activity items */}
@@ -270,8 +270,8 @@ export default function ActivityPage() {
                     const actionText = act.details || (act.action ? act.action.replace(/_/g, ' ') : '')
 
                     const content = (
-                      <div className={`flex items-center gap-3 px-4 py-3 bg-white rounded-lg border border-gray-100 transition-all group ${
-                        link ? "hover:border-gray-200 hover:shadow-sm cursor-pointer" : ""
+                      <div className={`flex items-center gap-3 px-4 py-3 bg-white dark:bg-slate-900 rounded-lg border border-gray-100 dark:border-slate-800 transition-all group ${
+                        link ? "hover:border-gray-200 dark:border-slate-800 hover:shadow-sm cursor-pointer" : ""
                       }`}>
                         {/* Icon */}
                         <div className={`w-8 h-8 rounded-lg ${meta.bg} flex items-center justify-center shrink-0`}>
@@ -279,14 +279,14 @@ export default function ActivityPage() {
                         </div>
 
                         {/* Avatar */}
-                        <div className="w-6 h-6 rounded-full overflow-hidden bg-gray-100 border border-gray-200 shrink-0">
+                        <div className="w-6 h-6 rounded-full overflow-hidden bg-gray-100 dark:bg-slate-800 border border-gray-200 dark:border-slate-800 shrink-0">
                           <img src={avatarUrl} className="w-full h-full object-cover" alt="" />
                         </div>
 
                         {/* Text */}
                         <div className="flex-1 min-w-0">
-                          <p className="text-[13px] text-gray-700 leading-tight">
-                            <span className="font-semibold text-gray-900">{userName}</span>{' '}
+                          <p className="text-[13px] text-gray-700 dark:text-gray-300 leading-tight">
+                            <span className="font-semibold text-gray-900 dark:text-gray-100">{userName}</span>{' '}
                             <span>{actionText}</span>
                           </p>
                         </div>
@@ -297,7 +297,7 @@ export default function ActivityPage() {
                         </span>
 
                         {/* Time */}
-                        <span className="text-[11px] text-gray-400 font-medium shrink-0 w-14 text-right">
+                        <span className="text-[11px] text-gray-400 dark:text-slate-500 font-medium shrink-0 w-14 text-right">
                           {relativeTime(act.createdAt)}
                         </span>
 

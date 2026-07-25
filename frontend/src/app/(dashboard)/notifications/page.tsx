@@ -83,25 +83,25 @@ export default function NotificationsPage() {
   const unreadCount = notifications.filter((n: any) => !n.isRead).length
 
   return (
-    <div className="flex-1 flex flex-col overflow-hidden bg-[#FAFAFA]">
+    <div className="flex-1 flex flex-col overflow-hidden bg-[#FAFAFA] dark:bg-slate-950 text-gray-900 dark:text-gray-100">
 
       {/* Header */}
-      <div className="px-8 py-5 border-b border-gray-100 bg-white shrink-0">
+      <div className="px-8 py-5 border-b border-gray-100 dark:border-slate-800 bg-white dark:bg-slate-900 shrink-0">
         <div className="max-w-4xl mx-auto">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
             <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-lg bg-gray-100 border border-gray-200 flex items-center justify-center">
-                <Bell className="w-4 h-4 text-gray-600" strokeWidth={2.5} />
+              <div className="w-8 h-8 rounded-lg bg-gray-100 dark:bg-slate-800 border border-gray-200 dark:border-slate-800 flex items-center justify-center">
+                <Bell className="w-4 h-4 text-gray-600 dark:text-slate-300" strokeWidth={2.5} />
               </div>
               <div>
-                <h1 className="text-lg font-bold text-gray-900 tracking-tight">Notifications</h1>
-                <p className="text-[12px] text-gray-500 font-medium">
+                <h1 className="text-lg font-bold text-gray-900 dark:text-gray-100 tracking-tight">Notifications</h1>
+                <p className="text-[12px] text-gray-500 dark:text-slate-400 font-medium">
                   You have {unreadCount} unread notification{unreadCount !== 1 && 's'}.
                 </p>
               </div>
             </div>
             <div className="flex gap-2">
-              <Button variant="outline" className="h-8 text-[12px] border-gray-200 px-3 cursor-pointer" onClick={() => markAllReadMutation.mutate()} disabled={unreadCount === 0 || markAllReadMutation.isPending}>
+              <Button variant="outline" className="h-8 text-[12px] border-gray-200 dark:border-slate-800 px-3 cursor-pointer" onClick={() => markAllReadMutation.mutate()} disabled={unreadCount === 0 || markAllReadMutation.isPending}>
                 <Check className="w-3.5 h-3.5 mr-1.5" />
                 {markAllReadMutation.isPending ? "Marking..." : "Mark all as read"}
               </Button>
@@ -114,33 +114,33 @@ export default function NotificationsPage() {
       <div className="flex-1 overflow-y-auto">
         <div className="max-w-4xl mx-auto px-8 py-6 space-y-4">
           {isLoading ? (
-            <div className="text-center py-16 text-sm text-gray-400 font-medium">Loading notifications...</div>
+            <div className="text-center py-16 text-sm text-gray-400 dark:text-slate-500 font-medium">Loading notifications...</div>
           ) : notifications.length === 0 ? (
             <div className="text-center py-16">
-              <div className="w-12 h-12 rounded-xl bg-gray-100 border border-gray-200 flex items-center justify-center mx-auto mb-3">
-                <Bell className="w-5 h-5 text-gray-400" />
+              <div className="w-12 h-12 rounded-xl bg-gray-100 dark:bg-slate-800 border border-gray-200 dark:border-slate-800 flex items-center justify-center mx-auto mb-3">
+                <Bell className="w-5 h-5 text-gray-400 dark:text-slate-500" />
               </div>
-              <p className="text-sm font-semibold text-gray-600">No notifications yet</p>
-              <p className="text-xs text-gray-400 mt-1">We'll alert you when something happens.</p>
+              <p className="text-sm font-semibold text-gray-600 dark:text-slate-300">No notifications yet</p>
+              <p className="text-xs text-gray-400 dark:text-slate-500 mt-1">We'll alert you when something happens.</p>
             </div>
           ) : (
             <div className="space-y-1.5">
               {notifications.map((item: any) => {
                 let IconComponent = Bell;
-                let iconBg = 'bg-gray-100 text-gray-600';
+                let iconBg = 'bg-gray-100 dark:bg-slate-800 text-gray-600 dark:text-slate-300';
                 let title = item.title || 'Notification';
                 
                 if (item.type === 'WORKSPACE_INVITATION') {
                   IconComponent = Users;
-                  iconBg = 'bg-indigo-50 text-[#6366F1]';
+                  iconBg = 'bg-indigo-50 dark:bg-indigo-950/60 text-[#6366F1]';
                   title = item.title || 'Workspace Invitation';
                 } else if (item.type === 'TASK_ASSIGNED') {
                   IconComponent = CheckCircle2;
-                  iconBg = 'bg-emerald-50 text-emerald-600';
+                  iconBg = 'bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600';
                   title = item.title || 'Task Assigned';
                 } else if (item.type === 'NEW_COMMENT') {
                   IconComponent = FileText;
-                  iconBg = 'bg-amber-50 text-amber-600';
+                  iconBg = 'bg-amber-50 dark:bg-amber-950/60 text-amber-600';
                   title = item.title || 'New Comment';
                 } else if (item.type === 'MENTION') {
                   IconComponent = AtSign;
@@ -152,8 +152,8 @@ export default function NotificationsPage() {
                   <div 
                     key={item._id} 
                     onClick={() => handleNotificationClick(item)}
-                    className={`flex items-center gap-3 px-4 py-3.5 bg-white rounded-xl border transition-all cursor-pointer group hover:border-indigo-200 hover:shadow-xs ${
-                      !item.isRead ? "border-indigo-100 bg-indigo-50/15" : "border-gray-100"
+                    className={`flex items-center gap-3 px-4 py-3.5 bg-white dark:bg-slate-900 rounded-xl border transition-all cursor-pointer group hover:border-indigo-200 hover:shadow-xs ${
+                      !item.isRead ? "border-indigo-100 bg-indigo-50 dark:bg-indigo-950/60/15" : "border-gray-100 dark:border-slate-800"
                     }`}
                   >
                      {/* Icon */}
@@ -163,8 +163,8 @@ export default function NotificationsPage() {
 
                      {/* Content */}
                      <div className="flex-1 min-w-0">
-                       <p className="text-[13px] text-gray-700 leading-tight">
-                         <span className="font-semibold text-gray-900">{title}</span>{' '}
+                       <p className="text-[13px] text-gray-700 dark:text-gray-300 leading-tight">
+                         <span className="font-semibold text-gray-900 dark:text-gray-100">{title}</span>{' '}
                          <span>{item.message}</span>
                        </p>
                        {item.type === 'WORKSPACE_INVITATION' && (
@@ -183,7 +183,7 @@ export default function NotificationsPage() {
                            <Button 
                              size="sm" 
                              variant="outline" 
-                             className="border-gray-200 text-gray-600 text-[11px] h-7 px-3 rounded-md hover:bg-red-50 hover:text-red-600 hover:border-red-100 cursor-pointer"
+                             className="border-gray-200 dark:border-slate-800 text-gray-600 dark:text-slate-300 text-[11px] h-7 px-3 rounded-md hover:bg-red-50 dark:bg-red-950/60 hover:text-red-600 hover:border-red-100 cursor-pointer"
                              onClick={(e) => {
                                e.stopPropagation()
                                rejectMutation.mutate(item._id)
@@ -197,7 +197,7 @@ export default function NotificationsPage() {
                      </div>
 
                      {/* Time */}
-                     <span className="text-[11px] text-gray-400 font-medium shrink-0 w-16 text-right">
+                     <span className="text-[11px] text-gray-400 dark:text-slate-500 font-medium shrink-0 w-16 text-right">
                        {relativeTime(item.createdAt)}
                      </span>
 

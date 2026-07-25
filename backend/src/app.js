@@ -31,6 +31,7 @@ const commentRoutes = require("./routes/commentRoutes");
 const messageRoutes = require("./routes/messageRoutes");
 const notificationRoutes = require("./routes/notificationRoutes");
 const searchRoutes = require("./routes/searchRoutes");
+const billingRoutes = require("./routes/billingRoutes");
 
 const apiLimiter = require(
     "./middleware/rateLimiter"
@@ -64,6 +65,7 @@ app.use("/api", commentRoutes);
 app.use("/api", messageRoutes);
 app.use("/api/notifications", notificationRoutes);
 app.use("/api/workspaces", searchRoutes);
+app.use("/api/billing", billingRoutes);
 
 // Test Route
 app.get("/", (req, res) => {

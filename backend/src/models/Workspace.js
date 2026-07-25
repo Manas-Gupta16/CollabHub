@@ -73,7 +73,19 @@ const workspaceSchema = new mongoose.Schema(
                 title: { type: String, required: true },
                 isCompleted: { type: Boolean, default: false }
             }
-        ]
+        ],
+
+        subscriptionPlan: {
+            type: String,
+            enum: ["FREE", "PRO", "ENTERPRISE"],
+            default: "FREE"
+        },
+
+        billingCycle: {
+            type: String,
+            enum: ["MONTHLY", "YEARLY"],
+            default: "MONTHLY"
+        }
     },
     {
         timestamps: true,

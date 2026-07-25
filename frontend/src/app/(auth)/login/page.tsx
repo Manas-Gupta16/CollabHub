@@ -65,8 +65,8 @@ export default function Login() {
 
   return (
     <div>
-      <h2 className="text-center text-2xl font-bold text-gray-900 mb-1 tracking-tight">Welcome back</h2>
-      <p className="text-center text-xs text-gray-500 font-medium mb-6">Sign in to access your workspaces and team channels</p>
+      <h2 className="text-center text-2xl font-bold text-gray-900 dark:text-gray-100 mb-1 tracking-tight">Welcome back</h2>
+      <p className="text-center text-xs text-gray-500 dark:text-slate-400 font-medium mb-6">Sign in to access your workspaces and team channels</p>
 
       <AnimatePresence>
         {error && (
@@ -74,7 +74,7 @@ export default function Login() {
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
-            className="mb-4 p-3 bg-red-50 border border-red-200 rounded-xl text-xs text-red-700 font-semibold flex items-center gap-2"
+            className="mb-4 p-3 bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-900/60 rounded-xl text-xs text-red-700 dark:text-red-300 font-semibold flex items-center gap-2"
           >
             <AlertCircle className="w-4 h-4 shrink-0 text-red-500" />
             <span>{error}</span>
@@ -84,32 +84,32 @@ export default function Login() {
 
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
-          <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">Email address</label>
+          <label className="block text-xs font-bold text-gray-700 dark:text-slate-200 uppercase tracking-wider mb-1.5">Email address</label>
           <div className="relative">
-            <Mail className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
+            <Mail className="w-4 h-4 text-gray-400 dark:text-slate-500 absolute left-3 top-1/2 -translate-y-1/2" />
             <input 
               type="email" 
               required 
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="you@company.com"
-              className="w-full pl-9 pr-3 py-2.5 bg-gray-50/50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-600 focus:bg-white text-xs transition-all font-medium"
+              className="w-full pl-9 pr-3 py-2.5 bg-gray-50 dark:bg-slate-800/80/50 dark:bg-slate-800/80 border border-gray-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-600 focus:bg-white dark:focus:bg-slate-800 text-xs text-gray-900 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-slate-500 transition-all font-medium"
               disabled={loading}
             />
           </div>
         </div>
 
         <div>
-          <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">Password</label>
+          <label className="block text-xs font-bold text-gray-700 dark:text-slate-200 uppercase tracking-wider mb-1.5">Password</label>
           <div className="relative">
-            <Lock className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
+            <Lock className="w-4 h-4 text-gray-400 dark:text-slate-500 absolute left-3 top-1/2 -translate-y-1/2" />
             <input 
               type="password" 
               required 
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="••••••••"
-              className="w-full pl-9 pr-3 py-2.5 bg-gray-50/50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-600 focus:bg-white text-xs transition-all font-medium"
+              className="w-full pl-9 pr-3 py-2.5 bg-gray-50 dark:bg-slate-800/80/50 dark:bg-slate-800/80 border border-gray-200 dark:border-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-600 focus:bg-white dark:focus:bg-slate-800 text-xs text-gray-900 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-slate-500 transition-all font-medium"
               disabled={loading}
             />
           </div>
@@ -117,11 +117,11 @@ export default function Login() {
 
         <div className="flex items-center justify-between pt-1">
           <div className="flex items-center">
-            <input id="remember-me" type="checkbox" className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded cursor-pointer" />
-            <label htmlFor="remember-me" className="ml-2 block text-xs text-gray-600 font-medium cursor-pointer">Remember me</label>
+            <input id="remember-me" type="checkbox" className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 dark:border-slate-700 rounded cursor-pointer" />
+            <label htmlFor="remember-me" className="ml-2 block text-xs text-gray-600 dark:text-slate-300 font-medium cursor-pointer">Remember me</label>
           </div>
           <div className="text-xs font-semibold">
-            <Link href="/forgot-password" className="text-indigo-600 hover:text-indigo-700 transition-colors">Forgot your password?</Link>
+            <Link href="/forgot-password" className="text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 transition-colors">Forgot your password?</Link>
           </div>
         </div>
 
@@ -134,10 +134,10 @@ export default function Login() {
 
       <div className="relative my-6">
         <div className="absolute inset-0 flex items-center">
-          <div className="w-full border-t border-gray-200" />
+          <div className="w-full border-t border-gray-200 dark:border-slate-700" />
         </div>
         <div className="relative flex justify-center text-[11px] uppercase">
-          <span className="bg-white px-3 text-gray-400 font-bold tracking-wider">Or continue with</span>
+          <span className="bg-white dark:bg-slate-900 px-3 text-gray-400 dark:text-slate-400 font-bold tracking-wider">Or continue with</span>
         </div>
       </div>
 
@@ -151,9 +151,9 @@ export default function Login() {
         />
       </div>
 
-      <div className="mt-6 text-center text-xs text-gray-500 font-medium">
+      <div className="mt-6 text-center text-xs text-gray-500 dark:text-slate-400 font-medium">
         Don't have an account?{" "}
-        <Link href="/signup" className="font-bold text-indigo-600 hover:text-indigo-700 transition-colors">
+        <Link href="/signup" className="font-bold text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 transition-colors">
           Create account free
         </Link>
       </div>

@@ -10,6 +10,7 @@ export const metadata: Metadata = {
 }
 
 import ReactQueryProvider from "@/providers/ReactQueryProvider"
+import { ThemeProvider } from "@/components/theme-provider"
 
 export default function RootLayout({
   children,
@@ -17,11 +18,13 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="en">
-      <body className={`${inter.className} bg-white text-gray-900`}>
-        <ReactQueryProvider>
-          {children}
-        </ReactQueryProvider>
+    <html lang="en" suppressHydrationWarning>
+      <body className={`${inter.className} bg-white dark:bg-slate-950 text-gray-900 dark:text-gray-100 transition-colors duration-200`}>
+        <ThemeProvider defaultTheme="light" storageKey="collabhub_theme">
+          <ReactQueryProvider>
+            {children}
+          </ReactQueryProvider>
+        </ThemeProvider>
       </body>
     </html>
   )

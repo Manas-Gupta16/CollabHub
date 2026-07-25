@@ -472,6 +472,14 @@ const createChannel = async (workspaceId, channelData, currentUser) => {
 
     const { name, isPrivate, initialMembers } = channelData;
 
+    // Enforce Plan Limits for Private Channels
+    if (isPrivate && (workspace.subscriptionPlan || "FREE") === "FREE") {
+        const privateChannelCount = workspace.channels.filter(c => c.isPrivate).length;
+        if (privateChannelCount >= 2) {
+            throw new AppError("Free workspaces are limited to 2 private channels. Please upgrade to Pro Team for unlimited private channels.", 403);
+        }
+    }
+
     // Check duplicate channel name
     const channelExists = workspace.channels.some(
         (c) => c.name.toLowerCase() === name.toLowerCase()
@@ -687,6 +695,10 @@ const addPinnedLink = async (workspaceId, linkData, currentUser) => {
     );
     if (!isMember) throw new AppError("You are not a member of this workspace", 403);
 
+    if ((workspace.subscriptionPlan || "FREE") === "FREE" && (workspace.pinnedLinks || []).length >= 3) {
+        throw new AppError("Free workspaces are limited to 3 pinned links per workspace. Please upgrade to Pro Team for unlimited pinned links.", 403);
+    }
+
     workspace.pinnedLinks.push({
         title: linkData.title,
         url: linkData.url
@@ -721,6 +733,10 @@ const addTeamGoal = async (workspaceId, goalData, currentUser) => {
         (m) => (m.user._id || m.user).toString() === currentUser._id.toString() && m.status !== "PENDING"
     );
     if (!isMember) throw new AppError("You are not a member of this workspace", 403);
+
+    if ((workspace.subscriptionPlan || "FREE") === "FREE" && (workspace.teamGoals || []).length >= 2) {
+        throw new AppError("Free workspaces are limited to 2 team goals. Please upgrade to Pro Team for unlimited team goals.", 403);
+    }
 
     workspace.teamGoals.push({
         title: goalData.title,

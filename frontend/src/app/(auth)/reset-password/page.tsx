@@ -57,7 +57,7 @@ function ResetPasswordForm() {
   return (
     <div>
       <div className="text-center mb-6">
-        <div className="w-12 h-12 bg-indigo-50 text-indigo-600 rounded-2xl flex items-center justify-center mx-auto mb-3">
+        <div className="w-12 h-12 bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 rounded-2xl flex items-center justify-center mx-auto mb-3">
           <KeyRound className="w-6 h-6" />
         </div>
         <h2 className="text-2xl font-bold text-gray-900">Set new password</h2>
@@ -65,13 +65,13 @@ function ResetPasswordForm() {
       </div>
 
       {error && (
-        <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-xl text-sm text-red-700 font-medium">
+        <div className="mb-4 p-3 bg-red-50 dark:bg-red-950/60 border border-red-200 rounded-xl text-sm text-red-700 font-medium">
           {error}
         </div>
       )}
 
       {successMsg ? (
-        <div className="p-4 bg-emerald-50 border border-emerald-200 rounded-2xl text-center space-y-3">
+        <div className="p-4 bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 rounded-2xl text-center space-y-3">
           <CheckCircle2 className="w-8 h-8 text-emerald-600 mx-auto" />
           <p className="text-sm font-semibold text-emerald-900">{successMsg}</p>
           <Link href="/login" className="inline-block text-xs font-bold text-indigo-600 hover:text-indigo-800">
@@ -81,7 +81,7 @@ function ResetPasswordForm() {
       ) : (
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">New Password</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1">New Password</label>
             <input 
               type="password" 
               required 
@@ -94,7 +94,7 @@ function ResetPasswordForm() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Confirm New Password</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1">Confirm New Password</label>
             <input 
               type="password" 
               required 

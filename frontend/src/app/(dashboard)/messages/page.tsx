@@ -12,7 +12,7 @@ import api, {
   addMemberToChannel, addPinnedLink, deletePinnedLink, addTeamGoal, 
   toggleTeamGoal, deleteTeamGoal, updateMessage, deleteMessage 
 } from "@/lib/api"
-import { useState, useMemo, useEffect, Suspense } from "react"
+import { useState, useMemo, useEffect, useRef, Suspense } from "react"
 import { UserAvatar } from "@/components/UserAvatar"
 import { getSocket } from "@/lib/socket"
 
@@ -23,6 +23,13 @@ function MessagesContent() {
   
   const queryClient = useQueryClient()
   const [newMessage, setNewMessage] = useState("")
+  const fileInputRef = useRef<HTMLInputElement>(null)
+
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    setNewMessage((prev) => prev ? `${prev} 📎 [Attached File: ${file.name}]` : `📎 [Attached File: ${file.name}]`)
+  }
   const [messageSearch, setMessageSearch] = useState("")
   const [isAddChannelMemberOpen, setIsAddChannelMemberOpen] = useState(false)
   const [memberToAdd, setMemberToAdd] = useState("")
@@ -278,7 +285,7 @@ function MessagesContent() {
       }
       if (part.startsWith('@')) {
         return (
-          <span key={i} className="font-bold text-indigo-600 bg-indigo-50 px-1.5 py-0.5 rounded-md border border-indigo-100/60 inline-block my-0.5 break-all">
+          <span key={i} className="font-bold text-indigo-600 bg-indigo-50 dark:bg-indigo-950/60 px-1.5 py-0.5 rounded-md border border-indigo-100/60 inline-block my-0.5 break-all">
             {part}
           </span>
         )
@@ -292,26 +299,26 @@ function MessagesContent() {
   )
 
   return (
-    <div className="flex-1 flex overflow-hidden bg-white">
+    <div className="flex-1 flex overflow-hidden bg-white dark:bg-slate-950 text-gray-900 dark:text-gray-100 transition-colors duration-200">
       
       {/* Center Chat Area */}
-      <div className="flex-1 min-w-0 flex flex-col border-r border-gray-100">
+      <div className="flex-1 min-w-0 flex flex-col border-r border-gray-100 dark:border-slate-800">
         
         {/* Header */}
-        <div className="h-14 border-b border-gray-100 flex items-center justify-between px-6 shrink-0 bg-white shadow-2xs z-10">
+        <div className="h-14 border-b border-gray-100 dark:border-slate-800 flex items-center justify-between px-6 shrink-0 bg-white dark:bg-slate-900 shadow-2xs z-10">
           <div className="flex items-center gap-2.5">
             <div className={`w-8 h-8 rounded-lg flex items-center justify-center font-bold ${
-              isPrivateChannel ? 'bg-amber-50 text-amber-600' : 'bg-indigo-50 text-[#6366F1]'
+              isPrivateChannel ? 'bg-amber-50 dark:bg-amber-950/50 text-amber-600 dark:text-amber-400' : 'bg-indigo-50 dark:bg-indigo-950/50 text-[#6366F1] dark:text-indigo-400'
             }`}>
               {isPrivateChannel ? <Lock className="w-4 h-4" /> : <Hash className="w-4 h-4" />}
             </div>
             <div>
-              <div className="font-bold text-sm text-gray-900 tracking-tight flex items-center gap-2">
+              <div className="font-bold text-sm text-gray-900 dark:text-gray-100 tracking-tight flex items-center gap-2">
                 #{queryChannel}
                 <span className={`px-2 py-0.5 rounded-md font-bold text-[10px] border uppercase tracking-wider ${
                   isPrivateChannel 
-                    ? 'bg-amber-50 text-amber-700 border-amber-200/60' 
-                    : 'bg-indigo-50 text-indigo-700 border-indigo-200/60'
+                    ? 'bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 border-amber-200/60 dark:border-amber-900/60' 
+                    : 'bg-indigo-50 dark:bg-indigo-950/40 text-indigo-700 dark:text-indigo-300 border-indigo-200/60 dark:border-indigo-900/60'
                 }`}>
                   {isPrivateChannel ? 'Private' : 'Public'}
                 </span>
@@ -323,7 +330,7 @@ function MessagesContent() {
             {isPrivateChannel && (
               <button
                 onClick={() => setIsAddChannelMemberOpen(true)}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-50 text-amber-700 hover:bg-amber-100 font-semibold text-xs border border-amber-200/60 transition-all cursor-pointer"
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-50 dark:bg-amber-950/50 text-amber-700 dark:text-amber-300 hover:bg-amber-100 dark:hover:bg-amber-900/60 font-semibold text-xs border border-amber-200/60 dark:border-amber-800 transition-all cursor-pointer"
               >
                 <UserPlus className="w-3.5 h-3.5" />
                 Add Member
@@ -333,19 +340,19 @@ function MessagesContent() {
         </div>
 
         {/* Chat Messages */}
-        <div className="flex-1 p-6 space-y-4 overflow-y-auto custom-scrollbar bg-slate-50/30">
+        <div className="flex-1 p-6 space-y-4 overflow-y-auto custom-scrollbar bg-slate-50/30 dark:bg-slate-900">
           {isLoading ? (
             <div className="flex items-center justify-center h-full">
               <div className="flex flex-col items-center gap-2">
                 <div className="w-6 h-6 border-2 border-indigo-600 border-t-transparent rounded-full animate-spin" />
-                <p className="text-xs font-semibold text-gray-400">Loading messages...</p>
+                <p className="text-xs font-semibold text-gray-400 dark:text-slate-500">Loading messages...</p>
               </div>
             </div>
           ) : isError ? (
-            <div className="text-center p-8 bg-red-50 rounded-2xl border border-red-100 max-w-md mx-auto my-12">
+            <div className="text-center p-8 bg-red-50 dark:bg-red-950/60 rounded-2xl border border-red-100 max-w-md mx-auto my-12">
               <Lock className="w-8 h-8 text-red-500 mx-auto mb-2" />
-              <h3 className="font-bold text-gray-900 text-sm">Access Restricted</h3>
-              <p className="text-xs text-gray-500 mt-1">
+              <h3 className="font-bold text-gray-900 dark:text-gray-100 text-sm">Access Restricted</h3>
+              <p className="text-xs text-gray-500 dark:text-slate-400 mt-1">
                 {(error as any)?.response?.data?.message || 'You are not a member of this private channel.'}
               </p>
             </div>
@@ -359,24 +366,24 @@ function MessagesContent() {
                 {isPrivateChannel ? <Lock className="w-7 h-7" /> : <Hash className="w-7 h-7" />}
               </div>
               
-              <h3 className="text-xl font-bold text-gray-900 tracking-tight">
+              <h3 className="text-xl font-bold text-gray-900 dark:text-gray-100 tracking-tight">
                 Welcome to #{queryChannel}!
               </h3>
-              <p className="text-xs text-gray-500 max-w-sm mt-1.5 leading-relaxed">
-                This is the start of the <strong className="text-gray-700 font-semibold">#{queryChannel}</strong> channel. Type a message or mention a teammate with @ to start collaborating.
+              <p className="text-xs text-gray-500 dark:text-slate-400 max-w-sm mt-1.5 leading-relaxed">
+                This is the start of the <strong className="text-gray-700 dark:text-gray-300 font-semibold">#{queryChannel}</strong> channel. Type a message or mention a teammate with @ to start collaborating.
               </p>
 
               {/* Starter Suggestions */}
               <div className="mt-6 flex flex-wrap justify-center gap-2 max-w-md">
                 <button
                   onClick={() => setNewMessage("Hi team! 👋 Glad to be collaborating here.")}
-                  className="px-3.5 py-2 rounded-xl text-xs font-semibold bg-white hover:bg-indigo-50 text-gray-700 hover:text-indigo-600 border border-gray-200/80 transition-all cursor-pointer shadow-xs hover:border-indigo-200"
+                  className="px-3.5 py-2 rounded-xl text-xs font-semibold bg-white hover:bg-indigo-50 dark:bg-indigo-950/60 text-gray-700 dark:text-gray-300 hover:text-indigo-600 border border-gray-200 dark:border-slate-800/80 transition-all cursor-pointer shadow-xs hover:border-indigo-200"
                 >
                   👋 Send a friendly wave
                 </button>
                 <button
                   onClick={() => setNewMessage("Here is a quick update on my tasks for today: ")}
-                  className="px-3.5 py-2 rounded-xl text-xs font-semibold bg-white hover:bg-indigo-50 text-gray-700 hover:text-indigo-600 border border-gray-200/80 transition-all cursor-pointer shadow-xs hover:border-indigo-200"
+                  className="px-3.5 py-2 rounded-xl text-xs font-semibold bg-white hover:bg-indigo-50 dark:bg-indigo-950/60 text-gray-700 dark:text-gray-300 hover:text-indigo-600 border border-gray-200 dark:border-slate-800/80 transition-all cursor-pointer shadow-xs hover:border-indigo-200"
                 >
                   📌 Share a status update
                 </button>
@@ -392,29 +399,29 @@ function MessagesContent() {
               const isEditing = editingMessageId === msg._id
 
               return (
-                <div key={msg._id} className="flex gap-3.5 p-3 rounded-2xl hover:bg-white hover:shadow-xs transition-all border border-transparent hover:border-gray-100 group relative">
+                <div key={msg._id} className="flex gap-3.5 p-3 rounded-2xl hover:bg-white hover:shadow-xs transition-all border border-transparent hover:border-gray-100 dark:border-slate-800 group relative">
                   <UserAvatar name={senderName} avatar={sender.avatar || sender.profileImage} size="w-9 h-9 text-[11px]" />
                   
                   <div className="min-w-0 flex-1">
                     <div className="flex gap-2 items-center justify-between mb-0.5">
                       <div className="flex items-center gap-2">
-                        <span className="font-bold text-[14px] text-gray-900">{senderName}</span>
-                        <span className="text-gray-400 text-[11px] font-medium">
+                        <span className="font-bold text-[14px] text-gray-900 dark:text-gray-100">{senderName}</span>
+                        <span className="text-gray-400 dark:text-slate-500 text-[11px] font-medium">
                           {new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                          {msg.isEdited && <span className="text-[10px] text-gray-400 italic ml-1">(edited)</span>}
+                          {msg.isEdited && <span className="text-[10px] text-gray-400 dark:text-slate-500 italic ml-1">(edited)</span>}
                         </span>
                       </div>
 
                       {/* Action buttons on hover */}
                       {!isEditing && (canDelete || isSender) && (
-                        <div className="opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1 bg-white border border-gray-200/80 shadow-2xs rounded-lg px-1 py-0.5 shrink-0">
+                        <div className="opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1 bg-white border border-gray-200 dark:border-slate-800/80 shadow-2xs rounded-lg px-1 py-0.5 shrink-0">
                           {isSender && (
                             <button
                               onClick={() => {
                                 setEditingMessageId(msg._id)
                                 setEditingContent(msg.content)
                               }}
-                              className="p-1 text-gray-400 hover:text-indigo-600 rounded hover:bg-indigo-50 transition-colors cursor-pointer"
+                              className="p-1 text-gray-400 dark:text-slate-500 hover:text-indigo-600 rounded hover:bg-indigo-50 dark:bg-indigo-950/60 transition-colors cursor-pointer"
                               title="Edit message"
                             >
                               <Pencil className="w-3.5 h-3.5" />
@@ -427,7 +434,7 @@ function MessagesContent() {
                                   deleteMessageMutation.mutate(msg._id)
                                 }
                               }}
-                              className="p-1 text-gray-400 hover:text-red-600 rounded hover:bg-red-50 transition-colors cursor-pointer"
+                              className="p-1 text-gray-400 dark:text-slate-500 hover:text-red-600 rounded hover:bg-red-50 dark:bg-red-950/60 transition-colors cursor-pointer"
                               title="Delete message"
                             >
                               <Trash2 className="w-3.5 h-3.5" />
@@ -451,7 +458,7 @@ function MessagesContent() {
                           type="text"
                           value={editingContent}
                           onChange={(e) => setEditingContent(e.target.value)}
-                          className="w-full text-xs border border-indigo-300 rounded-xl px-3 py-2 bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 font-medium"
+                          className="w-full text-xs border border-indigo-300 rounded-xl px-3 py-2 bg-white text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 font-medium"
                           autoFocus
                         />
                         <div className="flex items-center gap-2">
@@ -465,14 +472,14 @@ function MessagesContent() {
                           <button
                             type="button"
                             onClick={() => setEditingMessageId(null)}
-                            className="px-2.5 py-1 text-[11px] font-semibold text-gray-600 hover:bg-gray-100 rounded-lg cursor-pointer"
+                            className="px-2.5 py-1 text-[11px] font-semibold text-gray-600 dark:text-slate-300 hover:bg-gray-100 dark:bg-slate-800 rounded-lg cursor-pointer"
                           >
                             Cancel
                           </button>
                         </div>
                       </form>
                     ) : (
-                      <div className="text-gray-700 leading-relaxed text-[14px] font-medium whitespace-pre-wrap break-words break-all min-w-0">
+                      <div className="text-gray-700 dark:text-gray-300 leading-relaxed text-[14px] font-medium whitespace-pre-wrap break-words break-all min-w-0">
                          {renderMessageContent(msg.content)}
                       </div>
                     )}
@@ -484,37 +491,46 @@ function MessagesContent() {
         </div>
         
         {/* Input Box with Autocomplete Mention Popup */}
-        <form onSubmit={handleSend} className="p-4 sm:p-6 bg-white shrink-0 border-t border-gray-100 relative">
+        <form onSubmit={handleSend} className="p-4 sm:p-6 bg-white dark:bg-slate-950 shrink-0 border-t border-gray-100 dark:border-slate-800 relative">
            
            {/* Autocomplete Popup */}
            {showMentionPopup && matchingMembers.length > 0 && (
-             <div className="absolute bottom-full mb-2 left-6 right-6 bg-white border border-gray-200 rounded-2xl shadow-xl p-2 z-50 max-h-48 overflow-y-auto animate-in fade-in">
-               <div className="text-[10px] font-bold uppercase tracking-wider text-gray-400 px-2 py-1 mb-1">
+             <div className="absolute bottom-full mb-2 left-6 right-6 bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 rounded-2xl shadow-xl p-2 z-50 max-h-48 overflow-y-auto animate-in fade-in">
+               <div className="text-[10px] font-bold uppercase tracking-wider text-gray-400 dark:text-slate-500 px-2 py-1 mb-1">
                  Mention Team Member
                </div>
                {matchingMembers.map((m: any, idx: number) => (
                  <div
                    key={idx}
                    onClick={() => insertMention(m.user?.name)}
-                   className="flex items-center gap-2.5 px-3 py-2 hover:bg-indigo-50 rounded-xl cursor-pointer transition-colors"
+                   className="flex items-center gap-2.5 px-3 py-2 hover:bg-indigo-50 dark:bg-indigo-950/60 dark:hover:bg-slate-800 rounded-xl cursor-pointer transition-colors"
                  >
                    <UserAvatar name={m.user?.name} avatar={m.user?.avatar} size="w-6 h-6 text-[9px]" />
-                   <span className="text-xs font-bold text-gray-900">{m.user?.name}</span>
-                   <span className="text-[10px] text-gray-400 font-medium">({m.user?.email})</span>
+                   <span className="text-xs font-bold text-gray-900 dark:text-gray-100">{m.user?.name}</span>
+                   <span className="text-[10px] text-gray-400 dark:text-slate-500 font-medium">({m.user?.email})</span>
                  </div>
                ))}
              </div>
            )}
 
-           <div className="border border-gray-200/90 focus-within:border-[#6366F1] focus-within:ring-2 focus-within:ring-indigo-100 rounded-2xl px-4 py-3 flex items-center gap-3 bg-white shadow-xs transition-all">
-             <Plus className="w-4 h-4 text-gray-400 cursor-pointer hover:text-gray-600 transition-colors" />
+           <div className="border border-gray-200 dark:border-slate-800 focus-within:border-[#6366F1] focus-within:ring-2 focus-within:ring-indigo-100 rounded-2xl px-4 py-3 flex items-center gap-3 bg-white dark:bg-slate-900 shadow-xs transition-all">
+             <input 
+               type="file" 
+               ref={fileInputRef} 
+               onChange={handleFileUpload} 
+               className="hidden" 
+             />
+             <Plus 
+               onClick={() => fileInputRef.current?.click()}
+               className="w-4 h-4 text-gray-400 dark:text-slate-500 cursor-pointer hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors" 
+             />
              <input 
                type="text" 
                value={newMessage}
                onChange={handleInputChange}
                placeholder={`Message #${queryChannel}... (type @ to mention a teammate)`} 
                disabled={isError}
-               className="flex-1 bg-transparent outline-none text-[14px] text-gray-900 placeholder:text-gray-400 placeholder:font-medium disabled:opacity-50" 
+               className="flex-1 bg-transparent outline-none text-[14px] text-gray-900 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-slate-500 placeholder:font-medium disabled:opacity-50" 
              />
              <button 
                type="submit" 
@@ -528,16 +544,16 @@ function MessagesContent() {
       </div>
 
       {/* Right Sidebar */}
-      <div className="w-[280px] bg-white flex flex-col shrink-0 border-l border-gray-100">
+      <div className="w-[280px] bg-white dark:bg-slate-900 flex flex-col shrink-0 border-l border-gray-100 dark:border-slate-800">
         <div className="p-4 pb-2">
-          <div className="bg-gray-50 border border-gray-200/60 rounded-xl p-2.5 flex items-center gap-2">
-            <Search className="w-4 h-4 text-gray-400" />
+          <div className="bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl p-2.5 flex items-center gap-2">
+            <Search className="w-4 h-4 text-gray-400 dark:text-slate-500" />
             <input 
               type="text" 
               value={messageSearch}
               onChange={e => setMessageSearch(e.target.value)}
               placeholder="Search in chat..." 
-              className="bg-transparent outline-none text-[13px] text-gray-900 w-full placeholder:text-gray-400 placeholder:font-medium"
+              className="bg-transparent outline-none text-[13px] text-gray-900 dark:text-gray-100 w-full placeholder:text-gray-400 dark:placeholder:text-slate-500 placeholder:font-medium"
             />
           </div>
         </div>
@@ -545,9 +561,9 @@ function MessagesContent() {
         <div className="px-4 py-3 overflow-y-auto custom-scrollbar flex-1 space-y-6">
            {/* If private channel, show channel members */}
            {isPrivateChannel && (
-             <div className="bg-amber-50/40 p-3.5 rounded-2xl border border-amber-200/50">
+             <div className="bg-amber-50 dark:bg-amber-950/60/40 p-3.5 rounded-2xl border border-amber-200/50">
                <div className="flex items-center justify-between mb-2.5">
-                 <div className="text-[12px] font-bold text-gray-900 tracking-tight flex items-center gap-1.5">
+                 <div className="text-[12px] font-bold text-gray-900 dark:text-gray-100 tracking-tight flex items-center gap-1.5">
                    <Lock className="w-3.5 h-3.5 text-amber-600" /> Channel Members
                  </div>
                  <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-amber-100 text-amber-800">
@@ -563,7 +579,7 @@ function MessagesContent() {
                    return (
                      <div key={i} className="flex items-center gap-2.5">
                        <UserAvatar name={uName} avatar={user.avatar} size="w-7 h-7 text-[9px]" />
-                       <span className="font-semibold text-gray-700 text-[12px] truncate">{uName}</span>
+                       <span className="font-semibold text-gray-700 dark:text-gray-300 text-[12px] truncate">{uName}</span>
                      </div>
                    )
                  })}
@@ -579,9 +595,9 @@ function MessagesContent() {
 
            {/* Workspace Team */}
            <div>
-             <div className="text-[12px] font-bold text-gray-900 mb-3 tracking-tight flex items-center justify-between">
+             <div className="text-[12px] font-bold text-gray-900 dark:text-gray-100 mb-3 tracking-tight flex items-center justify-between">
                <span>Workspace Team</span>
-               <span className="text-[10px] font-semibold text-gray-400">{activeWorkspace?.members?.length || 0}</span>
+               <span className="text-[10px] font-semibold text-gray-400 dark:text-slate-500">{activeWorkspace?.members?.length || 0}</span>
              </div>
              <div className="space-y-2.5">
                {(activeWorkspace?.members || []).map((member: any, i: number) => {
@@ -593,16 +609,16 @@ function MessagesContent() {
                  const isOnline = onlineUserIds.includes(userIdStr) || (userProfile?._id && userIdStr === userProfile._id.toString())
 
                  return (
-                   <div key={i} className="flex justify-between items-center cursor-pointer group hover:bg-gray-50 p-1.5 rounded-xl transition-colors">
+                   <div key={i} className="flex justify-between items-center cursor-pointer group hover:bg-gray-50 dark:bg-slate-800/80 dark:hover:bg-slate-800 p-1.5 rounded-xl transition-colors">
                      <div className="flex items-center gap-2.5 min-w-0">
                        <UserAvatar name={name} avatar={u.avatar} size="w-7 h-7 text-[9px]" />
                        <div className="min-w-0">
-                         <span className="font-semibold text-gray-700 text-[12px] group-hover:text-gray-900 transition-colors truncate block leading-tight">{name}</span>
-                         <span className="text-[10px] text-gray-400 font-medium block">{isOnline ? 'Online' : 'Offline'}</span>
+                         <span className="font-semibold text-gray-700 dark:text-gray-300 text-[12px] group-hover:text-gray-900 dark:text-gray-100 transition-colors truncate block leading-tight">{name}</span>
+                         <span className="text-[10px] text-gray-400 dark:text-slate-500 font-medium block">{isOnline ? 'Online' : 'Offline'}</span>
                        </div>
                      </div>
                      <div 
-                       className={`w-2.5 h-2.5 rounded-full shrink-0 ${isOnline ? 'bg-emerald-500 shadow-xs ring-2 ring-white' : 'bg-gray-300'}`} 
+                       className={`w-2.5 h-2.5 rounded-full shrink-0 ${isOnline ? 'bg-emerald-50 dark:bg-emerald-950/600 shadow-xs ring-2 ring-white' : 'bg-gray-300'}`} 
                        title={isOnline ? 'Online' : 'Offline'}
                      ></div>
                    </div>
@@ -612,17 +628,17 @@ function MessagesContent() {
            </div>
            
            {/* Workspace Links & Goals */}
-            <div className="pt-3 border-t border-gray-100 space-y-5">
+            <div className="pt-3 border-t border-gray-100 dark:border-slate-800 space-y-5">
               
               {/* Pinned Links Section */}
               <div>
                 <div className="flex items-center justify-between mb-2">
-                  <div className="text-[11px] font-bold text-gray-400 uppercase tracking-wider flex items-center gap-1">
+                  <div className="text-[11px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-wider flex items-center gap-1">
                     <Pin className="w-3 h-3 text-red-500" /> Pinned Links
                   </div>
                   <button
                     onClick={() => setIsAddLinkOpen(true)}
-                    className="text-[10px] font-bold text-indigo-600 hover:text-indigo-800 hover:bg-indigo-50 px-1.5 py-0.5 rounded transition-all cursor-pointer"
+                    className="text-[10px] font-bold text-indigo-600 hover:text-indigo-800 hover:bg-indigo-50 dark:bg-indigo-950/60 px-1.5 py-0.5 rounded transition-all cursor-pointer"
                   >
                     + Add Link
                   </button>
@@ -633,19 +649,19 @@ function MessagesContent() {
                     {activeWorkspace.pinnedLinks.map((link: any, i: number) => {
                       const linkId = link._id || link.id || i
                       return (
-                        <div key={linkId} className="flex items-center justify-between group/link p-1.5 rounded-lg hover:bg-gray-50 transition-colors">
+                        <div key={linkId} className="flex items-center justify-between group/link p-1.5 rounded-lg hover:bg-gray-50 dark:bg-slate-800/80 dark:hover:bg-slate-800 transition-colors">
                           <a 
                             href={link.url.startsWith('http') ? link.url : `https://${link.url}`} 
                             target="_blank" 
                             rel="noopener noreferrer" 
-                            className="flex items-center gap-2 text-gray-700 truncate text-[12px] font-medium hover:text-[#6366F1] transition-colors min-w-0"
+                            className="flex items-center gap-2 text-gray-700 dark:text-gray-300 truncate text-[12px] font-medium hover:text-[#6366F1] transition-colors min-w-0"
                           >
                             <ExternalLink className="w-3.5 h-3.5 text-indigo-500 shrink-0"/>
                             <span className="truncate">{link.title || link.url}</span>
                           </a>
                           <button
                             onClick={() => deletePinnedLinkMutation.mutate(linkId)}
-                            className="opacity-0 group-hover/link:opacity-100 text-gray-400 hover:text-red-600 transition-opacity p-0.5 cursor-pointer"
+                            className="opacity-0 group-hover/link:opacity-100 text-gray-400 dark:text-slate-500 hover:text-red-600 transition-opacity p-0.5 cursor-pointer"
                             title="Delete link"
                           >
                             <Trash2 className="w-3 h-3" />
@@ -655,19 +671,19 @@ function MessagesContent() {
                     })}
                   </div>
                 ) : (
-                  <div className="text-[12px] text-gray-400 font-medium italic px-1">No pinned links</div>
+                  <div className="text-[12px] text-gray-400 dark:text-slate-500 font-medium italic px-1">No pinned links</div>
                 )}
               </div>
 
               {/* Team Goals Section */}
               <div>
                 <div className="flex items-center justify-between mb-2">
-                  <div className="text-[11px] font-bold text-gray-400 uppercase tracking-wider flex items-center gap-1">
+                  <div className="text-[11px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-wider flex items-center gap-1">
                     <CheckCircle2 className="w-3 h-3 text-emerald-500" /> Team Goals
                   </div>
                   <button
                     onClick={() => setIsAddGoalOpen(true)}
-                    className="text-[10px] font-bold text-indigo-600 hover:text-indigo-800 hover:bg-indigo-50 px-1.5 py-0.5 rounded transition-all cursor-pointer"
+                    className="text-[10px] font-bold text-indigo-600 hover:text-indigo-800 hover:bg-indigo-50 dark:bg-indigo-950/60 px-1.5 py-0.5 rounded transition-all cursor-pointer"
                   >
                     + Add Goal
                   </button>
@@ -680,7 +696,7 @@ function MessagesContent() {
                       const isDone = !!goal.isCompleted
 
                       return (
-                        <div key={goalId} className="flex items-center justify-between group/goal p-1.5 rounded-lg hover:bg-gray-50 transition-colors">
+                        <div key={goalId} className="flex items-center justify-between group/goal p-1.5 rounded-lg hover:bg-gray-50 dark:bg-slate-800/80 dark:hover:bg-slate-800 transition-colors">
                           <button
                             onClick={() => toggleTeamGoalMutation.mutate(goalId)}
                             className="flex items-center gap-2 text-left min-w-0 flex-1 cursor-pointer"
@@ -690,13 +706,13 @@ function MessagesContent() {
                             ) : (
                               <Circle className="w-3.5 h-3.5 text-gray-300 hover:text-indigo-500 shrink-0" />
                             )}
-                            <span className={`text-[12px] font-medium truncate ${isDone ? 'line-through text-gray-400' : 'text-gray-700'}`}>
+                            <span className={`text-[12px] font-medium truncate ${isDone ? 'line-through text-gray-400 dark:text-slate-500' : 'text-gray-700 dark:text-gray-300'}`}>
                               {goal.title}
                             </span>
                           </button>
                           <button
                             onClick={() => deleteTeamGoalMutation.mutate(goalId)}
-                            className="opacity-0 group-hover/goal:opacity-100 text-gray-400 hover:text-red-600 transition-opacity p-0.5 cursor-pointer ml-1"
+                            className="opacity-0 group-hover/goal:opacity-100 text-gray-400 dark:text-slate-500 hover:text-red-600 transition-opacity p-0.5 cursor-pointer ml-1"
                             title="Delete goal"
                           >
                             <Trash2 className="w-3 h-3" />
@@ -706,7 +722,7 @@ function MessagesContent() {
                     })}
                   </div>
                 ) : (
-                  <div className="text-[12px] text-gray-400 font-medium italic px-1">No team goals set</div>
+                  <div className="text-[12px] text-gray-400 dark:text-slate-500 font-medium italic px-1">No team goals set</div>
                 )}
               </div>
 
@@ -718,17 +734,17 @@ function MessagesContent() {
       {/* Add Member Modal for Chat */}
       {isAddChannelMemberOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-xs p-4 animate-in fade-in">
-          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-6 border border-gray-100">
-            <h2 className="text-lg font-bold text-gray-900 mb-2 flex items-center gap-2">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-6 border border-gray-100 dark:border-slate-800">
+            <h2 className="text-lg font-bold text-gray-900 dark:text-gray-100 mb-2 flex items-center gap-2">
               <UserPlus className="w-5 h-5 text-amber-600" /> Add to #{queryChannel}
             </h2>
-            <p className="text-xs text-gray-500 mb-4">Select a workspace member to grant access to this private channel.</p>
+            <p className="text-xs text-gray-500 dark:text-slate-400 mb-4">Select a workspace member to grant access to this private channel.</p>
             
             <div className="space-y-4">
               <select
                 value={memberToAdd}
                 onChange={(e) => setMemberToAdd(e.target.value)}
-                className="w-full bg-white border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500"
+                className="w-full bg-white border border-gray-200 dark:border-slate-800 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500"
               >
                 <option value="">Select a member...</option>
                 {(activeWorkspace?.members || [])
@@ -747,7 +763,7 @@ function MessagesContent() {
               <div className="flex justify-end gap-3 pt-2">
                 <button
                   onClick={() => setIsAddChannelMemberOpen(false)}
-                  className="px-4 py-2 text-xs font-semibold text-gray-600 hover:bg-gray-100 rounded-xl cursor-pointer"
+                  className="px-4 py-2 text-xs font-semibold text-gray-600 dark:text-slate-300 hover:bg-gray-100 dark:bg-slate-800 rounded-xl cursor-pointer"
                 >
                   Cancel
                 </button>
@@ -771,31 +787,31 @@ function MessagesContent() {
       {/* Add Pinned Link Modal */}
       {isAddLinkOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-xs p-4 animate-in fade-in">
-          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-6 border border-gray-100 space-y-4">
-            <h2 className="text-lg font-bold text-gray-900 flex items-center gap-2">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-6 border border-gray-100 dark:border-slate-800 space-y-4">
+            <h2 className="text-lg font-bold text-gray-900 dark:text-gray-100 flex items-center gap-2">
               <Pin className="w-5 h-5 text-red-500" /> Pin Resource Link
             </h2>
-            <p className="text-xs text-gray-500">Add useful doc, Figma, or GitHub URLs for your team.</p>
+            <p className="text-xs text-gray-500 dark:text-slate-400">Add useful doc, Figma, or GitHub URLs for your team.</p>
             
             <div className="space-y-3">
               <div>
-                <label className="text-xs font-bold uppercase text-gray-500">Link Title</label>
+                <label className="text-xs font-bold uppercase text-gray-500 dark:text-slate-400">Link Title</label>
                 <input
                   type="text"
                   value={linkTitle}
                   onChange={(e) => setLinkTitle(e.target.value)}
                   placeholder="e.g. Project Specs Docs"
-                  className="w-full bg-white border border-gray-200 rounded-xl px-3 py-2 text-sm mt-1 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  className="w-full bg-white border border-gray-200 dark:border-slate-800 rounded-xl px-3 py-2 text-sm mt-1 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                 />
               </div>
               <div>
-                <label className="text-xs font-bold uppercase text-gray-500">Resource URL</label>
+                <label className="text-xs font-bold uppercase text-gray-500 dark:text-slate-400">Resource URL</label>
                 <input
                   type="text"
                   value={linkUrl}
                   onChange={(e) => setLinkUrl(e.target.value)}
                   placeholder="https://..."
-                  className="w-full bg-white border border-gray-200 rounded-xl px-3 py-2 text-sm mt-1 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  className="w-full bg-white border border-gray-200 dark:border-slate-800 rounded-xl px-3 py-2 text-sm mt-1 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                 />
               </div>
             </div>
@@ -803,7 +819,7 @@ function MessagesContent() {
             <div className="flex justify-end gap-3 pt-2">
               <button
                 onClick={() => setIsAddLinkOpen(false)}
-                className="px-4 py-2 text-xs font-semibold text-gray-600 hover:bg-gray-100 rounded-xl cursor-pointer"
+                className="px-4 py-2 text-xs font-semibold text-gray-600 dark:text-slate-300 hover:bg-gray-100 dark:bg-slate-800 rounded-xl cursor-pointer"
               >
                 Cancel
               </button>
@@ -824,27 +840,27 @@ function MessagesContent() {
       {/* Add Team Goal Modal */}
       {isAddGoalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-xs p-4 animate-in fade-in">
-          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-6 border border-gray-100 space-y-4">
-            <h2 className="text-lg font-bold text-gray-900 flex items-center gap-2">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-6 border border-gray-100 dark:border-slate-800 space-y-4">
+            <h2 className="text-lg font-bold text-gray-900 dark:text-gray-100 flex items-center gap-2">
               <CheckCircle2 className="w-5 h-5 text-emerald-500" /> New Team Goal
             </h2>
-            <p className="text-xs text-gray-500">Define a milestone or goal for this workspace.</p>
+            <p className="text-xs text-gray-500 dark:text-slate-400">Define a milestone or goal for this workspace.</p>
             
             <div>
-              <label className="text-xs font-bold uppercase text-gray-500">Goal Description</label>
+              <label className="text-xs font-bold uppercase text-gray-500 dark:text-slate-400">Goal Description</label>
               <input
                 type="text"
                 value={goalTitle}
                 onChange={(e) => setGoalTitle(e.target.value)}
                 placeholder="e.g. Complete v1.0 Release"
-                className="w-full bg-white border border-gray-200 rounded-xl px-3 py-2 text-sm mt-1 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                className="w-full bg-white border border-gray-200 dark:border-slate-800 rounded-xl px-3 py-2 text-sm mt-1 focus:outline-none focus:ring-2 focus:ring-indigo-500"
               />
             </div>
 
             <div className="flex justify-end gap-3 pt-2">
               <button
                 onClick={() => setIsAddGoalOpen(false)}
-                className="px-4 py-2 text-xs font-semibold text-gray-600 hover:bg-gray-100 rounded-xl cursor-pointer"
+                className="px-4 py-2 text-xs font-semibold text-gray-600 dark:text-slate-300 hover:bg-gray-100 dark:bg-slate-800 rounded-xl cursor-pointer"
               >
                 Cancel
               </button>
