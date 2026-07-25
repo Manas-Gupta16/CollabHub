@@ -18,15 +18,15 @@ import { useSearchParams, useRouter } from "next/navigation"
 // ── Helpers ──────────────────────────────────────────────
 
 const STATUS_OPTIONS = [
-  { value: "TODO", label: "Todo", icon: Circle, color: "text-gray-400 dark:text-slate-500", bg: "bg-gray-50 dark:bg-slate-900 border-gray-200 dark:border-slate-800 text-gray-600 dark:text-slate-300" },
-  { value: "IN_PROGRESS", label: "In Progress", icon: Clock, color: "text-[#6366F1]", bg: "bg-indigo-50 dark:bg-indigo-950/60 border-indigo-200 text-indigo-700" },
-  { value: "DONE", label: "Done", icon: CheckCircle2, color: "text-emerald-500", bg: "bg-emerald-50 dark:bg-emerald-950/60 border-emerald-200 text-emerald-700" },
+  { value: "TODO", label: "Todo", icon: Circle, color: "text-gray-400 dark:text-slate-400", bg: "bg-gray-50 dark:bg-slate-800 border-gray-200 dark:border-slate-700 text-gray-600 dark:text-slate-300" },
+  { value: "IN_PROGRESS", label: "In Progress", icon: Clock, color: "text-[#6366F1] dark:text-indigo-400", bg: "bg-indigo-50 dark:bg-indigo-950/60 border-indigo-200 dark:border-indigo-800 text-indigo-700 dark:text-indigo-300" },
+  { value: "DONE", label: "Done", icon: CheckCircle2, color: "text-emerald-500 dark:text-emerald-400", bg: "bg-emerald-50 dark:bg-emerald-950/60 border-emerald-200 dark:border-emerald-800 text-emerald-700 dark:text-emerald-300" },
 ] as const
 
 const PRIORITY_OPTIONS = [
-  { value: "HIGH", label: "High", dot: "bg-red-50 dark:bg-red-950/600", bg: "bg-red-50 dark:bg-red-950/60 text-red-700 border-red-200" },
-  { value: "MEDIUM", label: "Medium", dot: "bg-orange-400", bg: "bg-orange-50 text-orange-700 border-orange-200" },
-  { value: "LOW", label: "Low", dot: "bg-blue-400", bg: "bg-blue-50 dark:bg-blue-950/60 text-blue-600 border-blue-200" },
+  { value: "HIGH", label: "High", dot: "bg-red-500", bg: "bg-red-50 dark:bg-red-950/60 text-red-700 dark:text-red-300 border-red-200 dark:border-red-800" },
+  { value: "MEDIUM", label: "Medium", dot: "bg-amber-400", bg: "bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 border-amber-200 dark:border-amber-800" },
+  { value: "LOW", label: "Low", dot: "bg-blue-400", bg: "bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-300 border-blue-200 dark:border-blue-800" },
 ] as const
 
 function relativeTime(dateStr: string) {
@@ -451,8 +451,8 @@ function TaskListContent() {
                         onClick={(e) => { e.stopPropagation(); handleToggleComplete(task) }}
                         className={`w-4 h-4 rounded border flex items-center justify-center transition-all ${
                           isDone
-                            ? "bg-emerald-50 dark:bg-emerald-950/600 border-emerald-500"
-                            : "border-gray-300 hover:border-gray-400"
+                            ? "bg-emerald-500 border-emerald-500"
+                            : "border-gray-300 dark:border-slate-700 text-transparent hover:border-indigo-400"
                         }`}
                       >
                         {isDone && <Check className="w-2.5 h-2.5 text-white" strokeWidth={3} />}

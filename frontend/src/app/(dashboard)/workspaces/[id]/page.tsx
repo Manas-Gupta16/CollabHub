@@ -282,8 +282,8 @@ export default function WorkspaceOverview() {
                 <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 border border-indigo-100">
                   {members.length} {members.length === 1 ? 'member' : 'members'}
                 </span>
-                <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 border border-emerald-100">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-50 dark:bg-emerald-950/600 animate-pulse" />
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border border-emerald-100 dark:border-emerald-800">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
                   Active Project
                 </span>
               </div>
@@ -395,9 +395,9 @@ export default function WorkspaceOverview() {
                   <span className="text-xs font-bold text-emerald-600">{completionPercentage}%</span>
                 </div>
                 <h3 className="text-2xl font-bold text-gray-900 dark:text-gray-100">{completedTasksCount}/{totalTasksCount}</h3>
-                <div className="w-full bg-gray-100 dark:bg-slate-800 h-2 rounded-full mt-2 overflow-hidden">
+                <div className="w-full bg-gray-100 dark:bg-slate-800 h-2.5 rounded-full mt-2 overflow-hidden shadow-inner">
                   <div 
-                    className="bg-emerald-50 dark:bg-emerald-950/600 h-full rounded-full transition-all duration-500" 
+                    className="bg-emerald-500 h-full rounded-full transition-all duration-500" 
                     style={{ width: `${completionPercentage}%` }}
                   />
                 </div>
@@ -464,7 +464,7 @@ export default function WorkspaceOverview() {
                     return (
                       <div 
                         key={task._id} 
-                        className="p-4 sm:px-6 flex items-center justify-between hover:bg-gray-50 dark:bg-slate-800/80 dark:hover:bg-slate-800/80 transition-colors group cursor-pointer"
+                        className="p-4 sm:px-6 flex items-center justify-between hover:bg-gray-50 dark:hover:bg-slate-800/60 transition-colors group cursor-pointer"
                         onClick={() => {
                           const nextStatus = isDone ? 'TODO' : 'DONE'
                           updateTaskStatusMutation.mutate({ taskId: task._id, status: nextStatus })
@@ -479,15 +479,15 @@ export default function WorkspaceOverview() {
                             }}
                             className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 transition-all cursor-pointer ${
                               isDone 
-                                ? 'bg-emerald-50 dark:bg-emerald-950/600 border-emerald-500 text-white' 
-                                : 'border-gray-300 text-transparent hover:border-indigo-400'
+                                ? 'bg-emerald-500 border-emerald-500 text-white' 
+                                : 'border-gray-300 dark:border-slate-700 text-transparent hover:border-indigo-400'
                             }`}
                             title={isDone ? "Mark as To Do" : "Mark as Done"}
                           >
                             <Check className="w-3 h-3 stroke-[3]" />
                           </button>
                           <div className="min-w-0">
-                            <div className={`font-semibold text-sm truncate ${isDone ? 'line-through text-gray-400 dark:text-slate-500' : 'text-gray-900 dark:text-gray-100'}`}>
+                            <div className={`font-semibold text-sm truncate ${isDone ? 'line-through text-gray-400 dark:text-slate-400 opacity-60' : 'text-gray-900 dark:text-gray-100'}`}>
                               {task.title}
                             </div>
                             <div className="flex items-center gap-2 mt-1">
@@ -501,8 +501,8 @@ export default function WorkspaceOverview() {
 
                         <div className="flex items-center gap-3 shrink-0">
                           <span className={`px-2.5 py-1 text-[11px] font-semibold rounded-lg border ${
-                            isDone ? 'bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 border-emerald-200/60' :
-                            task.status === 'IN_PROGRESS' ? 'bg-blue-50 dark:bg-blue-950/60 text-blue-700 border-blue-200/60' :
+                            isDone ? 'bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border-emerald-200/60 dark:border-emerald-800/60' :
+                            task.status === 'IN_PROGRESS' ? 'bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 border-blue-200/60 dark:border-blue-800/60' :
                             'bg-gray-100 dark:bg-slate-800 text-gray-600 dark:text-slate-300 border-gray-200 dark:border-slate-800/60'
                           }`}>
                             {isDone ? 'Done' : task.status === 'IN_PROGRESS' ? 'In Progress' : 'To Do'}
@@ -606,7 +606,7 @@ export default function WorkspaceOverview() {
                         <div className="flex items-center gap-3 min-w-0">
                           <div className="relative">
                             <UserAvatar name={userName} avatar={user.avatar} size="w-9 h-9 text-[11px]" />
-                            <span className={`absolute bottom-0 right-0 w-2.5 h-2.5 border-2 border-white rounded-full ${isOnline ? 'bg-emerald-50 dark:bg-emerald-950/600' : 'bg-gray-300'}`} title={isOnline ? 'Online' : 'Offline'} />
+                            <span className={`absolute bottom-0 right-0 w-2.5 h-2.5 border-2 border-white dark:border-slate-900 rounded-full ${isOnline ? 'bg-emerald-500' : 'bg-gray-300 dark:bg-slate-700'}`} title={isOnline ? 'Online' : 'Offline'} />
                           </div>
                           <div className="min-w-0">
                             <div className="text-sm font-bold text-gray-900 dark:text-gray-100 truncate flex items-center gap-1.5">
@@ -696,7 +696,7 @@ export default function WorkspaceOverview() {
 
             {/* Workspace Settings Card */}
             <Card className="border-gray-200 dark:border-slate-800/80 shadow-sm rounded-2xl bg-gradient-to-br from-indigo-900 via-slate-900 to-indigo-950 text-white p-6 relative overflow-hidden">
-              <div className="absolute -right-6 -bottom-6 w-32 h-32 bg-indigo-50 dark:bg-indigo-950/600/20 rounded-full blur-2xl pointer-events-none" />
+              <div className="absolute -right-6 -bottom-6 w-32 h-32 bg-indigo-500/20 rounded-full blur-2xl pointer-events-none" />
               <div className="relative z-10">
                 <div className="w-10 h-10 rounded-xl bg-white/10 backdrop-blur-md flex items-center justify-center mb-4 text-indigo-300 border border-white/10">
                   <Settings className="w-5 h-5" />

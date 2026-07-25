@@ -152,8 +152,8 @@ export default function NotificationsPage() {
                   <div 
                     key={item._id} 
                     onClick={() => handleNotificationClick(item)}
-                    className={`flex items-center gap-3 px-4 py-3.5 bg-white dark:bg-slate-900 rounded-xl border transition-all cursor-pointer group hover:border-indigo-200 hover:shadow-xs ${
-                      !item.isRead ? "border-indigo-100 bg-indigo-50 dark:bg-indigo-950/60/15" : "border-gray-100 dark:border-slate-800"
+                    className={`flex items-center gap-3 px-4 py-3.5 bg-white dark:bg-slate-900 rounded-xl border transition-all cursor-pointer group hover:border-indigo-200 dark:hover:border-indigo-800 hover:shadow-xs ${
+                      !item.isRead ? "border-indigo-100 dark:border-indigo-800/60 bg-indigo-50/50 dark:bg-indigo-950/30" : "border-gray-100 dark:border-slate-800"
                     }`}
                   >
                      {/* Icon */}

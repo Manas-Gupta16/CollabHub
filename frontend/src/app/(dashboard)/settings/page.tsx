@@ -8,7 +8,7 @@ import {
   User, Bell, Lock, Layout, MonitorSmartphone, CreditCard, Settings, 
   Layers, Crown, ShieldCheck, Shield, UserX, Check, Monitor, 
   Smartphone, Laptop, Globe, LogOut, Radio, MapPin, ShieldAlert, Sun, Moon,
-  X, Sparkles, Star, CheckCircle2, ArrowRight
+  X, Sparkles, Star, CheckCircle2, ArrowRight, Zap
 } from "lucide-react"
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 import { updateProfile, getWorkspaces, getWorkspaceById, updateWorkspaceInfo, updateMemberRole, removeMemberFromWorkspace } from "@/lib/api"
@@ -50,6 +50,10 @@ function SettingsContent() {
     queryKey: ['workspaces'],
     queryFn: getWorkspaces,
   })
+
+  const currentWorkspace = (workspaces && workspaces.length > 0) 
+    ? workspaces.find((w: any) => w._id === selectedWorkspaceId) || workspaces[0] 
+    : null
 
   useEffect(() => {
     if (queryWorkspaceId) {
@@ -422,7 +426,7 @@ function SettingsContent() {
                       onClick={() => setTheme('light')}
                       className={`p-5 rounded-2xl border-2 flex flex-col items-center gap-3 transition-all cursor-pointer ${
                         theme === 'light'
-                          ? 'border-indigo-600 bg-indigo-50 dark:bg-indigo-950/60/50 dark:bg-indigo-950/30'
+                          ? 'border-indigo-600 bg-indigo-50 dark:bg-indigo-950/40'
                           : 'border-gray-200 dark:border-slate-800 hover:border-gray-300 dark:hover:border-slate-700 bg-white dark:bg-slate-900'
                       }`}
                     >
@@ -440,7 +444,7 @@ function SettingsContent() {
                       onClick={() => setTheme('dark')}
                       className={`p-5 rounded-2xl border-2 flex flex-col items-center gap-3 transition-all cursor-pointer ${
                         theme === 'dark'
-                          ? 'border-indigo-600 bg-indigo-50 dark:bg-indigo-950/60/50 dark:bg-indigo-950/30'
+                          ? 'border-indigo-600 bg-indigo-50 dark:bg-indigo-950/40'
                           : 'border-gray-200 dark:border-slate-800 hover:border-gray-300 dark:hover:border-slate-700 bg-white dark:bg-slate-900'
                       }`}
                     >
@@ -458,7 +462,7 @@ function SettingsContent() {
                       onClick={() => setTheme('system')}
                       className={`p-5 rounded-2xl border-2 flex flex-col items-center gap-3 transition-all cursor-pointer ${
                         theme === 'system'
-                          ? 'border-indigo-600 bg-indigo-50 dark:bg-indigo-950/60/50 dark:bg-indigo-950/30'
+                          ? 'border-indigo-600 bg-indigo-50 dark:bg-indigo-950/40'
                           : 'border-gray-200 dark:border-slate-800 hover:border-gray-300 dark:hover:border-slate-700 bg-white dark:bg-slate-900'
                       }`}
                     >
@@ -724,7 +728,7 @@ function SettingsContent() {
                   </div>
 
                   {/* Security Overview Banner */}
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 rounded-2xl bg-indigo-50 dark:bg-indigo-950/60/50 border border-indigo-100/80 mb-6">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 rounded-2xl bg-indigo-50 dark:bg-indigo-950/40 border border-indigo-100/80 dark:border-slate-800 mb-6">
                     <div className="flex items-center gap-3 text-indigo-950 font-semibold text-xs">
                       <div className="w-8 h-8 rounded-xl bg-indigo-600 text-white flex items-center justify-center shrink-0 shadow-xs">
                         <ShieldCheck className="w-4 h-4" />
@@ -768,8 +772,8 @@ function SettingsContent() {
                                   {device.browser} on {device.os}
                                 </h4>
                                 {device.isCurrent && (
-                                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 border border-emerald-200/80 shrink-0">
-                                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-50 dark:bg-emerald-950/600 animate-pulse" />
+                                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border border-emerald-200/80 dark:border-emerald-800 shrink-0">
+                                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
                                     Current Session
                                   </span>
                                 )}
@@ -822,20 +826,53 @@ function SettingsContent() {
             {/* BILLING */}
             {activeTab === 'billing' && (
               <Card className="border-gray-200 dark:border-slate-800/80 bg-white dark:bg-slate-900 shadow-sm rounded-2xl">
-                <CardContent className="p-6 md:p-8">
-                  <h2 className="text-lg font-bold text-gray-900 dark:text-gray-100 mb-6">Subscription & Billing</h2>
-                  <div className="p-6 rounded-2xl border border-indigo-100 dark:border-slate-800 bg-indigo-50/70 dark:bg-indigo-950/30 flex justify-between items-center">
+                <CardContent className="p-6 md:p-8 space-y-6">
+                  <div className="flex items-center justify-between">
                     <div>
-                      <span className="text-xs font-bold text-[#6366F1] uppercase tracking-wider">Active Plan</span>
-                      <h3 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mt-1">CollabHub Free</h3>
-                      <p className="text-xs text-gray-500 dark:text-slate-400 mt-1">Includes unlimited workspace channels and team collaboration.</p>
+                      <h2 className="text-lg font-bold text-gray-900 dark:text-gray-100">Subscription & Razorpay Billing</h2>
+                      <p className="text-xs text-gray-500 dark:text-slate-400 mt-0.5">Manage your workspace subscription plan, payment methods, and invoice history.</p>
+                    </div>
+                    <span className="px-3 py-1 text-xs font-extrabold uppercase rounded-full bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 flex items-center gap-1.5">
+                      <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" /> Razorpay Verified
+                    </span>
+                  </div>
+
+                  <div className="p-6 rounded-2xl border border-indigo-100 dark:border-slate-800 bg-indigo-50/70 dark:bg-indigo-950/30 flex flex-col md:flex-row justify-between md:items-center gap-4">
+                    <div>
+                      <span className="text-xs font-bold text-[#6366F1] uppercase tracking-wider">Active Workspace Subscription</span>
+                      <h3 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mt-1 flex items-center gap-2">
+                        {currentWorkspace?.subscriptionPlan === 'PRO' ? 'CollabHub Pro Team' : currentWorkspace?.subscriptionPlan === 'ENTERPRISE' ? 'CollabHub Enterprise' : 'CollabHub Starter Free'}
+                        {currentWorkspace?.subscriptionPlan === 'PRO' && <Crown className="w-5 h-5 text-amber-500 fill-amber-400" />}
+                      </h3>
+                      <p className="text-xs text-gray-500 dark:text-slate-400 mt-1">
+                        Billing Cycle: <strong className="text-gray-700 dark:text-slate-200">{currentWorkspace?.billingCycle || 'MONTHLY'}</strong> · {currentWorkspace?.subscriptionPlan === 'PRO' ? '₹49/month per member' : 'Free tier (Up to 5 members)'}
+                      </p>
                     </div>
                     <Button 
                       onClick={() => router.push('/pricing')} 
-                      className="bg-[#6366F1] hover:bg-[#4F46E5] text-white rounded-xl text-xs font-semibold cursor-pointer"
+                      className="bg-[#6366F1] hover:bg-[#4F46E5] text-white rounded-xl text-xs font-bold px-5 py-2.5 cursor-pointer shadow-md shadow-indigo-500/20 flex items-center gap-2 shrink-0"
                     >
-                      Upgrade Plan
+                      <Zap className="w-4 h-4 fill-white" />
+                      {currentWorkspace?.subscriptionPlan === 'PRO' ? 'Manage Subscription' : 'Upgrade via Razorpay'}
                     </Button>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs font-semibold">
+                    <div className="p-4 rounded-xl border border-gray-100 dark:border-slate-800 bg-gray-50/50 dark:bg-slate-950">
+                      <span className="text-gray-400 dark:text-slate-500 block text-[10px] uppercase font-bold">Payment Gateway</span>
+                      <span className="text-gray-900 dark:text-gray-100 mt-1 block font-bold text-sm">Razorpay (INR ₹)</span>
+                      <span className="text-[11px] text-gray-500 dark:text-slate-400 font-normal">UPI, Cards, NetBanking</span>
+                    </div>
+                    <div className="p-4 rounded-xl border border-gray-100 dark:border-slate-800 bg-gray-50/50 dark:bg-slate-950">
+                      <span className="text-gray-400 dark:text-slate-500 block text-[10px] uppercase font-bold">Billing Currency</span>
+                      <span className="text-gray-900 dark:text-gray-100 mt-1 block font-bold text-sm">Indian Rupee (₹)</span>
+                      <span className="text-[11px] text-gray-500 dark:text-slate-400 font-normal">Auto GST compliant</span>
+                    </div>
+                    <div className="p-4 rounded-xl border border-gray-100 dark:border-slate-800 bg-gray-50/50 dark:bg-slate-950">
+                      <span className="text-gray-400 dark:text-slate-500 block text-[10px] uppercase font-bold">Security & Compliance</span>
+                      <span className="text-gray-900 dark:text-gray-100 mt-1 block font-bold text-sm">256-Bit SSL Encrypted</span>
+                      <span className="text-[11px] text-emerald-600 dark:text-emerald-400 font-normal">PCI-DSS Level 1</span>
+                    </div>
                   </div>
                 </CardContent>
               </Card>

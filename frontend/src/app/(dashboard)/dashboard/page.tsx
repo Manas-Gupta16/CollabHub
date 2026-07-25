@@ -473,23 +473,23 @@ export default function Dashboard() {
               <p className="text-xs text-gray-400 dark:text-slate-500 mt-0.5">Task distribution by urgency across {activeWorkspaceName}</p>
             </div>
             <div className="flex items-center gap-3 text-xs font-semibold">
-              <span className="flex items-center gap-1.5 text-red-600">
-                <span className="w-2.5 h-2.5 rounded-full bg-red-50 dark:bg-red-950/600" /> High: {highPriorityCount}
+              <span className="flex items-center gap-1.5 text-red-600 dark:text-red-400">
+                <span className="w-2.5 h-2.5 rounded-full bg-red-500" /> High: {highPriorityCount}
               </span>
-              <span className="flex items-center gap-1.5 text-amber-600">
-                <span className="w-2.5 h-2.5 rounded-full bg-amber-50 dark:bg-amber-950/600" /> Medium: {mediumPriorityCount}
+              <span className="flex items-center gap-1.5 text-amber-600 dark:text-amber-400">
+                <span className="w-2.5 h-2.5 rounded-full bg-amber-500" /> Medium: {mediumPriorityCount}
               </span>
-              <span className="flex items-center gap-1.5 text-blue-600">
-                <span className="w-2.5 h-2.5 rounded-full bg-blue-50 dark:bg-blue-950/600" /> Low: {lowPriorityCount}
+              <span className="flex items-center gap-1.5 text-blue-600 dark:text-blue-400">
+                <span className="w-2.5 h-2.5 rounded-full bg-blue-500" /> Low: {lowPriorityCount}
               </span>
             </div>
           </div>
-          <div className="w-full bg-gray-100 dark:bg-slate-800 h-2.5 rounded-full overflow-hidden flex">
+          <div className="w-full bg-gray-100 dark:bg-slate-800 h-3 rounded-full overflow-hidden flex shadow-inner">
             {totalTasks > 0 ? (
               <>
-                <div className="bg-red-50 dark:bg-red-950/600 h-full transition-all duration-500" style={{ width: `${(highPriorityCount / totalTasks) * 100}%` }} title={`High Priority: ${highPriorityCount}`} />
-                <div className="bg-amber-50 dark:bg-amber-950/600 h-full transition-all duration-500" style={{ width: `${(mediumPriorityCount / totalTasks) * 100}%` }} title={`Medium Priority: ${mediumPriorityCount}`} />
-                <div className="bg-blue-50 dark:bg-blue-950/600 h-full transition-all duration-500" style={{ width: `${(lowPriorityCount / totalTasks) * 100}%` }} title={`Low Priority: ${lowPriorityCount}`} />
+                <div className="bg-red-500 h-full transition-all duration-500" style={{ width: `${(highPriorityCount / totalTasks) * 100}%` }} title={`High Priority: ${highPriorityCount} (${Math.round((highPriorityCount / totalTasks) * 100)}%)`} />
+                <div className="bg-amber-500 h-full transition-all duration-500" style={{ width: `${(mediumPriorityCount / totalTasks) * 100}%` }} title={`Medium Priority: ${mediumPriorityCount} (${Math.round((mediumPriorityCount / totalTasks) * 100)}%)`} />
+                <div className="bg-blue-500 h-full transition-all duration-500" style={{ width: `${(lowPriorityCount / totalTasks) * 100}%` }} title={`Low Priority: ${lowPriorityCount} (${Math.round((lowPriorityCount / totalTasks) * 100)}%)`} />
               </>
             ) : (
               <div className="w-full h-full bg-gray-200 dark:bg-slate-700/80 transition-all" title="No tasks in selected workspace" />
@@ -564,7 +564,7 @@ export default function Dashboard() {
                               updateStatusMutation.mutate({ taskId: task._id, status: isDone ? 'TODO' : 'DONE' })
                             }}
                             className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 transition-all cursor-pointer ${
-                              isDone ? "bg-emerald-50 dark:bg-emerald-950/600 border-emerald-500 text-white" : "border-gray-300 text-transparent hover:border-indigo-400"
+                              isDone ? "bg-emerald-500 border-emerald-500 text-white" : "border-gray-300 dark:border-slate-700 text-transparent hover:border-indigo-400"
                             }`}
                             title={isDone ? "Mark as To Do" : "Mark as Done"}
                           >
@@ -574,20 +574,20 @@ export default function Dashboard() {
                           <div className="flex items-center gap-2.5 min-w-0">
                             <UserAvatar name={assignee.name || 'Unassigned'} avatar={assignee.avatar} size="w-6 h-6 text-[8px]" />
                             <div className="min-w-0">
-                              <h4 className={`font-semibold text-sm truncate ${isDone ? "line-through text-gray-400 dark:text-slate-500" : "text-gray-900 dark:text-gray-100"}`}>
+                              <h4 className={`font-semibold text-sm truncate ${isDone ? "line-through text-gray-400 dark:text-slate-400 opacity-60" : "text-gray-900 dark:text-gray-100"}`}>
                                 {task.title}
                               </h4>
-                              <p className="text-xs text-gray-400 dark:text-slate-500 mt-0.5 truncate">
-                                {task.status === 'TODO' ? 'To Do' : task.status === 'IN_PROGRESS' ? 'In Progress' : 'Done'} · <span className="font-semibold text-indigo-600">{task.workspaceName}</span>
+                              <p className="text-xs text-gray-400 dark:text-slate-400 mt-0.5 truncate">
+                                {task.status === 'TODO' ? 'To Do' : task.status === 'IN_PROGRESS' ? 'In Progress' : 'Done'} · <span className="font-semibold text-indigo-600 dark:text-indigo-400">{task.workspaceName}</span>
                               </p>
                             </div>
                           </div>
                         </div>
 
                         <span className={`px-2.5 py-1 text-[10px] font-bold uppercase rounded-lg border shrink-0 ${
-                          p === 'HIGH' ? 'bg-red-50 dark:bg-red-950/60 text-red-700 border-red-200/60' :
-                          p === 'LOW' ? 'bg-blue-50 dark:bg-blue-950/60 text-blue-700 border-blue-200/60' :
-                          'bg-amber-50 dark:bg-amber-950/60 text-amber-700 border-amber-200/60'
+                          p === 'HIGH' ? 'bg-red-50 dark:bg-red-950/60 text-red-700 dark:text-red-300 border-red-200/60 dark:border-red-800/60' :
+                          p === 'LOW' ? 'bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 border-blue-200/60 dark:border-blue-800/60' :
+                          'bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 border-amber-200/60 dark:border-amber-800/60'
                         }`}>
                           {task.priority || 'MEDIUM'}
                         </span>
@@ -621,7 +621,7 @@ export default function Dashboard() {
                     <div 
                       key={i} 
                       onClick={() => router.push(`/messages?workspace=${activeWorkspace?._id}&channel=${channel.name}`)}
-                      className="p-4 flex items-center justify-between hover:bg-indigo-50 dark:bg-indigo-950/60/40 transition-colors cursor-pointer group"
+                      className="p-4 flex items-center justify-between hover:bg-indigo-50 dark:hover:bg-indigo-950/40 transition-colors cursor-pointer group"
                     >
                       <div className="flex items-center gap-3">
                         <div className={`w-8 h-8 rounded-xl flex items-center justify-center font-bold text-xs ${
@@ -715,11 +715,11 @@ export default function Dashboard() {
                   const isOnline = onlineUserIds.includes(userIdStr) || (user?._id && userIdStr === user._id.toString())
                   
                   return (
-                    <div key={i} className="flex items-center justify-between p-1.5 rounded-xl hover:bg-gray-50 dark:bg-slate-900 transition-colors">
+                    <div key={i} className="flex items-center justify-between p-1.5 rounded-xl hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors">
                       <div className="flex items-center gap-2.5 min-w-0">
                         <div className="relative">
                           <UserAvatar name={uName} avatar={u.avatar} size="w-7 h-7 text-[9px]" />
-                          <span className={`absolute bottom-0 right-0 w-2 h-2 rounded-full border border-white ${isOnline ? 'bg-emerald-50 dark:bg-emerald-950/600' : 'bg-gray-300'}`} />
+                          <span className={`absolute bottom-0 right-0 w-2 h-2 rounded-full border border-white dark:border-slate-900 ${isOnline ? 'bg-emerald-500' : 'bg-gray-300 dark:bg-slate-700'}`} />
                         </div>
                         <div>
                           <span className="text-xs font-semibold text-gray-800 dark:text-gray-200 truncate block leading-tight">{uName}</span>
@@ -755,7 +755,7 @@ export default function Dashboard() {
                 {notifications && notifications.length > 0 ? (
                   notifications.slice(0, 5).map((notif: any) => (
                     <div key={notif._id} className={`p-3 rounded-xl border text-xs space-y-2 ${
-                      notif.isRead ? 'bg-white dark:bg-slate-900 border-gray-100 dark:border-slate-800 text-gray-600 dark:text-slate-300' : 'bg-amber-50 dark:bg-amber-950/60/30 border-amber-200/60 text-gray-900 dark:text-gray-100 font-medium'
+                      notif.isRead ? 'bg-white dark:bg-slate-900 border-gray-100 dark:border-slate-800 text-gray-600 dark:text-slate-300' : 'bg-amber-50 dark:bg-amber-950/30 border-amber-200/60 dark:border-amber-800/60 text-gray-900 dark:text-gray-100 font-medium'
                     }`}>
                       <p className="leading-snug">{notif.message}</p>
                       

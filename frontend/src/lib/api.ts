@@ -14,6 +14,9 @@ api.interceptors.request.use((config) => {
       config.headers.Authorization = `Bearer ${token}`;
     }
   }
+  if (typeof FormData !== 'undefined' && config.data instanceof FormData) {
+    config.headers['Content-Type'] = 'multipart/form-data';
+  }
   return config;
 });
 
@@ -91,9 +94,12 @@ export const getWorkspaceMessages = async (workspaceId: string, channel: string 
 
 export const sendMessage = async (workspaceId: string, data: any) => {
   // data can be FormData if it contains attachments
-  const response = await api.post(`/workspaces/${workspaceId}/messages`, data)
-  return response.data.data
-}
+  const config = (typeof FormData !== 'undefined' && data instanceof FormData)
+    ? { headers: { 'Content-Type': 'multipart/form-data' } }
+    : {};
+  const response = await api.post(`/workspaces/${workspaceId}/messages`, data, config);
+  return response.data.data;
+};
 
 export const updateMessage = async (messageId: string, content: string) => {
   const response = await api.patch(`/messages/${messageId}`, { content })

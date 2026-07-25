@@ -23,12 +23,13 @@ function MessagesContent() {
   
   const queryClient = useQueryClient()
   const [newMessage, setNewMessage] = useState("")
+  const [selectedFile, setSelectedFile] = useState<File | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (!file) return
-    setNewMessage((prev) => prev ? `${prev} 📎 [Attached File: ${file.name}]` : `📎 [Attached File: ${file.name}]`)
+    setSelectedFile(file)
   }
   const [messageSearch, setMessageSearch] = useState("")
   const [isAddChannelMemberOpen, setIsAddChannelMemberOpen] = useState(false)
@@ -95,10 +96,12 @@ function MessagesContent() {
   })
 
   const sendMutation = useMutation({
-    mutationFn: (content: string) => sendMessage(activeWorkspaceId, { content, channel: queryChannel }),
+    mutationFn: (payload: any) => sendMessage(activeWorkspaceId, payload),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['messages', activeWorkspaceId, queryChannel] })
       setNewMessage("")
+      setSelectedFile(null)
+      if (fileInputRef.current) fileInputRef.current.value = ""
       setShowMentionPopup(false)
     }
   })
@@ -206,8 +209,17 @@ function MessagesContent() {
 
   const handleSend = (e: React.FormEvent) => {
     e.preventDefault()
-    if (!newMessage.trim() || !activeWorkspaceId) return
-    sendMutation.mutate(newMessage)
+    if ((!newMessage.trim() && !selectedFile) || !activeWorkspaceId) return
+
+    if (selectedFile) {
+      const formData = new FormData()
+      formData.append("content", newMessage.trim() || `Uploaded file: ${selectedFile.name}`)
+      formData.append("channel", queryChannel)
+      formData.append("attachments", selectedFile)
+      sendMutation.mutate(formData as any)
+    } else {
+      sendMutation.mutate({ content: newMessage.trim(), channel: queryChannel })
+    }
   }
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -285,7 +297,7 @@ function MessagesContent() {
       }
       if (part.startsWith('@')) {
         return (
-          <span key={i} className="font-bold text-indigo-600 bg-indigo-50 dark:bg-indigo-950/60 px-1.5 py-0.5 rounded-md border border-indigo-100/60 inline-block my-0.5 break-all">
+          <span key={i} className="font-bold text-indigo-600 dark:text-indigo-300 bg-indigo-50 dark:bg-indigo-950/80 px-1.5 py-0.5 rounded-md border border-indigo-100/60 dark:border-indigo-800/60 inline-block my-0.5 break-all">
             {part}
           </span>
         )
@@ -399,7 +411,7 @@ function MessagesContent() {
               const isEditing = editingMessageId === msg._id
 
               return (
-                <div key={msg._id} className="flex gap-3.5 p-3 rounded-2xl hover:bg-white hover:shadow-xs transition-all border border-transparent hover:border-gray-100 dark:border-slate-800 group relative">
+                <div key={msg._id} className="flex gap-3.5 p-3 rounded-2xl hover:bg-white dark:hover:bg-slate-900/80 hover:shadow-xs transition-all border border-transparent hover:border-gray-100 dark:hover:border-slate-800 group relative">
                   <UserAvatar name={senderName} avatar={sender.avatar || sender.profileImage} size="w-9 h-9 text-[11px]" />
                   
                   <div className="min-w-0 flex-1">
@@ -414,14 +426,14 @@ function MessagesContent() {
 
                       {/* Action buttons on hover */}
                       {!isEditing && (canDelete || isSender) && (
-                        <div className="opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1 bg-white border border-gray-200 dark:border-slate-800/80 shadow-2xs rounded-lg px-1 py-0.5 shrink-0">
+                        <div className="opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1 bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800/80 shadow-2xs rounded-lg px-1 py-0.5 shrink-0">
                           {isSender && (
                             <button
                               onClick={() => {
                                 setEditingMessageId(msg._id)
                                 setEditingContent(msg.content)
                               }}
-                              className="p-1 text-gray-400 dark:text-slate-500 hover:text-indigo-600 rounded hover:bg-indigo-50 dark:bg-indigo-950/60 transition-colors cursor-pointer"
+                              className="p-1 text-gray-400 dark:text-slate-500 hover:text-indigo-600 dark:hover:text-indigo-400 rounded hover:bg-indigo-50 dark:hover:bg-indigo-950/60 transition-colors cursor-pointer"
                               title="Edit message"
                             >
                               <Pencil className="w-3.5 h-3.5" />
@@ -434,7 +446,7 @@ function MessagesContent() {
                                   deleteMessageMutation.mutate(msg._id)
                                 }
                               }}
-                              className="p-1 text-gray-400 dark:text-slate-500 hover:text-red-600 rounded hover:bg-red-50 dark:bg-red-950/60 transition-colors cursor-pointer"
+                              className="p-1 text-gray-400 dark:text-slate-500 hover:text-red-600 dark:hover:text-red-400 rounded hover:bg-red-50 dark:hover:bg-red-950/60 transition-colors cursor-pointer"
                               title="Delete message"
                             >
                               <Trash2 className="w-3.5 h-3.5" />
@@ -479,8 +491,43 @@ function MessagesContent() {
                         </div>
                       </form>
                     ) : (
-                      <div className="text-gray-700 dark:text-gray-300 leading-relaxed text-[14px] font-medium whitespace-pre-wrap break-words break-all min-w-0">
-                         {renderMessageContent(msg.content)}
+                      <div>
+                        <div className="text-gray-700 dark:text-gray-300 leading-relaxed text-[14px] font-medium whitespace-pre-wrap break-words break-all min-w-0">
+                           {renderMessageContent(msg.content)}
+                        </div>
+
+                        {/* Attachments rendering */}
+                        {msg.attachments && msg.attachments.length > 0 && (
+                          <div className="mt-2.5 flex flex-wrap gap-2">
+                            {msg.attachments.map((att: string, idx: number) => {
+                              const fullUrl = att.startsWith("http") ? att : `http://localhost:5000${att}`
+                              const isImg = /\.(png|jpe?g|gif|webp|svg)$/i.test(att)
+                              const fileName = att.split("/").pop() || "Attachment"
+
+                              if (isImg) {
+                                return (
+                                  <a key={idx} href={fullUrl} target="_blank" rel="noopener noreferrer" className="block overflow-hidden rounded-xl border border-gray-200 dark:border-slate-800 max-w-sm hover:opacity-90 transition-opacity shadow-xs">
+                                    <img src={fullUrl} alt={fileName} className="max-h-60 w-auto object-cover" />
+                                  </a>
+                                )
+                              }
+
+                              return (
+                                <a
+                                  key={idx}
+                                  href={fullUrl}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  download
+                                  className="inline-flex items-center gap-2 px-3 py-2 rounded-xl bg-indigo-50 dark:bg-indigo-950/60 border border-indigo-100 dark:border-slate-800 text-indigo-600 dark:text-indigo-400 font-bold text-xs hover:bg-indigo-100 dark:hover:bg-slate-800 transition-colors shadow-xs"
+                                >
+                                  <span>📎 Download {fileName}</span>
+                                  <ExternalLink className="w-3.5 h-3.5" />
+                                </a>
+                              )
+                            })}
+                          </div>
+                        )}
                       </div>
                     )}
                   </div>
@@ -493,6 +540,18 @@ function MessagesContent() {
         {/* Input Box with Autocomplete Mention Popup */}
         <form onSubmit={handleSend} className="p-4 sm:p-6 bg-white dark:bg-slate-950 shrink-0 border-t border-gray-100 dark:border-slate-800 relative">
            
+           {/* Selected File Attachment Chip */}
+           {selectedFile && (
+             <div className="mb-2 p-2.5 rounded-xl bg-indigo-50 dark:bg-indigo-950/60 border border-indigo-100 dark:border-slate-800 flex items-center justify-between text-xs font-semibold text-indigo-700 dark:text-indigo-300 animate-in fade-in">
+               <div className="flex items-center gap-2 truncate">
+                 <span>📎 Attachment ready: <strong>{selectedFile.name}</strong> ({Math.round(selectedFile.size / 1024)} KB)</span>
+               </div>
+               <button type="button" onClick={() => setSelectedFile(null)} className="text-indigo-500 hover:text-indigo-700 cursor-pointer font-bold p-1">
+                 <X className="w-4 h-4" />
+               </button>
+             </div>
+           )}
+
            {/* Autocomplete Popup */}
            {showMentionPopup && matchingMembers.length > 0 && (
              <div className="absolute bottom-full mb-2 left-6 right-6 bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 rounded-2xl shadow-xl p-2 z-50 max-h-48 overflow-y-auto animate-in fade-in">
@@ -534,7 +593,7 @@ function MessagesContent() {
              />
              <button 
                type="submit" 
-               disabled={!newMessage.trim() || sendMutation.isPending || isError} 
+               disabled={(!newMessage.trim() && !selectedFile) || sendMutation.isPending || isError} 
                className="w-8 h-8 rounded-xl bg-[#6366F1] text-white hover:bg-[#4F46E5] disabled:opacity-40 transition-all flex items-center justify-center shrink-0 cursor-pointer shadow-xs"
              >
                 <Send className="w-4 h-4" />
@@ -561,7 +620,7 @@ function MessagesContent() {
         <div className="px-4 py-3 overflow-y-auto custom-scrollbar flex-1 space-y-6">
            {/* If private channel, show channel members */}
            {isPrivateChannel && (
-             <div className="bg-amber-50 dark:bg-amber-950/60/40 p-3.5 rounded-2xl border border-amber-200/50">
+             <div className="bg-amber-50 dark:bg-amber-950/40 p-3.5 rounded-2xl border border-amber-200/50 dark:border-amber-900/40">
                <div className="flex items-center justify-between mb-2.5">
                  <div className="text-[12px] font-bold text-gray-900 dark:text-gray-100 tracking-tight flex items-center gap-1.5">
                    <Lock className="w-3.5 h-3.5 text-amber-600" /> Channel Members
@@ -618,9 +677,9 @@ function MessagesContent() {
                        </div>
                      </div>
                      <div 
-                       className={`w-2.5 h-2.5 rounded-full shrink-0 ${isOnline ? 'bg-emerald-50 dark:bg-emerald-950/600 shadow-xs ring-2 ring-white' : 'bg-gray-300'}`} 
-                       title={isOnline ? 'Online' : 'Offline'}
-                     ></div>
+                        className={`w-2.5 h-2.5 rounded-full shrink-0 ${isOnline ? 'bg-emerald-500 shadow-xs ring-2 ring-white dark:ring-slate-900' : 'bg-gray-300 dark:bg-slate-700'}`} 
+                        title={isOnline ? 'Online' : 'Offline'}
+                      ></div>
                    </div>
                  )
                })}
@@ -638,7 +697,7 @@ function MessagesContent() {
                   </div>
                   <button
                     onClick={() => setIsAddLinkOpen(true)}
-                    className="text-[10px] font-bold text-indigo-600 hover:text-indigo-800 hover:bg-indigo-50 dark:bg-indigo-950/60 px-1.5 py-0.5 rounded transition-all cursor-pointer"
+                    className="text-[10px] font-bold text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 hover:bg-indigo-50 dark:hover:bg-indigo-950/60 px-1.5 py-0.5 rounded transition-all cursor-pointer"
                   >
                     + Add Link
                   </button>
@@ -649,7 +708,7 @@ function MessagesContent() {
                     {activeWorkspace.pinnedLinks.map((link: any, i: number) => {
                       const linkId = link._id || link.id || i
                       return (
-                        <div key={linkId} className="flex items-center justify-between group/link p-1.5 rounded-lg hover:bg-gray-50 dark:bg-slate-800/80 dark:hover:bg-slate-800 transition-colors">
+                        <div key={linkId} className="flex items-center justify-between group/link p-1.5 rounded-lg hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors">
                           <a 
                             href={link.url.startsWith('http') ? link.url : `https://${link.url}`} 
                             target="_blank" 
@@ -683,7 +742,7 @@ function MessagesContent() {
                   </div>
                   <button
                     onClick={() => setIsAddGoalOpen(true)}
-                    className="text-[10px] font-bold text-indigo-600 hover:text-indigo-800 hover:bg-indigo-50 dark:bg-indigo-950/60 px-1.5 py-0.5 rounded transition-all cursor-pointer"
+                    className="text-[10px] font-bold text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 hover:bg-indigo-50 dark:hover:bg-indigo-950/60 px-1.5 py-0.5 rounded transition-all cursor-pointer"
                   >
                     + Add Goal
                   </button>
@@ -696,7 +755,7 @@ function MessagesContent() {
                       const isDone = !!goal.isCompleted
 
                       return (
-                        <div key={goalId} className="flex items-center justify-between group/goal p-1.5 rounded-lg hover:bg-gray-50 dark:bg-slate-800/80 dark:hover:bg-slate-800 transition-colors">
+                        <div key={goalId} className="flex items-center justify-between group/goal p-1.5 rounded-lg hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors">
                           <button
                             onClick={() => toggleTeamGoalMutation.mutate(goalId)}
                             className="flex items-center gap-2 text-left min-w-0 flex-1 cursor-pointer"

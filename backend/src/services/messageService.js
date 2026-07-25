@@ -12,11 +12,17 @@ const sendMessage = async (workspaceId, content, currentUser, files = [], channe
         throw new AppError("Workspace not found", 404);
     }
 
+    const currentUserId = (currentUser._id || currentUser).toString();
+    const isOwner = workspace.owner && workspace.owner.toString() === currentUserId;
+
     const currentMember = workspace.members.find(
-        (member) => (member.user._id || member.user).toString() === currentUser._id.toString() && member.status !== "PENDING"
+        (member) => {
+            const mId = (member.user?._id || member.user || "").toString();
+            return mId === currentUserId && member.status !== "PENDING";
+        }
     );
 
-    if (!currentMember) {
+    if (!currentMember && !isOwner) {
         throw new AppError("You are not a member of this workspace", 403);
     }
 
@@ -25,10 +31,10 @@ const sendMessage = async (workspaceId, content, currentUser, files = [], channe
         (c) => c.name.toLowerCase() === (channelName || "General").toLowerCase()
     );
     if (channelObj && channelObj.isPrivate) {
-        const isChannelMember = channelObj.members.some(
-            (m) => m.toString() === currentUser._id.toString()
+        const isChannelMember = channelObj.members && channelObj.members.some(
+            (m) => (m._id || m).toString() === currentUserId
         );
-        const isOwnerOrAdmin = currentMember.role === "OWNER" || currentMember.role === "ADMIN";
+        const isOwnerOrAdmin = isOwner || (currentMember && (currentMember.role === "OWNER" || currentMember.role === "ADMIN"));
         if (!isChannelMember && !isOwnerOrAdmin) {
             throw new AppError("You do not have access to this private channel", 403);
         }
@@ -36,9 +42,12 @@ const sendMessage = async (workspaceId, content, currentUser, files = [], channe
 
     // Handle Attachments
     const attachments = files ? files.map(file => `/uploads/${file.filename}`) : [];
+    const finalContent = (content && content.trim()) 
+        ? content.trim() 
+        : (files && files.length > 0 ? `Uploaded file: ${files[0].originalname || 'attachment'}` : "Attachment");
 
     const message = await Message.create({
-        content,
+        content: finalContent,
         workspace: workspaceId,
         channel: channelName || "General",
         sender: currentUser._id,
@@ -95,11 +104,17 @@ const getWorkspaceMessages = async (workspaceId, currentUser, filters = {}) => {
         throw new AppError("Workspace not found", 404);
     }
 
+    const currentUserId = (currentUser._id || currentUser).toString();
+    const isOwner = workspace.owner && workspace.owner.toString() === currentUserId;
+
     const currentMember = workspace.members.find(
-        (member) => (member.user._id || member.user).toString() === currentUser._id.toString() && member.status !== "PENDING"
+        (member) => {
+            const mId = (member.user?._id || member.user || "").toString();
+            return mId === currentUserId && member.status !== "PENDING";
+        }
     );
 
-    if (!currentMember) {
+    if (!currentMember && !isOwner) {
         throw new AppError("You are not a member of this workspace", 403);
     }
 
@@ -110,10 +125,10 @@ const getWorkspaceMessages = async (workspaceId, currentUser, filters = {}) => {
         (c) => c.name.toLowerCase() === channelName.toLowerCase()
     );
     if (channelObj && channelObj.isPrivate) {
-        const isChannelMember = channelObj.members.some(
-            (m) => m.toString() === currentUser._id.toString()
+        const isChannelMember = channelObj.members && channelObj.members.some(
+            (m) => (m._id || m).toString() === currentUserId
         );
-        const isOwnerOrAdmin = currentMember.role === "OWNER" || currentMember.role === "ADMIN";
+        const isOwnerOrAdmin = isOwner || (currentMember && (currentMember.role === "OWNER" || currentMember.role === "ADMIN"));
         if (!isChannelMember && !isOwnerOrAdmin) {
             throw new AppError("You do not have access to this private channel", 403);
         }
