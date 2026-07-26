@@ -1,0 +1,35 @@
+services:
+  # 1. Backend Web Service (Node.js / Express / Socket.IO)
+  - type: web
+    name: collabhub-backend
+    env: node
+    region: singapore # Options: oregon, frankfurt, singapore, ohio
+    plan: free
+    rootDir: backend
+    buildCommand: npm install
+    startCommand: node src/server.js
+    healthCheckPath: /
+    envVars:
+      - key: PORT
+        value: 10000
+      - key: MONGO_URI
+        sync: false # Set manually in Render Dashboard or prompt on deploy
+      - key: JWT_SECRET
+        generateValue: true # Render automatically generates a secure random 256-bit string
+      - key: NODE_ENV
+        value: production
+
+  # 2. Frontend Web Service (Next.js 16 SSR App)
+  - type: web
+    name: collabhub-frontend
+    env: node
+    region: singapore
+    plan: free
+    rootDir: frontend
+    buildCommand: npm install && npm run build
+    startCommand: npm start
+    envVars:
+      - key: NEXT_PUBLIC_API_URL
+        sync: false # Set to https://collabhub-backend.onrender.com/api
+      - key: NEXT_PUBLIC_SOCKET_URL
+        sync: false # Set to https://collabhub-backend.onrender.com
