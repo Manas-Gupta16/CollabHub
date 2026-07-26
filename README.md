@@ -1,202 +1,206 @@
-# CollabHub – Modern Team Collaboration Platform
+# CollabHub – Modern Full-Stack Team Collaboration Platform
 
-CollabHub is a full-stack collaboration platform designed for teams and developers to communicate, manage tasks, and collaborate efficiently in real time.
+CollabHub is a feature-rich, full-stack enterprise-grade collaboration platform designed for modern software teams to manage tasks, communicate in real time, monitor project activity, and control workspace permissions seamlessly.
 
-This project is being built from scratch with a strong focus on scalable backend architecture, modern frontend design, clean code practices, and production-level engineering workflows.
-
----
-
-## Features
-
-### Authentication & Security
-
-- JWT-based Authentication
-- Secure Login & Registration
-- Protected Routes
-- Role-Based Access Control
-
-### Workspaces & Collaboration
-
-- Create and manage workspaces
-- Invite team members
-- Workspace roles & permissions
-
-### Communication System
-
-- Team channels
-- Real-time messaging (Socket.IO)
-- Message history
-- Notifications & mentions
-
-### Task Management
-
-- Create tasks
-- Assign tasks to members
-- Due dates & priorities
-- Task status tracking
-
-### Activity & Notifications
-
-- Activity logs
-- Advanced real-time notifications
-
-### Search & Filtering
-
-- Search tasks & messages
-- Pagination
-- Sorting & filtering
-
-### Frontend Experience
-
-- Cinematic landing page
-- Responsive dashboard
-- Modern UI/UX
-- Dark premium aesthetic
+Built from scratch with a focus on scalable backend architecture, Next.js App Router frontend design, clean code patterns, real-time WebSockets, and production-level engineering workflows.
 
 ---
 
-## Tech Stack
+## 🌟 Key Features
 
-### Frontend
+### 🔐 Authentication & Security
+- **JWT & Session Auth**: Secure token-based auth with request interceptors & Bearer token header handling.
+- **Google OAuth 2.0**: Integrated single-sign-on using Google Auth Library and `@react-oauth/google`.
+- **Role-Based Access Control (RBAC)**: Fine-grained permissions for workspace owners, admins, members, and guests.
+- **Email Verification & Password Resets**: Nodemailer SMTP integration for email verification and secure password reset links.
 
-- React.js
-- Tailwind CSS
-- Axios
-- React Router
+### 🏢 Workspace Management
+- **Multi-Tenant Workspaces**: Create, manage, and switch between multiple workspaces.
+- **Member Invitations**: Unique invite tokens and email invite flows.
+- **Channel & Project Organization**: Group team activities into dedicated workspace channels.
 
-### Backend
+### 📋 Task & Project Management
+- **Kanban & List Views**: Task tracking with real-time status transitions (`todo`, `in_progress`, `review`, `completed`).
+- **Priorities & Assignees**: Urgent/High/Medium/Low priority tagging, due dates, and task assignments.
+- **Task Comments**: Threaded discussions and file/comment support per task.
 
-- Node.js
-- Express.js
+### 💬 Real-Time Communication
+- **Socket.IO Integration**: Low-latency instant messaging across workspace channels.
+- **Live Notifications**: Real-time push alerts for user mentions, task assignments, and invite updates.
+- **Centralized Inbox**: Notifications tray with read/unread filtering and single-click "mark all as read".
 
-### Database
+### 📊 Activity & Analytics Audit Trail
+- **Workspace Audit Logs**: Track member actions, task status updates, and workspace configuration changes.
+- **Interactive Dashboards**: Visual analytics powered by Recharts.
 
-- MongoDB
-- Mongoose
+### 💳 Billing & Subscription Plans
+- **Tiered Pricing**: Free, Pro, and Enterprise subscription tiers with feature limits.
+- **Simulated Checkout Flow**: Subscription lifecycle and billing management views.
 
-### Tools & Technologies
-
-- JWT Authentication
-- Git & GitHub Actions (CI/CD)
-- REST APIs & Swagger UI
-- Docker & Docker Compose
-- Socket.IO
-- Jest & Supertest
+### 🔍 Global Search & Filtering
+- **Unified Search**: Search across tasks, messages, channels, and team members instantly.
 
 ---
 
-## Project Structure
+## 🛠️ Tech Stack
+
+### **Frontend**
+- **Framework**: [Next.js 16](https://nextjs.org/) (React 19, App Router, TypeScript)
+- **Styling**: [Tailwind CSS v4](https://tailwindcss.com/), Framer Motion, `@base-ui/react`, Lucide React icons
+- **State Management**: [Zustand](https://zustand-demo.pmnd.rs/), [TanStack React Query v5](https://tanstack.com/query)
+- **Real-Time Client**: Socket.IO Client
+
+### **Backend**
+- **Runtime**: Node.js & Express.js (v5.x, MVC Architecture)
+- **Database**: MongoDB with Mongoose ORM
+- **WebSockets**: Socket.IO Server
+- **Security & Utilities**: Helmet, Express Rate Limit, Express Validator, Bcrypt, JsonWebToken, Nodemailer
+- **API Specs**: Swagger UI (`/api-docs`) powered by `swagger-jsdoc`
+
+---
+
+## 📁 Project Structure
 
 ```txt
 CollabHub/
 │
 ├── backend/
 │   ├── src/
-│   │   ├── config/         # Database & environment configuration
-│   │   ├── controllers/    # Request handlers
-│   │   ├── middleware/     # Custom middleware
-│   │   ├── models/         # Database models
-│   │   ├── routes/         # API routes
-│   │   ├── services/       # Business logic
-│   │   ├── utils/          # Utility/helper functions
-│   │   ├── app.js          # Express app configuration
-│   │   └── server.js       # Server entry point
-│   │
+│   │   ├── config/         # Database & environment configurations
+│   │   ├── controllers/    # Express controllers (auth, workspace, task, billing, etc.)
+│   │   ├── middleware/     # Auth verification, rate limiting, error handlers
+│   │   ├── models/         # Mongoose schemas (User, Workspace, Task, Message, Activity, etc.)
+│   │   ├── routes/         # REST API endpoints
+│   │   ├── services/       # Core business & background services
+│   │   ├── utils/          # Helpers (Nodemailer, tokens, search)
+│   │   ├── validators/     # Express-validator schema validation
+│   │   ├── app.js          # Express middleware pipeline & routes initialization
+│   │   ├── server.js       # HTTP & MongoDB entry point
+│   │   └── socket.js       # Socket.IO event handlers
 │   ├── .env
-│   ├── .gitignore
-│   ├── package.json
-│   └── package-lock.json
+│   ├── Dockerfile
+│   ├── docker-compose.yml
+│   └── package.json
 │
-├── frontend/               # Frontend application (coming soon)
+├── frontend/
+│   ├── src/
+│   │   ├── app/
+│   │   │   ├── (auth)/        # Auth pages (Login, Register, Forgot Password)
+│   │   │   ├── (marketing)/   # Public Landing Page & Pricing
+│   │   │   └── (dashboard)/   # Main Workspace App (Workspaces, Tasks, Messages, Activity)
+│   │   ├── components/        # Reusable UI components & Theme Toggle
+│   │   ├── lib/               # Axios API client, Socket instance, Utilities
+│   │   └── providers/         # React Query & Theme providers
+│   └── package.json
 │
-├── LICENSE
-└── README.md
+├── README.md
+└── LICENSE
 ```
 
 ---
 
-## Installation & Setup
+## 🚀 Getting Started
 
-### 1. Clone the Repository
-
-```bash
-git clone https://github.com/your-username/collabhub.git
-cd collabhub
-```
+### 1. Prerequisites
+- **Node.js**: `v18.x` or higher
+- **npm**: `v9.x` or higher
+- **MongoDB**: Local MongoDB instance or MongoDB Atlas connection URI
 
 ---
 
-### 2. Setup Backend
+### 2. Backend Setup
 
 ```bash
 cd backend
 npm install
 ```
 
-Create a `.env` file inside the backend folder:
+Create a `.env` file inside the `backend/` directory:
 
 ```env
 PORT=5000
 MONGO_URI=your_mongodb_connection_string
-JWT_SECRET=your_secret_key
+JWT_SECRET=your_jwt_secret_key
+GOOGLE_CLIENT_ID=your_google_oauth_client_id
+# Optional: SMTP Configuration for email features
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=587
+SMTP_USER=your_email@gmail.com
+SMTP_PASS=your_app_password
 ```
 
-Run backend server:
+Start the backend development server:
 
 ```bash
 npm run dev
 ```
 
+The backend server runs on `http://localhost:5000`. Swagger API documentation is available at `http://localhost:5000/api-docs`.
+
 ---
 
-## Initial API Endpoint
+### 3. Frontend Setup
 
-```http
-GET /
+```bash
+cd frontend
+npm install
 ```
 
-Response:
+Create a `.env.local` file inside the `frontend/` directory (optional defaults provided in `lib/api.ts`):
 
-```json
-"CollabHub API is running..."
+```env
+NEXT_PUBLIC_API_URL=http://localhost:5000/api
+NEXT_PUBLIC_SOCKET_URL=http://localhost:5000
+NEXT_PUBLIC_GOOGLE_CLIENT_ID=your_google_oauth_client_id
+```
+
+Start the frontend development server:
+
+```bash
+npm run dev
+```
+
+The frontend client will be accessible at `http://localhost:3000`.
+
+---
+
+## 📡 Key API Endpoint Groups
+
+| Method | Endpoint | Description |
+| :--- | :--- | :--- |
+| `POST` | `/api/auth/register` | Register new user account |
+| `POST` | `/api/auth/login` | Authenticate user & return JWT |
+| `POST` | `/api/auth/google` | Authenticate with Google OAuth |
+| `GET` | `/api/workspaces` | Get workspaces for authenticated user |
+| `POST` | `/api/workspaces` | Create new workspace |
+| `GET` | `/api/tasks` | Get tasks with status/priority filtering |
+| `POST` | `/api/tasks` | Create task item |
+| `GET` | `/api/messages/:workspaceId` | Get workspace channel messages |
+| `GET` | `/api/notifications` | Fetch unread user notifications |
+| `GET` | `/api/activity/:workspaceId` | Fetch workspace audit trail logs |
+| `GET` | `/api-docs` | Interactive OpenAPI Swagger UI |
+
+---
+
+## 🧪 Testing
+
+To run backend test suites:
+
+```bash
+cd backend
+npm test
 ```
 
 ---
 
-## Future Improvements
+## 📄 License
 
-- File uploads
-- Cloud deployment
-- PostgreSQL integration
-- Microservices architecture (future scope)
+Distributed under the MIT License.
 
 ---
 
-## Learning Goals of This Project
+## 👤 Author
 
-- Build scalable backend systems
-- Master MongoDB & database design
-- Learn authentication & security practices
-- Understand production-level architecture
-- Create a recruiter-quality full-stack project
-- Improve frontend-backend integration skills
-
----
-
-## Contributing
-
-Contributions are welcome. Feel free to fork the repository and submit pull requests.
-
----
-
-## License
-
-This project is licensed under the MIT License.
-
----
-
-## Author
-
-**Manas Gupta**
-Aspiring Software Engineer
-Passionate about backend engineering, scalable systems, and modern web development.
+**Manas Gupta**  
+*Full-Stack Engineer & Scalable Systems Enthusiast*  
+GitHub: [@Manas-Gupta16](https://github.com/Manas-Gupta16)
