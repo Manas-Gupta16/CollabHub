@@ -14,7 +14,7 @@ export const getSocket = (): Socket | null => {
         return process.env.NEXT_PUBLIC_API_URL.replace("/api", "")
       }
       if (typeof window !== "undefined" && window.location.hostname.includes("onrender.com")) {
-        return "https://collabhub-backend.onrender.com"
+        return "https://collabhub-backend-68xr.onrender.com"
       }
       return "http://localhost:5000"
     }
