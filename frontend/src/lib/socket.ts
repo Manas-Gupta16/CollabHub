@@ -10,13 +10,12 @@ export const getSocket = (): Socket | null => {
 
   if (!socket || !socket.connected) {
     const getBackendUrl = () => {
-      if (process.env.NEXT_PUBLIC_API_URL) {
-        return process.env.NEXT_PUBLIC_API_URL.replace("/api", "")
-      }
       if (typeof window !== "undefined" && window.location.hostname.includes("onrender.com")) {
         return "https://collabhub-backend-68xr.onrender.com"
       }
-      return "http://localhost:5000"
+      return process.env.NEXT_PUBLIC_API_URL
+        ? process.env.NEXT_PUBLIC_API_URL.replace("/api", "")
+        : "http://localhost:5000"
     }
 
     socket = io(getBackendUrl(), {

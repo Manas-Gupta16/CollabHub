@@ -1,13 +1,10 @@
 import axios from 'axios';
 
 const getBaseURL = () => {
-  if (process.env.NEXT_PUBLIC_API_URL) {
-    return process.env.NEXT_PUBLIC_API_URL;
-  }
   if (typeof window !== 'undefined' && window.location.hostname.includes('onrender.com')) {
     return 'https://collabhub-backend-68xr.onrender.com/api';
   }
-  return 'http://localhost:5000/api';
+  return process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
 };
 
 const api = axios.create({
