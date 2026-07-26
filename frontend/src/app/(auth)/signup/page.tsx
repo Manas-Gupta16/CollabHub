@@ -36,7 +36,8 @@ export default function Signup() {
         router.push("/login")
       }
     } catch (err: any) {
-      const msg = err?.response?.data?.message || err?.response?.data?.error || "Registration failed. Please try again."
+      console.error("Signup Error:", err)
+      const msg = err?.response?.data?.message || err?.response?.data?.error || err?.message || "Registration failed. Please try again."
       setError(msg)
     } finally {
       setLoading(false)

@@ -31,7 +31,8 @@ export default function Login() {
         setError("Login failed. No token received.")
       }
     } catch (err: any) {
-      const msg = err?.response?.data?.message || err?.response?.data?.error || "Invalid email or password."
+      console.error("Login Error:", err)
+      const msg = err?.response?.data?.message || err?.response?.data?.error || err?.message || "Invalid email or password."
       setError(msg)
     } finally {
       setLoading(false)
