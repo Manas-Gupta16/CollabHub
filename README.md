@@ -2,7 +2,15 @@
 
 CollabHub is a feature-rich, full-stack enterprise-grade collaboration platform designed for modern software teams to manage tasks, communicate in real time, monitor project activity, and control workspace permissions seamlessly.
 
-Built from scratch with a focus on scalable backend architecture, Next.js App Router frontend design, clean code patterns, real-time WebSockets, and production-level engineering workflows.
+Built from scratch with a focus on scalable backend architecture, Next.js 16 App Router frontend design, clean code patterns, real-time WebSockets, and production-level engineering workflows.
+
+---
+
+## 🌐 Live Production Deployment
+
+- 💻 **Live Web Application**: [https://collabhub-frontend.onrender.com](https://collabhub-frontend.onrender.com)
+- ⚙️ **Live Backend REST API**: [https://collabhub-backend-68xr.onrender.com/api](https://collabhub-backend-68xr.onrender.com/api)
+- 📚 **Interactive Swagger API Docs**: [https://collabhub-backend-68xr.onrender.com/api-docs](https://collabhub-backend-68xr.onrender.com/api-docs)
 
 ---
 
@@ -93,6 +101,7 @@ CollabHub/
 │   │   └── providers/         # React Query & Theme providers
 │   └── package.json
 │
+├── render.yaml              # Render Blueprint for automated deployment
 ├── README.md
 └── LICENSE
 ```
@@ -161,6 +170,16 @@ npm run dev
 ```
 
 The frontend client will be accessible at `http://localhost:3000`.
+
+---
+
+### 4. Cloud Deployment (Render Blueprint)
+
+CollabHub includes a `render.yaml` Blueprint file for deployment on [Render](https://render.com/):
+
+1. Connect your GitHub repository in the **Render Dashboard** -> **Blueprints**.
+2. Set environment variables (`MONGO_URI`, `NEXT_PUBLIC_API_URL`).
+3. Render automatically provisions both the Next.js Frontend Web Service and Node.js WebSockets Backend.
 
 ---
 
