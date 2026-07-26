@@ -14,7 +14,8 @@ import {
 } from "lucide-react"
 import Link from "next/link"
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
-import api, { getWorkspaces, createChannel, globalSearch } from "@/lib/api"
+import api, { getWorkspaces, createChannel, globalSearch, getNotifications } from "@/lib/api"
+import { getSocket } from "@/lib/socket"
 import { useState, useEffect, Suspense } from "react"
 import { useRouter, usePathname, useSearchParams } from "next/navigation"
 import { Input } from "@/components/ui/input"
@@ -65,6 +66,34 @@ function DashboardLayoutInner({
     queryFn: getWorkspaces,
     enabled: isMounted && !!localStorage.getItem("token"),
   })
+
+  const { data: notifications } = useQuery({
+    queryKey: ['notifications'],
+    queryFn: getNotifications,
+    enabled: isMounted && !!localStorage.getItem("token"),
+  })
+
+  const unreadCount = (notifications || []).filter((n: any) => !n.isRead).length
+
+  useEffect(() => {
+    if (!isMounted || typeof window === 'undefined') return
+    const token = localStorage.getItem("token")
+    if (!token) return
+
+    const socket = getSocket()
+    if (!socket) return
+
+    const handleNewNotification = () => {
+      queryClient.invalidateQueries({ queryKey: ['notifications'] })
+      queryClient.invalidateQueries({ queryKey: ['workspaces'] })
+    }
+
+    socket.on("new_notification", handleNewNotification)
+
+    return () => {
+      socket.off("new_notification", handleNewNotification)
+    }
+  }, [isMounted, queryClient])
 
   // Extract ID from path if available, or fall back to query string client-side via reactive searchParams hook
   let currentWorkspaceId = pathname.match(/\/workspaces\/([a-zA-Z0-9_-]+)/)?.[1]
@@ -193,14 +222,19 @@ function DashboardLayoutInner({
                 { name: 'Overview', href: '/dashboard', icon: <Layout className="w-4 h-4" /> },
                 { name: 'Tasks', href: '/tasks', icon: <FolderKanban className="w-4 h-4" /> },
                 { name: 'Activity Feed', href: '/activity', icon: <Activity className="w-4 h-4" /> },
-                { name: 'Notifications', href: '/notifications', icon: <Bell className="w-4 h-4" /> },
-              ].map((item) => {
+                { name: 'Notifications', href: '/notifications', icon: <Bell className="w-4 h-4" />, badge: unreadCount },
+              ].map((item: any) => {
                 const isActive = pathname === item.href;
                 return (
                   <Link key={item.href} href={item.href}>
                     <div className={`flex items-center gap-2.5 px-2 py-1.5 rounded-md text-[13px] font-medium transition-colors cursor-pointer ${isActive ? 'bg-gray-100 dark:bg-slate-800 dark:bg-slate-800 text-gray-900 dark:text-gray-100 dark:text-gray-100 font-bold' : 'text-gray-700 dark:text-gray-300 dark:text-slate-300 hover:bg-gray-50 dark:bg-slate-900 dark:hover:bg-slate-800/50'}`}>
                       {item.icon}
-                      {item.name}
+                      <span className="flex-1">{item.name}</span>
+                      {item.badge > 0 && (
+                        <span className="bg-[#6366F1] text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full shadow-xs">
+                          {item.badge}
+                        </span>
+                      )}
                     </div>
                   </Link>
                 );

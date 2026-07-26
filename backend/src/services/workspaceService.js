@@ -223,7 +223,7 @@ const addMemberToWorkspace = async (
     workspace.members.push({
         user: user._id,
         role: role || ROLES.MEMBER,
-        status: "ACTIVE",
+        status: "PENDING",
     });
 
     await workspace.save();
