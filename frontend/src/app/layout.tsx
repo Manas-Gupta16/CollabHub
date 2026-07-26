@@ -5,8 +5,11 @@ import "./globals.css"
 const inter = Inter({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
-  title: "CollabHub",
+  title: "CollabHub – Modern Team Collaboration Platform",
   description: "Collaboration that's effortless & powerful",
+  icons: {
+    icon: "/icon.svg",
+  },
 }
 
 import ReactQueryProvider from "@/providers/ReactQueryProvider"
