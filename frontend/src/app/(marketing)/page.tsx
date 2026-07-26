@@ -10,6 +10,7 @@ import {
 import { useState } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { ThemeToggle } from "@/components/ThemeToggle"
+import { CollabHubLogo } from "@/components/CollabHubLogo"
 
 export default function LandingPage() {
   const [openFaq, setOpenFaq] = useState<number | null>(0)
@@ -28,12 +29,7 @@ export default function LandingPage() {
         transition={{ duration: 0.5 }}
         className="max-w-7xl mx-auto px-6 py-6 flex items-center justify-between sticky top-0 z-50 bg-[#F5F8FF]/85 dark:bg-slate-950/85 backdrop-blur-md border-b border-gray-100 dark:border-slate-800/60 dark:border-slate-800/60 transition-colors"
       >
-        <Link href="/" className="flex items-center gap-2 font-bold text-[22px] tracking-tight text-gray-900 dark:text-gray-100 hover:opacity-85 transition-opacity">
-          <div className="relative w-6 h-6 border-2 border-gray-900 dark:border-gray-100 dark:border-slate-800 rounded-[5px] flex items-center justify-center bg-transparent">
-             <div className="absolute -top-1 -right-1 w-3 h-3 bg-white dark:bg-slate-950 border-2 border-gray-900 dark:border-gray-100 dark:border-slate-800 rounded-[3px]"></div>
-          </div>
-          CollabHub
-        </Link>
+        <CollabHubLogo href="/" size="md" />
         
         <div className="hidden md:flex items-center gap-8 font-semibold text-[14px] text-gray-600 dark:text-slate-300">
           <a href="#features" className="hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">Features</a>

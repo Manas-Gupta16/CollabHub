@@ -22,6 +22,7 @@ import { Button } from "@/components/ui/button"
 
 import { UserAvatar } from "@/components/UserAvatar"
 import { ThemeToggle } from "@/components/ThemeToggle"
+import { CollabHubLogo } from "@/components/CollabHubLogo"
 
 function DashboardLayoutInner({
   children,
@@ -154,14 +155,9 @@ function DashboardLayoutInner({
       <div className="w-[260px] border-r border-gray-100 dark:border-slate-800 dark:border-slate-800/80 flex flex-col bg-white dark:bg-slate-950 dark:bg-slate-900 shrink-0 transition-colors duration-200">
         
         {/* Logo */}
-        <Link href="/dashboard" className="h-14 flex items-center px-6 mb-2">
-          <div className="flex items-center gap-2 font-bold text-lg tracking-tight text-gray-900 dark:text-gray-100 dark:text-gray-100">
-             <div className="relative w-5 h-5 border-[1.5px] border-gray-900 dark:border-gray-100 dark:border-slate-800 rounded-[3px] bg-transparent">
-               <div className="absolute -top-[1.5px] -right-[1.5px] w-[8px] h-[8px] bg-white dark:bg-slate-950 dark:bg-slate-900 border-[1.5px] border-gray-900 dark:border-gray-100 dark:border-slate-800 rounded-[2px]"></div>
-             </div>
-             CollabHub
-          </div>
-        </Link>
+        <div className="h-14 flex items-center px-6 mb-2">
+          <CollabHubLogo href="/dashboard" size="md" />
+        </div>
 
         {/* Workspace Search Button */}
         {activeWorkspace && (
