@@ -190,7 +190,7 @@ export default function WorkspaceOverview() {
       queryClient.invalidateQueries({ queryKey: ['workspace', id] })
       setIsInviteModalOpen(false)
       setInviteEmail("")
-      alert("User invited successfully!")
+      alert("Invitation sent successfully! The user will receive a notification to join this workspace.")
     },
     onError: () => {
       alert("Failed to invite user. They might not exist.")

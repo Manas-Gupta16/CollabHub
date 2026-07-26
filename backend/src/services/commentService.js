@@ -69,6 +69,16 @@ const addComment = async (
         });
     }
 
+    if (task.createdBy && task.createdBy.toString() !== currentUser._id.toString() && task.createdBy.toString() !== (task.assignee ? task.assignee.toString() : "")) {
+        await notificationService.createNotification({
+            recipientId: task.createdBy,
+            type: "NEW_COMMENT",
+            message: `${currentUser.name} commented on task: ${task.title}`,
+            workspaceId: workspace._id,
+            relatedEntityId: task._id
+        });
+    }
+
     return comment;
 };
 

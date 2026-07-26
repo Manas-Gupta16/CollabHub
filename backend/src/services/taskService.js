@@ -61,6 +61,16 @@ const createTask = async (
         details: `Created task: ${task.title}`,
     });
 
+    if (task.assignee && task.assignee.toString() !== currentUser._id.toString()) {
+        await notificationService.createNotification({
+            recipientId: task.assignee,
+            type: "TASK_ASSIGNED",
+            message: `You were assigned to task: ${task.title}`,
+            workspaceId: workspaceId,
+            relatedEntityId: task._id
+        });
+    }
+
     return task;
 };
 
