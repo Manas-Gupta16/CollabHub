@@ -4,7 +4,6 @@ import Link from "next/link"
 import { motion } from "framer-motion"
 import { Sparkles } from "lucide-react"
 import { ThemeToggle } from "@/components/ThemeToggle"
-import { CollabHubLogo } from "@/components/CollabHubLogo"
 
 export default function AuthLayout({
   children,
@@ -40,7 +39,15 @@ export default function AuthLayout({
           transition={{ duration: 0.4 }}
           className="flex flex-col items-center mb-8"
         >
-          <CollabHubLogo href="/" size="lg" />
+          <Link href="/" className="flex items-center gap-2 font-bold text-3xl tracking-tight text-gray-900 dark:text-gray-100 hover:opacity-85 transition-opacity cursor-pointer group">
+            <motion.div 
+              whileHover={{ rotate: 10, scale: 1.05 }}
+              className="w-9 h-9 rounded-lg bg-transparent border-2 border-gray-900 dark:border-gray-100 flex items-center justify-center relative shadow-xs"
+            >
+              <div className="w-3.5 h-3.5 bg-gray-900 dark:bg-gray-100 dark:bg-slate-800 rounded-xs absolute top-1 right-1"></div>
+            </motion.div>
+            <span>CollabHub</span>
+          </Link>
           <p className="text-xs text-gray-500 dark:text-slate-400 font-medium mt-2 flex items-center gap-1">
             <Sparkles className="w-3 h-3 text-indigo-500" /> Real-time team collaboration platform
           </p>
