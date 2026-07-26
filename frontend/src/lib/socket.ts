@@ -9,11 +9,17 @@ export const getSocket = (): Socket | null => {
   if (!token) return null
 
   if (!socket || !socket.connected) {
-    const backendUrl = process.env.NEXT_PUBLIC_API_URL
-      ? process.env.NEXT_PUBLIC_API_URL.replace("/api", "")
-      : "http://localhost:5000"
+    const getBackendUrl = () => {
+      if (process.env.NEXT_PUBLIC_API_URL) {
+        return process.env.NEXT_PUBLIC_API_URL.replace("/api", "")
+      }
+      if (typeof window !== "undefined" && window.location.hostname.includes("onrender.com")) {
+        return "https://collabhub-backend.onrender.com"
+      }
+      return "http://localhost:5000"
+    }
 
-    socket = io(backendUrl, {
+    socket = io(getBackendUrl(), {
       auth: { token },
       transports: ["websocket", "polling"],
       reconnection: true,
