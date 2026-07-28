@@ -48,12 +48,19 @@ app.use(express.json());
 
 // Serve uploads statically
 const path = require("path");
-app.use("/uploads", express.static(path.join(__dirname, "../uploads")));
+app.use("/uploads", express.static(path.join(__dirname, "../uploads"), {
+    setHeaders: (res) => {
+        res.set("Access-Control-Allow-Origin", "*");
+        res.set("Cross-Origin-Resource-Policy", "cross-origin");
+    }
+}));
 
 
 app.use(logger);
 
-app.use(helmet());
+app.use(helmet({
+    crossOriginResourcePolicy: { policy: "cross-origin" }
+}));
 app.use(apiLimiter);
 
 // Routes

@@ -11,7 +11,7 @@ import { Input } from "@/components/ui/input"
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 import {
   getWorkspaces, getTasks, createTask, updateTaskStatus,
-  updateTask, deleteTask, getTaskComments, addTaskComment
+  updateTask, deleteTask, getTaskComments, addTaskComment, getFileUrl
 } from "@/lib/api"
 import { useSearchParams, useRouter } from "next/navigation"
 
@@ -432,7 +432,7 @@ function TaskListContent() {
                 const assignee = task.assignee || {}
                 const assigneeName = assignee.name || 'Unassigned'
                 const assigneeAvatar = assignee.avatar
-                  ? `http://localhost:5000${assignee.avatar}`
+                  ? getFileUrl(assignee.avatar)
                   : `https://api.dicebear.com/7.x/initials/svg?seed=${assigneeName.replace(/\s/g, '')}&backgroundColor=6366f1&textColor=ffffff`
                 const isDone = task.status === "DONE"
                 const statusOpt = STATUS_OPTIONS.find(s => s.value === task.status) || STATUS_OPTIONS[0]
@@ -790,7 +790,7 @@ function TaskListContent() {
                         <div className="w-4 h-4 rounded-full overflow-hidden bg-gray-100 dark:bg-slate-800 border border-gray-200 dark:border-slate-800">
                           <img
                             src={selectedTask.assignee?.avatar
-                              ? `http://localhost:5000${selectedTask.assignee.avatar}`
+                              ? getFileUrl(selectedTask.assignee.avatar)
                               : `https://api.dicebear.com/7.x/initials/svg?seed=${(selectedTask.assignee?.name || 'U').replace(/\s/g, '')}&backgroundColor=6366f1&textColor=ffffff`}
                             className="w-full h-full object-cover" alt="" />
                         </div>
@@ -858,7 +858,7 @@ function TaskListContent() {
                     comments.map((c: any) => {
                       const commenterName = c.user?.name || 'Someone'
                       const avatar = c.user?.avatar
-                        ? `http://localhost:5000${c.user.avatar}`
+                        ? getFileUrl(c.user.avatar)
                         : `https://api.dicebear.com/7.x/initials/svg?seed=${commenterName.replace(/\s/g, '')}&backgroundColor=6366f1&textColor=ffffff`
                       return (
                         <div key={c._id} className="flex gap-2.5 items-start p-3 bg-gray-50 dark:bg-slate-900/50 border border-gray-100 dark:border-slate-800 rounded-lg">

@@ -10,7 +10,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 import api, { 
   getWorkspaces, getWorkspaceMessages, sendMessage, getWorkspaceById, 
   addMemberToChannel, addPinnedLink, deletePinnedLink, addTeamGoal, 
-  toggleTeamGoal, deleteTeamGoal, updateMessage, deleteMessage 
+  toggleTeamGoal, deleteTeamGoal, updateMessage, deleteMessage, getFileUrl, downloadFile 
 } from "@/lib/api"
 import { useState, useMemo, useEffect, useRef, Suspense } from "react"
 import { UserAvatar } from "@/components/UserAvatar"
@@ -500,7 +500,7 @@ function MessagesContent() {
                         {msg.attachments && msg.attachments.length > 0 && (
                           <div className="mt-2.5 flex flex-wrap gap-2">
                             {msg.attachments.map((att: string, idx: number) => {
-                              const fullUrl = att.startsWith("http") ? att : `http://localhost:5000${att}`
+                              const fullUrl = getFileUrl(att)
                               const isImg = /\.(png|jpe?g|gif|webp|svg)$/i.test(att)
                               const fileName = att.split("/").pop() || "Attachment"
 
@@ -513,17 +513,15 @@ function MessagesContent() {
                               }
 
                               return (
-                                <a
+                                <button
                                   key={idx}
-                                  href={fullUrl}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  download
-                                  className="inline-flex items-center gap-2 px-3 py-2 rounded-xl bg-indigo-50 dark:bg-indigo-950/60 border border-indigo-100 dark:border-slate-800 text-indigo-600 dark:text-indigo-400 font-bold text-xs hover:bg-indigo-100 dark:hover:bg-slate-800 transition-colors shadow-xs"
+                                  type="button"
+                                  onClick={() => downloadFile(fullUrl, fileName)}
+                                  className="inline-flex items-center gap-2 px-3 py-2 rounded-xl bg-indigo-50 dark:bg-indigo-950/60 border border-indigo-100 dark:border-slate-800 text-indigo-600 dark:text-indigo-400 font-bold text-xs hover:bg-indigo-100 dark:hover:bg-slate-800 transition-colors shadow-xs cursor-pointer"
                                 >
                                   <span>📎 Download {fileName}</span>
                                   <ExternalLink className="w-3.5 h-3.5" />
-                                </a>
+                                </button>
                               )
                             })}
                           </div>

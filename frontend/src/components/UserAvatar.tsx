@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react"
+import { getFileUrl } from "@/lib/api"
 
 interface UserAvatarProps {
   name?: string
@@ -22,11 +23,7 @@ export function UserAvatar({ name, avatar, size = "w-8 h-8 text-[12px] font-bold
     .toUpperCase()
 
   const userName = name || "User"
-  const avatarUrl = avatar
-    ? (avatar.startsWith("http") || avatar.startsWith("blob:") || avatar.startsWith("data:"))
-      ? avatar
-      : `http://localhost:5000${avatar}`
-    : null
+  const avatarUrl = avatar ? getFileUrl(avatar) : null
 
   // Generate a premium soft color gradient based on name hash
   const colors = [

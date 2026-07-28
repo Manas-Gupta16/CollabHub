@@ -11,7 +11,7 @@ import {
   X, Sparkles, Star, CheckCircle2, ArrowRight, Zap
 } from "lucide-react"
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
-import { updateProfile, getWorkspaces, getWorkspaceById, updateWorkspaceInfo, updateMemberRole, removeMemberFromWorkspace } from "@/lib/api"
+import { updateProfile, getWorkspaces, getWorkspaceById, updateWorkspaceInfo, updateMemberRole, removeMemberFromWorkspace, getFileUrl } from "@/lib/api"
 import api from "@/lib/api"
 import { useSearchParams, useRouter } from "next/navigation"
 import { UserAvatar } from "@/components/UserAvatar"
@@ -107,10 +107,7 @@ function SettingsContent() {
       setLastName(parts.slice(1).join(' ') || '')
       setEmail(user.email || '')
       if (user.avatar) {
-        const url = (user.avatar.startsWith('http') || user.avatar.startsWith('blob:') || user.avatar.startsWith('data:'))
-          ? user.avatar
-          : `http://localhost:5000${user.avatar}`
-        setAvatarPreview(url)
+        setAvatarPreview(getFileUrl(user.avatar))
       }
     }
   }, [user])

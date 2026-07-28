@@ -1,10 +1,56 @@
 import axios from 'axios';
 
-const getBaseURL = () => {
-  if (typeof window !== 'undefined' && window.location.hostname.includes('onrender.com')) {
-    return 'https://collabhub-backend-68xr.onrender.com/api';
+export const getBackendOrigin = () => {
+  if (process.env.NEXT_PUBLIC_API_URL) {
+    return process.env.NEXT_PUBLIC_API_URL.replace(/\/api\/?$/, '');
   }
-  return process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
+
+  if (typeof window !== 'undefined') {
+    const host = window.location.hostname;
+    if (host !== 'localhost' && host !== '127.0.0.1' && !host.startsWith('192.168.') && !host.startsWith('10.')) {
+      if (host.includes('onrender.com')) {
+        if (host.includes('frontend')) {
+          return `https://${host.replace('frontend', 'backend')}`;
+        }
+        return 'https://collabhub-backend-68xr.onrender.com';
+      }
+      return 'https://collabhub-backend-68xr.onrender.com';
+    }
+  }
+
+  return 'http://localhost:5000';
+};
+
+export const getFileUrl = (path?: string | null): string => {
+  if (!path) return '';
+  if (path.startsWith('http://') || path.startsWith('https://') || path.startsWith('blob:') || path.startsWith('data:')) {
+    return path;
+  }
+  const origin = getBackendOrigin();
+  const cleanPath = path.startsWith('/') ? path : `/${path}`;
+  return `${origin}${cleanPath}`;
+};
+
+export const downloadFile = async (url: string, fileName: string) => {
+  try {
+    const res = await fetch(url);
+    if (!res.ok) throw new Error("Network response was not ok");
+    const blob = await res.blob();
+    const blobUrl = window.URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = blobUrl;
+    link.download = fileName;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    window.URL.revokeObjectURL(blobUrl);
+  } catch (err) {
+    window.open(url, "_blank");
+  }
+};
+
+export const getBaseURL = () => {
+  return `${getBackendOrigin()}/api`;
 };
 
 const api = axios.create({
@@ -22,7 +68,7 @@ api.interceptors.request.use((config) => {
     }
   }
   if (typeof FormData !== 'undefined' && config.data instanceof FormData) {
-    config.headers['Content-Type'] = 'multipart/form-data';
+    delete config.headers['Content-Type'];
   }
   return config;
 });
@@ -73,13 +119,6 @@ export const getTasks = async (workspaceId: string) => {
 };
 
 export const createTask = async (workspaceId: string, data: any) => {
-  // Use FormData if attachments exist, otherwise JSON
-  if (data instanceof FormData) {
-    const response = await api.post(`/workspaces/${workspaceId}/tasks`, data, {
-      headers: { 'Content-Type': 'multipart/form-data' }
-    });
-    return response.data.data;
-  }
   const response = await api.post(`/workspaces/${workspaceId}/tasks`, data);
   return response.data.data;
 };
@@ -100,11 +139,7 @@ export const getWorkspaceMessages = async (workspaceId: string, channel: string 
 }
 
 export const sendMessage = async (workspaceId: string, data: any) => {
-  // data can be FormData if it contains attachments
-  const config = (typeof FormData !== 'undefined' && data instanceof FormData)
-    ? { headers: { 'Content-Type': 'multipart/form-data' } }
-    : {};
-  const response = await api.post(`/workspaces/${workspaceId}/messages`, data, config);
+  const response = await api.post(`/workspaces/${workspaceId}/messages`, data);
   return response.data.data;
 };
 
@@ -135,9 +170,7 @@ export const getWorkspaceActivity = async (workspaceId: string) => {
 
 
 export const updateProfile = async (data: any) => {
-  const response = await api.put('/auth/profile', data, {
-    headers: { 'Content-Type': 'multipart/form-data' }
-  });
+  const response = await api.put('/auth/profile', data);
   return response.data.user;
 };
 

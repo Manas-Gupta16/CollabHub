@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Mail, MapPin, Link as LinkIcon, Calendar, CheckCircle2, MessageSquare, GitCommit } from "lucide-react"
 import { useQuery } from "@tanstack/react-query"
-import api from "@/lib/api"
+import api, { getFileUrl } from "@/lib/api"
 
 export default function ProfilePage() {
   const { data: user } = useQuery({
@@ -34,7 +34,7 @@ export default function ProfilePage() {
           <CardContent className="p-8 pt-0 relative">
              <div className="flex flex-col sm:flex-row gap-6 items-start sm:items-end -mt-12 mb-6">
                <div className="w-24 h-24 rounded-full border-4 border-white bg-white dark:bg-slate-900 shadow-md overflow-hidden shrink-0">
-                  <img src={user?.avatar ? `http://localhost:5000${user.avatar}` : `https://api.dicebear.com/7.x/initials/svg?seed=${userSeed}&backgroundColor=6366f1&textColor=ffffff`} className="w-full h-full object-cover" />
+                  <img src={user?.avatar ? getFileUrl(user.avatar) : `https://api.dicebear.com/7.x/initials/svg?seed=${userSeed}&backgroundColor=6366f1&textColor=ffffff`} className="w-full h-full object-cover" />
                </div>
                <div className="flex-1">
                  <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100 tracking-tight">{userName}</h1>

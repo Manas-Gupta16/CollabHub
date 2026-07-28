@@ -14,7 +14,7 @@ import {
 } from "lucide-react"
 import Link from "next/link"
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
-import api, { getWorkspaces, createChannel, globalSearch, getNotifications } from "@/lib/api"
+import api, { getWorkspaces, createChannel, globalSearch, getNotifications, getFileUrl } from "@/lib/api"
 import { getSocket } from "@/lib/socket"
 import { useState, useEffect, Suspense } from "react"
 import { useRouter, usePathname, useSearchParams } from "next/navigation"
@@ -162,7 +162,7 @@ function DashboardLayoutInner({
 
   const userName = user?.name || 'User'
   const userSeed = user?.name?.replace(/\s/g, '') || 'Oliver'
-  const avatarUrl = user?.avatar ? `http://localhost:5000${user.avatar}` : `https://api.dicebear.com/7.x/initials/svg?seed=${userSeed}&backgroundColor=6366f1&textColor=ffffff`;
+  const avatarUrl = user?.avatar ? getFileUrl(user.avatar) : `https://api.dicebear.com/7.x/initials/svg?seed=${userSeed}&backgroundColor=6366f1&textColor=ffffff`;
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {

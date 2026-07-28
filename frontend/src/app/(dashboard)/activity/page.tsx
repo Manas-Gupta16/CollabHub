@@ -7,7 +7,7 @@ import {
   ListTodo, ExternalLink
 } from "lucide-react"
 import { useQuery } from "@tanstack/react-query"
-import { getWorkspaces, getWorkspaceActivity } from "@/lib/api"
+import { getWorkspaces, getWorkspaceActivity, getFileUrl } from "@/lib/api"
 import Link from "next/link"
 
 // Map activity action strings to icons & colors
@@ -260,7 +260,7 @@ export default function ActivityPage() {
                     const Icon = meta.icon
                     const userName = act.user?.name || 'Someone'
                     const avatarUrl = act.user?.avatar
-                      ? `http://localhost:5000${act.user.avatar}`
+                      ? getFileUrl(act.user.avatar)
                       : `https://api.dicebear.com/7.x/initials/svg?seed=${userName.replace(/\s/g, '')}&backgroundColor=6366f1&textColor=ffffff`
                     const link = getActivityLink(
                       (act.details || act.action || '').toLowerCase(),

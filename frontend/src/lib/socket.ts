@@ -1,4 +1,5 @@
 import { io, Socket } from "socket.io-client"
+import { getBackendOrigin } from "./api"
 
 let socket: Socket | null = null
 
@@ -9,16 +10,7 @@ export const getSocket = (): Socket | null => {
   if (!token) return null
 
   if (!socket || !socket.connected) {
-    const getBackendUrl = () => {
-      if (typeof window !== "undefined" && window.location.hostname.includes("onrender.com")) {
-        return "https://collabhub-backend-68xr.onrender.com"
-      }
-      return process.env.NEXT_PUBLIC_API_URL
-        ? process.env.NEXT_PUBLIC_API_URL.replace("/api", "")
-        : "http://localhost:5000"
-    }
-
-    socket = io(getBackendUrl(), {
+    socket = io(getBackendOrigin(), {
       auth: { token },
       transports: ["websocket", "polling"],
       reconnection: true,
