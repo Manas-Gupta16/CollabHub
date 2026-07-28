@@ -92,7 +92,7 @@ function MessagesContent() {
     queryKey: ['messages', activeWorkspaceId, queryChannel],
     queryFn: () => getWorkspaceMessages(activeWorkspaceId, queryChannel),
     enabled: !!activeWorkspaceId,
-    refetchInterval: 3000
+    refetchInterval: 15000
   })
 
   const sendMutation = useMutation({
