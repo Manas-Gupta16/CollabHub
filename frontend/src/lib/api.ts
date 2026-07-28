@@ -12,6 +12,10 @@ export const getBackendOrigin = () => {
     }
   }
 
+  if (process.env.NODE_ENV === 'production') {
+    return 'https://collabhub-backend-68xr.onrender.com';
+  }
+
   return 'http://localhost:5000';
 };
 
@@ -55,6 +59,7 @@ const api = axios.create({
 });
 
 api.interceptors.request.use((config) => {
+  config.baseURL = getBaseURL();
   if (typeof window !== 'undefined') {
     const token = localStorage.getItem('token');
     if (token) {
