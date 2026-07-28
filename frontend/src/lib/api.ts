@@ -8,12 +8,6 @@ export const getBackendOrigin = () => {
   if (typeof window !== 'undefined') {
     const host = window.location.hostname;
     if (host !== 'localhost' && host !== '127.0.0.1' && !host.startsWith('192.168.') && !host.startsWith('10.')) {
-      if (host.includes('onrender.com')) {
-        if (host.includes('frontend')) {
-          return `https://${host.replace('frontend', 'backend')}`;
-        }
-        return 'https://collabhub-backend-68xr.onrender.com';
-      }
       return 'https://collabhub-backend-68xr.onrender.com';
     }
   }
