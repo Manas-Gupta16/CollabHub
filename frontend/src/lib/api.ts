@@ -1,8 +1,13 @@
 import axios from 'axios';
 
 export const getBackendOrigin = () => {
-  if (process.env.NEXT_PUBLIC_API_URL) {
-    return process.env.NEXT_PUBLIC_API_URL.replace(/\/api\/?$/, '');
+  const envUrl = process.env.NEXT_PUBLIC_API_URL;
+  if (envUrl) {
+    const origin = envUrl.replace(/\/api\/?$/, '');
+    if (origin === 'https://collabhub-backend.onrender.com' || origin === 'http://collabhub-backend.onrender.com') {
+      return 'https://collabhub-backend-68xr.onrender.com';
+    }
+    return origin;
   }
 
   if (typeof window !== 'undefined') {
