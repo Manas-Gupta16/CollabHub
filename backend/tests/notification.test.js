@@ -36,6 +36,11 @@ describe("Notification Routes", () => {
         // User 1 adds User 2
         await request(app).post(`/api/workspaces/${workspaceId}/members`).set("Authorization", `Bearer ${token1}`).send({ email: "user2@example.com", role: "MEMBER" });
 
+        const Workspace = require("../src/models/Workspace");
+        const ws = await Workspace.findById(workspaceId);
+        const m = ws.members.find(mem => mem.user.toString() === user2._id.toString());
+        if (m) { m.status = "ACTIVE"; await ws.save(); }
+
         // User 1 creates Task
         const taskRes = await request(app).post(`/api/workspaces/${workspaceId}/tasks`).set("Authorization", `Bearer ${token1}`).send({ title: "Task 1", status: "TODO", priority: "LOW" });
         taskId = taskRes.body.data._id;
