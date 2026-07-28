@@ -117,6 +117,11 @@ describe("Task Routes", () => {
                 .set("Authorization", `Bearer ${token}`)
                 .send({ email: "u2@example.com", role: "MEMBER" });
 
+            const Workspace = require("../src/models/Workspace");
+            const ws = await Workspace.findById(workspaceId);
+            const m = ws.members.find(mem => mem.user.toString() === u2._id.toString());
+            if (m) { m.status = "ACTIVE"; await ws.save(); }
+
             const response = await request(app)
                 .patch(`/api/tasks/${taskId}/assign`)
                 .set("Authorization", `Bearer ${token}`)
@@ -135,6 +140,12 @@ describe("Task Routes", () => {
                 .post(`/api/workspaces/${workspaceId}/members`)
                 .set("Authorization", `Bearer ${token}`)
                 .send({ email: "u3@example.com", role: "MEMBER" });
+
+            const Workspace = require("../src/models/Workspace");
+            const ws = await Workspace.findById(workspaceId);
+            const u3 = await User.findOne({ email: "u3@example.com" });
+            const m = ws.members.find(mem => mem.user.toString() === u3._id.toString());
+            if (m) { m.status = "ACTIVE"; await ws.save(); }
 
             // User 3 tries to delete task
             const res2 = await request(app).post("/api/auth/login").send({ email: "u3@example.com", password: "password" });

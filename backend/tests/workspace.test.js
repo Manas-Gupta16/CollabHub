@@ -69,6 +69,11 @@ describe("Workspace Routes", () => {
                 .post(`/api/workspaces/${workspaceId}/members`)
                 .set("Authorization", `Bearer ${token1}`)
                 .send({ email: "user2@example.com", role: "MEMBER" });
+
+            const Workspace = require("../src/models/Workspace");
+            const ws = await Workspace.findById(workspaceId);
+            const m = ws.members.find(mem => mem.user.toString() === user2._id.toString());
+            if (m) { m.status = "ACTIVE"; await ws.save(); }
         });
 
         test("4. Update Member Role - Success", async () => {
