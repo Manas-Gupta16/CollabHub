@@ -60,6 +60,10 @@ const loginUser = async (userData) => {
             name: user.name,
             email: user.email,
             avatar: user.avatar,
+            title: user.title,
+            bio: user.bio,
+            location: user.location,
+            website: user.website,
         },
     };
 };
@@ -106,6 +110,10 @@ const googleAuth = async (idToken) => {
             name: user.name,
             email: user.email,
             avatar: user.avatar,
+            title: user.title,
+            bio: user.bio,
+            location: user.location,
+            website: user.website,
         },
     };
 };

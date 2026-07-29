@@ -38,7 +38,7 @@ export default function ProfilePage() {
                </div>
                <div className="flex-1">
                  <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100 tracking-tight">{userName}</h1>
-                 <p className="text-gray-500 dark:text-slate-400 font-medium">Product Designer at CollabHub</p>
+                 <p className="text-gray-500 dark:text-slate-400 font-medium">{user?.title || 'Team Member at CollabHub'}</p>
                </div>
                <div className="flex gap-2 w-full sm:w-auto">
                  <Button variant="outline" className="flex-1 sm:flex-none border-gray-200 dark:border-slate-800">Share</Button>
@@ -47,10 +47,14 @@ export default function ProfilePage() {
              </div>
 
              <div className="flex flex-wrap gap-y-2 gap-x-6 text-sm text-gray-600 dark:text-slate-300">
-               <div className="flex items-center gap-1.5"><MapPin className="w-4 h-4 text-gray-400 dark:text-slate-500"/> San Francisco, CA</div>
+               {user?.location && (
+                 <div className="flex items-center gap-1.5"><MapPin className="w-4 h-4 text-gray-400 dark:text-slate-500"/> {user.location}</div>
+               )}
                <div className="flex items-center gap-1.5"><Mail className="w-4 h-4 text-gray-400 dark:text-slate-500"/> {userEmail}</div>
-               <div className="flex items-center gap-1.5"><LinkIcon className="w-4 h-4 text-gray-400 dark:text-slate-500"/> collabhub.com</div>
-               <div className="flex items-center gap-1.5"><Calendar className="w-4 h-4 text-gray-400 dark:text-slate-500"/> Joined 2026</div>
+               {user?.website && (
+                 <div className="flex items-center gap-1.5"><LinkIcon className="w-4 h-4 text-gray-400 dark:text-slate-500"/> {user.website}</div>
+               )}
+               <div className="flex items-center gap-1.5"><Calendar className="w-4 h-4 text-gray-400 dark:text-slate-500"/> Joined {user?.createdAt ? new Date(user.createdAt).getFullYear() : 2026}</div>
              </div>
           </CardContent>
         </Card>
@@ -63,7 +67,7 @@ export default function ProfilePage() {
               <CardContent className="p-6">
                  <h2 className="text-lg font-bold text-gray-900 dark:text-gray-100 mb-4">About</h2>
                  <p className="text-sm text-gray-600 dark:text-slate-300 leading-relaxed mb-6">
-                   Passionate about creating intuitive, user-centric experiences. Building the future of collaboration at CollabHub.
+                   {user?.bio || 'Passionate about creating intuitive, user-centric experiences. Building the future of collaboration at CollabHub.'}
                  </p>
                  <h2 className="text-lg font-bold text-gray-900 dark:text-gray-100 mb-4">Stats</h2>
                  <div className="space-y-4">

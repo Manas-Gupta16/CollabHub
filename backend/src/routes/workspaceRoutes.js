@@ -136,6 +136,7 @@ router.get("/", protect, getMyWorkspaces);
  *         description: Workspace not found
  */
 router.get("/:workspaceId", protect, getWorkspaceById);
+router.patch("/:workspaceId", protect, updateWorkspace);
 
 /**
  * @swagger

@@ -92,6 +92,14 @@ const acceptInvitation = async (notificationId, userId) => {
 
     await Notification.findByIdAndDelete(notificationId);
 
+    // Emit real-time socket notification so client automatically refreshes workspaces list
+    try {
+        getIO().to(userId.toString()).emit("workspace_updated", { workspaceId: workspace._id, action: "joined" });
+        getIO().to(workspace._id.toString()).emit("workspace_updated", { workspaceId: workspace._id });
+    } catch (err) {
+        // Socket may not be initialized
+    }
+
     return { workspace };
 };
 

@@ -91,6 +91,10 @@ function SettingsContent() {
   const [firstName, setFirstName] = useState('')
   const [lastName, setLastName] = useState('')
   const [email, setEmail] = useState('')
+  const [title, setTitle] = useState('')
+  const [bio, setBio] = useState('')
+  const [location, setLocation] = useState('')
+  const [website, setWebsite] = useState('')
   const [avatarFile, setAvatarFile] = useState<File | null>(null)
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null)
   const [selectedPresetUrl, setSelectedPresetUrl] = useState<string | null>(null)
@@ -106,6 +110,10 @@ function SettingsContent() {
       setFirstName(parts[0] || '')
       setLastName(parts.slice(1).join(' ') || '')
       setEmail(user.email || '')
+      setTitle(user.title || '')
+      setBio(user.bio || '')
+      setLocation(user.location || '')
+      setWebsite(user.website || '')
       if (user.avatar) {
         setAvatarPreview(getFileUrl(user.avatar))
       }
@@ -171,6 +179,10 @@ function SettingsContent() {
     const formData = new FormData()
     formData.append('name', `${firstName} ${lastName}`.trim())
     formData.append('email', email)
+    formData.append('title', title)
+    formData.append('bio', bio)
+    formData.append('location', location)
+    formData.append('website', website)
     if (avatarFile) {
       formData.append('avatar', avatarFile)
     } else if (selectedPresetUrl) {
@@ -378,22 +390,51 @@ function SettingsContent() {
                     </div>
                   </div>
 
-                  <div className="space-y-5">
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                      <div className="space-y-1.5">
-                        <label className="text-xs font-bold uppercase text-gray-500 dark:text-slate-400 tracking-wider">First Name</label>
-                        <Input value={firstName} onChange={e => setFirstName(e.target.value)} className="rounded-xl border-gray-200 dark:border-slate-800" />
+                    <div className="space-y-5">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                        <div className="space-y-1.5">
+                          <label className="text-xs font-bold uppercase text-gray-500 dark:text-slate-400 tracking-wider">First Name</label>
+                          <Input value={firstName} onChange={e => setFirstName(e.target.value)} className="rounded-xl border-gray-200 dark:border-slate-800" />
+                        </div>
+                        <div className="space-y-1.5">
+                          <label className="text-xs font-bold uppercase text-gray-500 dark:text-slate-400 tracking-wider">Last Name</label>
+                          <Input value={lastName} onChange={e => setLastName(e.target.value)} className="rounded-xl border-gray-200 dark:border-slate-800" />
+                        </div>
                       </div>
+                      
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                        <div className="space-y-1.5">
+                          <label className="text-xs font-bold uppercase text-gray-500 dark:text-slate-400 tracking-wider">Email Address</label>
+                          <Input value={email} onChange={e => setEmail(e.target.value)} className="rounded-xl border-gray-200 dark:border-slate-800" />
+                        </div>
+                        <div className="space-y-1.5">
+                          <label className="text-xs font-bold uppercase text-gray-500 dark:text-slate-400 tracking-wider">Job Title / Role</label>
+                          <Input value={title} onChange={e => setTitle(e.target.value)} placeholder="e.g. Product Designer" className="rounded-xl border-gray-200 dark:border-slate-800" />
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                        <div className="space-y-1.5">
+                          <label className="text-xs font-bold uppercase text-gray-500 dark:text-slate-400 tracking-wider">Location</label>
+                          <Input value={location} onChange={e => setLocation(e.target.value)} placeholder="e.g. San Francisco, CA" className="rounded-xl border-gray-200 dark:border-slate-800" />
+                        </div>
+                        <div className="space-y-1.5">
+                          <label className="text-xs font-bold uppercase text-gray-500 dark:text-slate-400 tracking-wider">Website / Portfolio</label>
+                          <Input value={website} onChange={e => setWebsite(e.target.value)} placeholder="e.g. collabhub.com" className="rounded-xl border-gray-200 dark:border-slate-800" />
+                        </div>
+                      </div>
+
                       <div className="space-y-1.5">
-                        <label className="text-xs font-bold uppercase text-gray-500 dark:text-slate-400 tracking-wider">Last Name</label>
-                        <Input value={lastName} onChange={e => setLastName(e.target.value)} className="rounded-xl border-gray-200 dark:border-slate-800" />
+                        <label className="text-xs font-bold uppercase text-gray-500 dark:text-slate-400 tracking-wider">Bio / About</label>
+                        <textarea 
+                          value={bio} 
+                          onChange={e => setBio(e.target.value)} 
+                          rows={3} 
+                          placeholder="Tell team members a bit about yourself..." 
+                          className="w-full px-3 py-2 text-sm border border-gray-200 dark:border-slate-800 rounded-xl bg-white dark:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500" 
+                        />
                       </div>
                     </div>
-                    <div className="space-y-1.5">
-                      <label className="text-xs font-bold uppercase text-gray-500 dark:text-slate-400 tracking-wider">Email Address</label>
-                      <Input value={email} onChange={e => setEmail(e.target.value)} className="rounded-xl border-gray-200 dark:border-slate-800" />
-                    </div>
-                  </div>
 
                   <div className="mt-8 pt-6 border-t border-gray-100 dark:border-slate-800 flex justify-end">
                     <Button 

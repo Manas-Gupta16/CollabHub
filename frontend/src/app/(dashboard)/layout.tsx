@@ -88,10 +88,17 @@ function DashboardLayoutInner({
       queryClient.invalidateQueries({ queryKey: ['workspaces'] })
     }
 
+    const handleWorkspaceUpdated = () => {
+      queryClient.invalidateQueries({ queryKey: ['workspaces'] })
+      queryClient.invalidateQueries({ queryKey: ['notifications'] })
+    }
+
     socket.on("new_notification", handleNewNotification)
+    socket.on("workspace_updated", handleWorkspaceUpdated)
 
     return () => {
       socket.off("new_notification", handleNewNotification)
+      socket.off("workspace_updated", handleWorkspaceUpdated)
     }
   }, [isMounted, queryClient])
 

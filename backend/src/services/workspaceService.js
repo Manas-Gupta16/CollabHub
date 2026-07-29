@@ -590,7 +590,7 @@ const removeMemberFromWorkspace = async (workspaceId, userId, currentUser) => {
     }
 
     const currentMember = workspace.members.find(
-        (member) => member.user.toString() === currentUser._id.toString() && member.status !== "PENDING"
+        (member) => (member.user._id || member.user).toString() === currentUser._id.toString() && member.status !== "PENDING"
     );
 
     if (!currentMember || currentMember.role !== "OWNER") {
@@ -602,18 +602,36 @@ const removeMemberFromWorkspace = async (workspaceId, userId, currentUser) => {
     }
 
     const memberExists = workspace.members.some(
-        (member) => member.user.toString() === userId.toString()
+        (member) => (member.user._id || member.user).toString() === userId.toString()
     );
 
     if (!memberExists) {
         throw new AppError("Member not found in workspace", 404);
     }
 
+    // Remove member from workspace members array
     workspace.members = workspace.members.filter(
-        (member) => member.user.toString() !== userId.toString()
+        (member) => (member.user._id || member.user).toString() !== userId.toString()
     );
 
+    // Remove member from all private channel membership lists
+    (workspace.channels || []).forEach(ch => {
+        if (ch.members && Array.isArray(ch.members)) {
+            ch.members = ch.members.filter(mId => (mId._id || mId).toString() !== userId.toString());
+        }
+    });
+
     await workspace.save();
+
+    // Unassign tasks assigned to removed member in this workspace
+    try {
+        await Task.updateMany(
+            { workspace: workspaceId, assignee: userId },
+            { $unset: { assignee: 1 } }
+        );
+    } catch (e) {
+        // Log task unassign error silently
+    }
 
     await activityService.createActivity({
         workspace: workspace._id,
@@ -621,6 +639,15 @@ const removeMemberFromWorkspace = async (workspaceId, userId, currentUser) => {
         action: "MEMBER_REMOVED",
         details: `Removed member from workspace`,
     });
+
+    // Notify affected user and workspace room via socket
+    try {
+        const { getIO } = require("../socket");
+        getIO().to(userId.toString()).emit("workspace_updated", { workspaceId: workspace._id, action: "removed" });
+        getIO().to(workspaceId.toString()).emit("workspace_updated", { workspaceId: workspace._id });
+    } catch (err) {
+        // Socket may not be initialized
+    }
 
     return workspace;
 };

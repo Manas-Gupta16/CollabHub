@@ -47,6 +47,18 @@ const updateProfile = asyncHandler(
         if (req.body.password) {
             user.password = await bcrypt.hash(req.body.password, 10);
         }
+        if (req.body.title !== undefined) {
+            user.title = req.body.title;
+        }
+        if (req.body.bio !== undefined) {
+            user.bio = req.body.bio;
+        }
+        if (req.body.location !== undefined) {
+            user.location = req.body.location;
+        }
+        if (req.body.website !== undefined) {
+            user.website = req.body.website;
+        }
         
         if (req.body.removeAvatar === "true" || req.body.removeAvatar === true) {
             user.avatar = "";

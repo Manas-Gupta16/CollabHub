@@ -31,6 +31,26 @@ const userSchema = new mongoose.Schema(
             type: String,
         },
 
+        title: {
+            type: String,
+            default: "",
+        },
+
+        bio: {
+            type: String,
+            default: "",
+        },
+
+        location: {
+            type: String,
+            default: "",
+        },
+
+        website: {
+            type: String,
+            default: "",
+        },
+
         resetPasswordToken: {
             type: String,
         },
