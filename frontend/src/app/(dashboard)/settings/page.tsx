@@ -175,7 +175,22 @@ function SettingsContent() {
     }
   })
 
-  const handleSaveProfile = () => {
+  const handleSaveProfile = async () => {
+    let finalAvatarUrl = selectedPresetUrl || avatarPreview || ''
+
+    if (avatarFile) {
+      try {
+        finalAvatarUrl = await new Promise<string>((resolve, reject) => {
+          const reader = new FileReader()
+          reader.onload = () => resolve(reader.result as string)
+          reader.onerror = reject
+          reader.readAsDataURL(avatarFile)
+        })
+      } catch (err) {
+        console.error("Error reading image file", err)
+      }
+    }
+
     const formData = new FormData()
     formData.append('name', `${firstName} ${lastName}`.trim())
     formData.append('email', email)
@@ -183,14 +198,13 @@ function SettingsContent() {
     formData.append('bio', bio)
     formData.append('location', location)
     formData.append('website', website)
-    if (avatarFile) {
-      formData.append('avatar', avatarFile)
-    } else if (selectedPresetUrl) {
-      formData.append('avatarUrl', selectedPresetUrl)
-    }
+    
     if (removeAvatar) {
       formData.append('removeAvatar', 'true')
+    } else if (finalAvatarUrl) {
+      formData.append('avatarUrl', finalAvatarUrl)
     }
+
     updateProfileMutation.mutate(formData)
   }
 
