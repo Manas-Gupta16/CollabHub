@@ -180,14 +180,47 @@ function SettingsContent() {
 
     if (avatarFile) {
       try {
-        finalAvatarUrl = await new Promise<string>((resolve, reject) => {
-          const reader = new FileReader()
-          reader.onload = () => resolve(reader.result as string)
-          reader.onerror = reject
-          reader.readAsDataURL(avatarFile)
+        finalAvatarUrl = await new Promise<string>((resolve) => {
+          const img = new Image()
+          const objectUrl = URL.createObjectURL(avatarFile)
+          img.onload = () => {
+            let width = img.width
+            let height = img.height
+            const maxDim = 400
+            if (width > height) {
+              if (width > maxDim) {
+                height = Math.round((height * maxDim) / width)
+                width = maxDim
+              }
+            } else {
+              if (height > maxDim) {
+                width = Math.round((width * maxDim) / height)
+                height = maxDim
+              }
+            }
+            const canvas = document.createElement("canvas")
+            canvas.width = width
+            canvas.height = height
+            const ctx = canvas.getContext("2d")
+            if (ctx) {
+              ctx.drawImage(img, 0, 0, width, height)
+              resolve(canvas.toDataURL("image/jpeg", 0.85))
+            } else {
+              const reader = new FileReader()
+              reader.onload = () => resolve(reader.result as string)
+              reader.readAsDataURL(avatarFile)
+            }
+            URL.revokeObjectURL(objectUrl)
+          }
+          img.onerror = () => {
+            const reader = new FileReader()
+            reader.onload = () => resolve(reader.result as string)
+            reader.readAsDataURL(avatarFile)
+          }
+          img.src = objectUrl
         })
       } catch (err) {
-        console.error("Error reading image file", err)
+        console.error("Error compressing image file", err)
       }
     }
 
