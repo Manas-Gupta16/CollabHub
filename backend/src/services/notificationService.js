@@ -53,6 +53,8 @@ const markAllAsRead = async (userId) => {
     return { success: true };
 };
 
+const getUserIdStr = (u) => (u?._id || u || "").toString();
+
 const acceptInvitation = async (notificationId, userId) => {
     const notification = await Notification.findOne({ _id: notificationId, recipient: userId });
     if (!notification) {
@@ -68,7 +70,7 @@ const acceptInvitation = async (notificationId, userId) => {
     }
 
     const member = workspace.members.find(
-        (m) => m.user.toString() === userId.toString()
+        (m) => getUserIdStr(m.user) === userId.toString()
     );
     if (!member) {
         throw new AppError("You are not listed in this workspace's members list", 400);
@@ -115,7 +117,7 @@ const rejectInvitation = async (notificationId, userId) => {
     const workspace = await Workspace.findById(notification.workspace);
     if (workspace) {
         workspace.members = workspace.members.filter(
-            (m) => m.user.toString() !== userId.toString()
+            (m) => getUserIdStr(m.user) !== userId.toString()
         );
         await workspace.save();
     }

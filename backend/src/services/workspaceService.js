@@ -13,6 +13,8 @@ const {
     ACTIVITY_ACTIONS,
 } = require("../constants/activityConstants");
 
+const getUserIdStr = (u) => (u?._id || u || "").toString();
+
 const createWorkspace = async (
     workspaceData,
     currentUser
@@ -87,7 +89,7 @@ const getMyWorkspaces = async (
         }
 
         const currentMember = ws.members.find(
-            (m) => (m.user._id || m.user).toString() === currentUser._id.toString()
+            (m) => getUserIdStr(m.user) === currentUser._id.toString()
         );
         const isOwner = currentMember && currentMember.role === "OWNER";
 
@@ -96,7 +98,7 @@ const getMyWorkspaces = async (
             if (!c.isPrivate) return true;
             if (isOwner) return true;
             return c.members && c.members.some(
-                (m) => (m._id || m).toString() === currentUser._id.toString()
+                (m) => getUserIdStr(m) === currentUser._id.toString()
             );
         });
 
@@ -125,7 +127,7 @@ const getWorkspaceById = async (
 
     const currentMember = workspace.members.find(
         (member) =>
-            (member.user._id || member.user).toString() ===
+            getUserIdStr(member.user) ===
             currentUser._id.toString() && member.status !== "PENDING"
     );
 
@@ -155,7 +157,7 @@ const getWorkspaceById = async (
         if (!c.isPrivate) return true;
         if (isOwner) return true;
         return c.members && c.members.some(
-            (m) => (m._id || m).toString() === currentUser._id.toString()
+            (m) => getUserIdStr(m) === currentUser._id.toString()
         );
     });
 
@@ -182,7 +184,7 @@ const addMemberToWorkspace = async (
 
     const ownerMember = workspace.members.find(
         (member) =>
-            member.user.toString() ===
+            getUserIdStr(member.user) ===
             currentUser._id.toString()
     );
 
@@ -209,7 +211,7 @@ const addMemberToWorkspace = async (
 
     const existingMember = workspace.members.find(
         (member) =>
-            member.user.toString() ===
+            getUserIdStr(member.user) ===
             user._id.toString()
     );
 
@@ -270,7 +272,7 @@ const updateMemberRole = async (
     const ownerMember =
         workspace.members.find(
             (member) =>
-                member.user.toString() ===
+                getUserIdStr(member.user) ===
                 currentUser._id.toString() && member.status !== "PENDING"
         );
 
@@ -287,8 +289,7 @@ const updateMemberRole = async (
     const targetMember =
         workspace.members.find(
             (member) =>
-                member.user.toString() ===
-                userId.toString() && member.status !== "PENDING"
+                (getUserIdStr(member.user) === userId.toString() || (member._id && member._id.toString() === userId.toString()))
         );
 
     if (!targetMember) {
@@ -590,7 +591,7 @@ const removeMemberFromWorkspace = async (workspaceId, userId, currentUser) => {
     }
 
     const currentMember = workspace.members.find(
-        (member) => (member.user._id || member.user).toString() === currentUser._id.toString() && member.status !== "PENDING"
+        (member) => getUserIdStr(member.user) === currentUser._id.toString() && member.status !== "PENDING"
     );
 
     if (!currentMember || currentMember.role !== "OWNER") {
@@ -601,17 +602,19 @@ const removeMemberFromWorkspace = async (workspaceId, userId, currentUser) => {
         throw new AppError("Owner cannot be removed from the workspace", 400);
     }
 
-    const memberExists = workspace.members.some(
-        (member) => (member.user._id || member.user).toString() === userId.toString()
+    const targetMember = workspace.members.find(
+        (member) => getUserIdStr(member.user) === userId.toString() || (member._id && member._id.toString() === userId.toString())
     );
 
-    if (!memberExists) {
+    if (!targetMember) {
         throw new AppError("Member not found in workspace", 404);
     }
 
+    const targetUserIdStr = getUserIdStr(targetMember.user);
+
     // Remove member from workspace members array
     workspace.members = workspace.members.filter(
-        (member) => (member.user._id || member.user).toString() !== userId.toString()
+        (member) => getUserIdStr(member.user) !== targetUserIdStr && (!member._id || member._id.toString() !== userId.toString())
     );
 
     // Remove member from all private channel membership lists

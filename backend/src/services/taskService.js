@@ -9,6 +9,8 @@ const {
     ACTIVITY_ACTIONS,
 } = require("../constants/activityConstants");
 
+const getUserIdStr = (u) => (u?._id || u || "").toString();
+
 const createTask = async (
     workspaceId,
     taskData,
@@ -28,7 +30,7 @@ const createTask = async (
 
     const isMember = workspace.members.some(
         (member) =>
-            member.user.toString() ===
+            getUserIdStr(member.user) ===
             currentUser._id.toString() && member.status !== "PENDING"
     );
 
