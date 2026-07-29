@@ -89,6 +89,7 @@ function SettingsContent() {
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null)
   const [selectedPresetUrl, setSelectedPresetUrl] = useState<string | null>(null)
   const [removeAvatar, setRemoveAvatar] = useState(false)
+  const [avatarCategory, setAvatarCategory] = useState<string>('All')
 
   // Workspace settings state
   const [wsName, setWsName] = useState('')
@@ -408,13 +409,61 @@ function SettingsContent() {
                   </div>
 
                   {/* Default Avatars Character Selection Grid */}
-                  <div className="mb-8 p-4 rounded-2xl bg-gray-50 dark:bg-slate-900/80 border border-gray-100 dark:border-slate-800 space-y-3">
-                    <div className="flex items-center justify-between">
-                      <label className="text-xs font-bold uppercase text-gray-600 dark:text-slate-300 tracking-wider">Choose Avatar Character</label>
-                      <span className="text-[11px] text-gray-400 dark:text-slate-500 font-medium">Click to select an avatar</span>
+                  <div className="mb-8 p-4 md:p-5 rounded-2xl bg-gray-50/80 dark:bg-slate-900/80 border border-gray-200/80 dark:border-slate-800 space-y-4 shadow-2xs">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                      <div>
+                        <label className="text-xs font-bold uppercase text-gray-700 dark:text-slate-200 tracking-wider flex items-center gap-1.5">
+                          <Sparkles className="w-3.5 h-3.5 text-indigo-500" />
+                          Choose Avatar Character
+                        </label>
+                        <p className="text-[11px] text-gray-400 dark:text-slate-500 mt-0.5">Select a high-resolution illustrated avatar character</p>
+                      </div>
+                      
+                      <div className="flex items-center gap-2">
+                        {/* Category Pills */}
+                        <div className="flex items-center bg-gray-200/60 dark:bg-slate-800 p-0.5 rounded-lg text-[11px] font-semibold">
+                          {['All', 'Modern', 'Illustrated', 'Tech', 'Creative'].map((cat) => (
+                            <button
+                              key={cat}
+                              type="button"
+                              onClick={() => setAvatarCategory(cat)}
+                              className={`px-2.5 py-1 rounded-md transition-all cursor-pointer ${
+                                avatarCategory === cat
+                                  ? 'bg-white dark:bg-slate-900 text-indigo-600 dark:text-indigo-400 shadow-2xs font-bold'
+                                  : 'text-gray-500 dark:text-slate-400 hover:text-gray-900 dark:hover:text-gray-200'
+                              }`}
+                            >
+                              {cat}
+                            </button>
+                          ))}
+                        </div>
+
+                        {/* Randomize button */}
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const filtered = avatarCategory === 'All' 
+                              ? DEFAULT_AVATARS 
+                              : DEFAULT_AVATARS.filter(a => a.category === avatarCategory)
+                            const randomAvatar = filtered[Math.floor(Math.random() * filtered.length)]
+                            if (randomAvatar) {
+                              setSelectedPresetUrl(randomAvatar.url)
+                              setAvatarPreview(randomAvatar.url)
+                              setAvatarFile(null)
+                              setRemoveAvatar(false)
+                            }
+                          }}
+                          className="px-2.5 py-1 rounded-lg border border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-xs font-semibold text-gray-700 dark:text-slate-300 hover:bg-gray-100 dark:hover:bg-slate-800 transition-all flex items-center gap-1 cursor-pointer shadow-2xs shrink-0"
+                          title="Random avatar"
+                        >
+                          <Sparkles className="w-3 h-3 text-amber-500" />
+                          Randomize
+                        </button>
+                      </div>
                     </div>
-                    <div className="grid grid-cols-5 sm:grid-cols-10 gap-2.5">
-                      {DEFAULT_AVATARS.map((avatarItem) => {
+
+                    <div className="grid grid-cols-5 sm:grid-cols-10 gap-2.5 pt-1">
+                      {DEFAULT_AVATARS.filter(a => avatarCategory === 'All' || a.category === avatarCategory).map((avatarItem) => {
                         const isSelected = avatarPreview === avatarItem.url || selectedPresetUrl === avatarItem.url
                         return (
                           <button
@@ -426,17 +475,22 @@ function SettingsContent() {
                               setAvatarFile(null)
                               setRemoveAvatar(false)
                             }}
-                            className={`relative rounded-full overflow-hidden border-2 transition-all p-0.5 cursor-pointer aspect-square group hover:scale-105 ${
-                              isSelected ? 'border-indigo-600 ring-2 ring-indigo-500/30 bg-white dark:bg-slate-900 shadow-md' : 'border-transparent hover:border-indigo-300 bg-white dark:bg-slate-900'
+                            className={`group relative rounded-full overflow-hidden border-2 transition-all p-0.5 cursor-pointer aspect-square hover:scale-110 hover:z-10 ${
+                              isSelected 
+                                ? 'border-indigo-600 ring-4 ring-indigo-500/25 bg-white dark:bg-slate-900 shadow-md scale-105' 
+                                : 'border-transparent hover:border-indigo-400 bg-white dark:bg-slate-900'
                             }`}
-                            title={`Select ${avatarItem.name}`}
+                            title={`Select ${avatarItem.name} (${avatarItem.category})`}
                           >
                             <img src={avatarItem.url} alt={avatarItem.name} className="w-full h-full rounded-full object-cover" />
                             {isSelected && (
-                              <div className="absolute inset-0 bg-indigo-600/30 flex items-center justify-center rounded-full">
+                              <div className="absolute inset-0 bg-indigo-600/30 backdrop-blur-[1px] flex items-center justify-center rounded-full">
                                 <Check className="w-4 h-4 text-white stroke-[3] drop-shadow-md" />
                               </div>
                             )}
+                            <span className="absolute bottom-0 inset-x-0 bg-black/60 text-[9px] text-white font-medium py-0.5 opacity-0 group-hover:opacity-100 transition-opacity text-center truncate">
+                              {avatarItem.name}
+                            </span>
                           </button>
                         )
                       })}
