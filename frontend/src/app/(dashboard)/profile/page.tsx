@@ -5,6 +5,7 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Mail, MapPin, Link as LinkIcon, Calendar, CheckCircle2, MessageSquare, GitCommit } from "lucide-react"
 import { useQuery } from "@tanstack/react-query"
 import api, { getFileUrl } from "@/lib/api"
+import { UserAvatar } from "@/components/UserAvatar"
 
 export default function ProfilePage() {
   const { data: user } = useQuery({
@@ -33,9 +34,7 @@ export default function ProfilePage() {
           </div>
           <CardContent className="p-8 pt-0 relative">
              <div className="flex flex-col sm:flex-row gap-6 items-start sm:items-end -mt-12 mb-6">
-               <div className="w-24 h-24 rounded-full border-4 border-white bg-white dark:bg-slate-900 shadow-md overflow-hidden shrink-0">
-                  <img src={user?.avatar ? getFileUrl(user.avatar) : `https://api.dicebear.com/7.x/initials/svg?seed=${userSeed}&backgroundColor=6366f1&textColor=ffffff`} className="w-full h-full object-cover" />
-               </div>
+               <UserAvatar name={userName} avatar={user?.avatar} size="w-24 h-24 text-3xl font-bold border-4 border-white dark:border-slate-900 shadow-md" />
                <div className="flex-1">
                  <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100 tracking-tight">{userName}</h1>
                  <p className="text-gray-500 dark:text-slate-400 font-medium">{user?.title || 'Team Member at CollabHub'}</p>

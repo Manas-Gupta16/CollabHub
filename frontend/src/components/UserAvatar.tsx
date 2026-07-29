@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react"
 import { getFileUrl } from "@/lib/api"
+import { DEFAULT_AVATARS } from "@/constants/avatars"
 
 interface UserAvatarProps {
   name?: string
@@ -23,7 +24,18 @@ export function UserAvatar({ name, avatar, size = "w-8 h-8 text-[12px] font-bold
     .toUpperCase()
 
   const userName = name || "User"
-  const avatarUrl = avatar ? getFileUrl(avatar) : null
+  
+  let rawUrl = avatar ? getFileUrl(avatar) : null
+
+  // If avatar is a legacy external DiceBear URL, map to self-contained SVG Data URI
+  if (rawUrl && rawUrl.includes("api.dicebear.com")) {
+    const matched = DEFAULT_AVATARS.find(a => rawUrl?.toLowerCase().includes(`seed=${a.name.toLowerCase()}`))
+    if (matched) {
+      rawUrl = matched.url
+    }
+  }
+
+  const avatarUrl = rawUrl
 
   // Generate a premium soft color gradient based on name hash
   const colors = [
