@@ -14,6 +14,8 @@ import {
   updateTask, deleteTask, getTaskComments, addTaskComment, getFileUrl
 } from "@/lib/api"
 import { useSearchParams, useRouter } from "next/navigation"
+import { toast } from "sonner"
+import { ConfirmModal } from "@/components/ConfirmModal"
 
 // ── Helpers ──────────────────────────────────────────────
 
@@ -214,23 +216,44 @@ function TaskListContent() {
 
   // ── Mutations ──────────────────────────────────────────
 
+  const [confirmModal, setConfirmModal] = useState<{
+    isOpen: boolean
+    title: string
+    description?: string
+    onConfirm: () => void
+  }>({
+    isOpen: false,
+    title: "",
+    onConfirm: () => {},
+  })
+
   const createMutation = useMutation({
     mutationFn: (data: any) => createTask(data.workspaceId, data.body),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['all-tasks'] })
       setIsNewTaskModalOpen(false)
       setNewTask({ title: "", description: "", priority: "MEDIUM", assignee: "", dueDate: "" })
+      toast.success("Task created!")
+    },
+    onError: (err: any) => {
+      toast.error(err.response?.data?.message || "Failed to create task.")
     }
   })
 
   const updateStatusMutation = useMutation({
     mutationFn: ({ taskId, status }: { taskId: string, status: string }) => updateTaskStatus(taskId, status),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['all-tasks'] })
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['all-tasks'] })
+      toast.success("Task status updated!")
+    }
   })
 
   const updateTaskMutation = useMutation({
     mutationFn: ({ taskId, data }: { taskId: string, data: any }) => updateTask(taskId, data),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['all-tasks'] })
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['all-tasks'] })
+      toast.success("Task updated!")
+    }
   })
 
   const deleteMutation = useMutation({
@@ -238,6 +261,10 @@ function TaskListContent() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['all-tasks'] })
       setSelectedTask(null)
+      toast.success("Task deleted!")
+    },
+    onError: (err: any) => {
+      toast.error(err.response?.data?.message || "Failed to delete task.")
     }
   })
 
@@ -575,7 +602,17 @@ function TaskListContent() {
                           Comments
                         </button>
                         <button
-                          onClick={() => { if (confirm("Delete this task?")) deleteMutation.mutate(task._id) }}
+                          onClick={() => {
+                            setConfirmModal({
+                              isOpen: true,
+                              title: `Delete task "${task.title}"?`,
+                              description: "Are you sure you want to delete this task? This action cannot be undone.",
+                              onConfirm: () => {
+                                deleteMutation.mutate(task._id)
+                                setConfirmModal(prev => ({ ...prev, isOpen: false }))
+                              }
+                            })
+                          }}
                           className="w-full text-left px-3 py-1.5 text-[12px] font-medium text-red-600 hover:bg-red-50 dark:bg-red-950/60 flex items-center gap-2"
                         >
                           <Trash2 className="w-3.5 h-3.5" />
@@ -885,6 +922,14 @@ function TaskListContent() {
         </div>
       )}
 
+      {/* Confirmation Modal */}
+      <ConfirmModal
+        isOpen={confirmModal.isOpen}
+        title={confirmModal.title}
+        description={confirmModal.description}
+        onConfirm={confirmModal.onConfirm}
+        onClose={() => setConfirmModal(prev => ({ ...prev, isOpen: false }))}
+      />
     </div>
   )
 }

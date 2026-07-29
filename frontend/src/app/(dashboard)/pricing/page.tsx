@@ -14,6 +14,7 @@ import {
 import { useQuery, useQueryClient } from "@tanstack/react-query"
 import { getWorkspaces } from "@/lib/api"
 import api from "@/lib/api"
+import { toast } from "sonner"
 
 const loadRazorpayScript = (): Promise<boolean> => {
   return new Promise((resolve) => {
@@ -79,7 +80,7 @@ export default function PricingPage() {
     }
 
     if (!targetWorkspaceId) {
-      alert("Please select or create a workspace first.")
+      toast.error("Please select or create a workspace first.")
       setIsProcessing(false)
       return
     }

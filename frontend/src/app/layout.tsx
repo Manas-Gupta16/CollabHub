@@ -14,6 +14,7 @@ export const metadata: Metadata = {
 
 import ReactQueryProvider from "@/providers/ReactQueryProvider"
 import { ThemeProvider } from "@/components/theme-provider"
+import { Toaster } from "sonner"
 
 export default function RootLayout({
   children,
@@ -26,6 +27,7 @@ export default function RootLayout({
         <ThemeProvider defaultTheme="light" storageKey="collabhub_theme">
           <ReactQueryProvider>
             {children}
+            <Toaster position="top-right" richColors closeButton />
           </ReactQueryProvider>
         </ThemeProvider>
       </body>

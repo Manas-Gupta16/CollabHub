@@ -39,7 +39,8 @@ import api, {
 import Link from "next/link"
 import { UserAvatar } from "@/components/UserAvatar"
 import { getSocket } from "@/lib/socket"
-import { useRouter } from "next/navigation"
+import { useSearchParams, useRouter } from "next/navigation"
+import { toast } from "sonner"
 
 const wsGradients = [
   'from-indigo-500 via-indigo-600 to-violet-600',
@@ -190,9 +191,10 @@ export default function Dashboard() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['dashboard-tasks'] })
       setQuickTaskTitle("")
+      toast.success("Task created!")
     },
     onError: (err: any) => {
-      alert(err.response?.data?.message || "Failed to create quick task.")
+      toast.error(err.response?.data?.message || "Failed to create quick task.")
     }
   })
 
@@ -217,7 +219,7 @@ export default function Dashboard() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['notifications'] })
       queryClient.invalidateQueries({ queryKey: ['workspaces'] })
-      alert("Invitation accepted!")
+      toast.success("Invitation accepted!")
     }
   })
 
@@ -226,7 +228,7 @@ export default function Dashboard() {
     if (!quickTaskTitle.trim()) return
     const targetWsId = quickTaskWsId || (workspaces?.[0]?._id)
     if (!targetWsId) {
-      alert("Please select or create a workspace first.")
+      toast.error("Please select or create a workspace first.")
       return
     }
     createQuickTaskMutation.mutate({ wsId: targetWsId, title: quickTaskTitle.trim() })

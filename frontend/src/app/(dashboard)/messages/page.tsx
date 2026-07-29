@@ -15,6 +15,8 @@ import api, {
 import { useState, useMemo, useEffect, useRef, Suspense } from "react"
 import { UserAvatar } from "@/components/UserAvatar"
 import { getSocket } from "@/lib/socket"
+import { toast } from "sonner"
+import { ConfirmModal } from "@/components/ConfirmModal"
 
 function MessagesContent() {
   const searchParams = useSearchParams()
@@ -106,16 +108,27 @@ function MessagesContent() {
     }
   })
 
+  const [confirmModal, setConfirmModal] = useState<{
+    isOpen: boolean
+    title: string
+    description?: string
+    onConfirm: () => void
+  }>({
+    isOpen: false,
+    title: "",
+    onConfirm: () => {},
+  })
+
   const addMemberToChannelMutation = useMutation({
     mutationFn: (userId: string) => addMemberToChannel(activeWorkspaceId, queryChannel, userId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['workspace', activeWorkspaceId] })
       setIsAddChannelMemberOpen(false)
       setMemberToAdd("")
-      alert("Member added to channel!")
+      toast.success("Member added to channel!")
     },
     onError: (err: any) => {
-      alert(err.response?.data?.message || "Failed to add member to channel.")
+      toast.error(err.response?.data?.message || "Failed to add member to channel.")
     }
   })
 
@@ -127,9 +140,10 @@ function MessagesContent() {
       setIsAddLinkOpen(false)
       setLinkTitle("")
       setLinkUrl("")
+      toast.success("Link pinned successfully!")
     },
     onError: (err: any) => {
-      alert(err.response?.data?.message || "Failed to add link.")
+      toast.error(err.response?.data?.message || "Failed to add link.")
     }
   })
 
@@ -137,6 +151,7 @@ function MessagesContent() {
     mutationFn: (linkId: string) => deletePinnedLink(activeWorkspaceId, linkId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['workspace', activeWorkspaceId] })
+      toast.success("Link removed.")
     }
   })
 
@@ -147,9 +162,10 @@ function MessagesContent() {
       queryClient.invalidateQueries({ queryKey: ['workspace', activeWorkspaceId] })
       setIsAddGoalOpen(false)
       setGoalTitle("")
+      toast.success("Goal added!")
     },
     onError: (err: any) => {
-      alert(err.response?.data?.message || "Failed to add goal.")
+      toast.error(err.response?.data?.message || "Failed to add goal.")
     }
   })
 
@@ -164,6 +180,7 @@ function MessagesContent() {
     mutationFn: (goalId: string) => deleteTeamGoal(activeWorkspaceId, goalId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['workspace', activeWorkspaceId] })
+      toast.success("Goal removed.")
     }
   })
 
@@ -191,9 +208,10 @@ function MessagesContent() {
       queryClient.invalidateQueries({ queryKey: ['messages', activeWorkspaceId, queryChannel] })
       setEditingMessageId(null)
       setEditingContent("")
+      toast.success("Message updated!")
     },
     onError: (err: any) => {
-      alert(err.response?.data?.message || "Failed to update message.")
+      toast.error(err.response?.data?.message || "Failed to update message.")
     }
   })
 
@@ -201,9 +219,10 @@ function MessagesContent() {
     mutationFn: (messageId: string) => deleteMessage(messageId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['messages', activeWorkspaceId, queryChannel] })
+      toast.success("Message deleted!")
     },
     onError: (err: any) => {
-      alert(err.response?.data?.message || "Failed to delete message.")
+      toast.error(err.response?.data?.message || "Failed to delete message.")
     }
   })
 
@@ -442,9 +461,15 @@ function MessagesContent() {
                           {canDelete && (
                             <button
                               onClick={() => {
-                                if (confirm("Delete this message?")) {
-                                  deleteMessageMutation.mutate(msg._id)
-                                }
+                                setConfirmModal({
+                                  isOpen: true,
+                                  title: "Delete message?",
+                                  description: "Are you sure you want to delete this message?",
+                                  onConfirm: () => {
+                                    deleteMessageMutation.mutate(msg._id)
+                                    setConfirmModal(prev => ({ ...prev, isOpen: false }))
+                                  }
+                                })
                               }}
                               className="p-1 text-gray-400 dark:text-slate-500 hover:text-red-600 dark:hover:text-red-400 rounded hover:bg-red-50 dark:hover:bg-red-950/60 transition-colors cursor-pointer"
                               title="Delete message"
@@ -935,6 +960,14 @@ function MessagesContent() {
         </div>
       )}
 
+      {/* Confirmation Modal */}
+      <ConfirmModal
+        isOpen={confirmModal.isOpen}
+        title={confirmModal.title}
+        description={confirmModal.description}
+        onConfirm={confirmModal.onConfirm}
+        onClose={() => setConfirmModal(prev => ({ ...prev, isOpen: false }))}
+      />
     </div>
   )
 }

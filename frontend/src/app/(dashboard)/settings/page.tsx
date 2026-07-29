@@ -16,6 +16,8 @@ import api from "@/lib/api"
 import { useSearchParams, useRouter } from "next/navigation"
 import { UserAvatar } from "@/components/UserAvatar"
 import { useTheme } from "@/components/theme-provider"
+import { toast } from "sonner"
+import { ConfirmModal } from "@/components/ConfirmModal"
 
 const DEFAULT_AVATARS = [
   { id: 'peeps-1', name: 'Alex', url: 'https://api.dicebear.com/7.x/open-peeps/svg?seed=Alex&backgroundColor=b6e3f4' },
@@ -130,15 +132,28 @@ function SettingsContent() {
   const userSeed = userName.replace(/\s/g, '') || 'Design'
   const fallbackAvatar = `https://api.dicebear.com/7.x/initials/svg?seed=${userSeed}&backgroundColor=6366f1&textColor=ffffff`
 
+  const [confirmModal, setConfirmModal] = useState<{
+    isOpen: boolean
+    title: string
+    description?: string
+    confirmText?: string
+    variant?: "destructive" | "primary"
+    onConfirm: () => void
+  }>({
+    isOpen: false,
+    title: "",
+    onConfirm: () => {},
+  })
+
   const updateProfileMutation = useMutation({
     mutationFn: updateProfile,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['profile'] })
-      alert("Profile updated successfully!")
+      toast.success("Profile updated successfully!")
     },
     onError: (err: any) => {
       const msg = err?.response?.data?.message || err?.response?.data?.error || "Failed to update profile."
-      alert(msg)
+      toast.error(msg)
     }
   })
 
@@ -147,10 +162,10 @@ function SettingsContent() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['workspace', selectedWorkspaceId] })
       queryClient.invalidateQueries({ queryKey: ['workspaces'] })
-      alert("Workspace settings updated successfully!")
+      toast.success("Workspace settings updated successfully!")
     },
     onError: (err: any) => {
-      alert(err.response?.data?.message || "Failed to update workspace settings.")
+      toast.error(err.response?.data?.message || "Failed to update workspace settings.")
     }
   })
 
@@ -158,9 +173,10 @@ function SettingsContent() {
     mutationFn: ({ userId, role }: { userId: string; role: string }) => updateMemberRole(selectedWorkspaceId, userId, role),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['workspace', selectedWorkspaceId] })
+      toast.success("Member role updated successfully!")
     },
     onError: (err: any) => {
-      alert(err.response?.data?.message || "Failed to update member role.")
+      toast.error(err.response?.data?.message || "Failed to update member role.")
     }
   })
 
@@ -168,10 +184,11 @@ function SettingsContent() {
     mutationFn: (userId: string) => removeMemberFromWorkspace(selectedWorkspaceId, userId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['workspace', selectedWorkspaceId] })
-      alert("Member removed from workspace.")
+      queryClient.invalidateQueries({ queryKey: ['workspaces'] })
+      toast.success("Member removed from workspace.")
     },
     onError: (err: any) => {
-      alert(err.response?.data?.message || "Failed to remove member.")
+      toast.error(err.response?.data?.message || "Failed to remove member.")
     }
   })
 
@@ -311,12 +328,13 @@ function SettingsContent() {
   }, [])
 
   const handlePasswordSave = () => {
+    if (!password) return
     if (password.length < 6) {
-      alert("Password must be at least 6 characters.")
+      toast.error("Password must be at least 6 characters.")
       return
     }
     if (password !== confirmPassword) {
-      alert("Passwords do not match.")
+      toast.error("Passwords do not match.")
       return
     }
     const formData = new FormData()
@@ -686,9 +704,15 @@ function SettingsContent() {
                                         variant="ghost"
                                         size="sm"
                                         onClick={() => {
-                                          if (confirm(`Remove ${uName} from workspace?`)) {
-                                            removeMemberMutation.mutate(uId)
-                                          }
+                                          setConfirmModal({
+                                            isOpen: true,
+                                            title: `Remove ${uName}?`,
+                                            description: `Are you sure you want to remove ${uName} from workspace "${activeWorkspace?.name}"?`,
+                                            onConfirm: () => {
+                                              removeMemberMutation.mutate(uId)
+                                              setConfirmModal(prev => ({ ...prev, isOpen: false }))
+                                            }
+                                          })
                                         }}
                                         className="text-red-500 hover:bg-red-50 dark:bg-red-950/60 text-xs rounded-lg cursor-pointer"
                                       >
@@ -754,7 +778,7 @@ function SettingsContent() {
                       </div>
                       <input type="checkbox" checked={pushNotif} onChange={e => setPushNotif(e.target.checked)} className="h-4 w-4 rounded text-indigo-600 focus:ring-indigo-500 cursor-pointer" />
                     </div>
-                    <Button className="bg-[#6366F1] hover:bg-[#4F46E5] text-white rounded-xl text-xs font-semibold cursor-pointer" onClick={() => alert("Preferences saved!")}>Save Preferences</Button>
+                    <Button className="bg-[#6366F1] hover:bg-[#4F46E5] text-white rounded-xl text-xs font-semibold cursor-pointer" onClick={() => toast.success("Preferences saved!")}>Save Preferences</Button>
                   </div>
                 </CardContent>
               </Card>
@@ -773,7 +797,23 @@ function SettingsContent() {
                     <div className="pt-6 border-t border-gray-100 dark:border-slate-800 space-y-2">
                       <label className="text-sm font-bold text-red-600">Delete Account</label>
                       <p className="text-xs text-gray-500 dark:text-slate-400">Permanently delete your user account and all personal data.</p>
-                      <Button variant="destructive" className="rounded-xl text-xs font-semibold mt-2 cursor-pointer" onClick={() => confirm("Are you sure you want to delete your account?") && alert("Account deletion requested")}>
+                      <Button
+                        variant="destructive"
+                        className="rounded-xl text-xs font-semibold mt-2 cursor-pointer"
+                        onClick={() => {
+                          setConfirmModal({
+                            isOpen: true,
+                            title: "Delete Account?",
+                            description: "Are you sure you want to delete your account? This action is permanent and cannot be undone.",
+                            confirmText: "Delete Account",
+                            variant: "destructive",
+                            onConfirm: () => {
+                              setConfirmModal(prev => ({ ...prev, isOpen: false }))
+                              toast.error("Account deletion request logged.")
+                            }
+                          })
+                        }}
+                      >
                         Delete Account
                       </Button>
                     </div>
@@ -800,10 +840,18 @@ function SettingsContent() {
                         size="sm"
                         className="text-red-600 border-red-200/80 hover:bg-red-50 dark:bg-red-950/60 hover:border-red-300 rounded-xl text-xs font-bold transition-all shadow-2xs self-start sm:self-auto cursor-pointer"
                         onClick={() => {
-                          if (confirm("Revoke all other active login sessions?")) {
-                            setDevices(devices.filter(d => d.isCurrent))
-                            alert("All other sessions revoked successfully!")
-                          }
+                          setConfirmModal({
+                            isOpen: true,
+                            title: "Revoke All Other Sessions?",
+                            description: "Are you sure you want to revoke all other active login sessions?",
+                            confirmText: "Revoke All",
+                            variant: "destructive",
+                            onConfirm: () => {
+                              setDevices(devices.filter(d => d.isCurrent))
+                              setConfirmModal(prev => ({ ...prev, isOpen: false }))
+                              toast.success("All other sessions revoked successfully!")
+                            }
+                          })
                         }}
                       >
                         <LogOut className="w-3.5 h-3.5 mr-1.5" />
@@ -892,8 +940,18 @@ function SettingsContent() {
                                 size="sm"
                                 className="text-red-600 border-red-200 hover:bg-red-50 dark:bg-red-950/60 hover:border-red-300 rounded-xl text-xs font-bold cursor-pointer transition-all shadow-2xs"
                                 onClick={() => {
-                                  setDevices(devices.filter((d) => d.id !== device.id))
-                                  alert("Session revoked successfully!")
+                                  setConfirmModal({
+                                    isOpen: true,
+                                    title: "Revoke Session?",
+                                    description: `Are you sure you want to revoke session for ${device.browser} on ${device.os}?`,
+                                    confirmText: "Revoke Session",
+                                    variant: "destructive",
+                                    onConfirm: () => {
+                                      setDevices(devices.filter((d) => d.id !== device.id))
+                                      setConfirmModal(prev => ({ ...prev, isOpen: false }))
+                                      toast.success("Session revoked successfully!")
+                                    }
+                                  })
                                 }}
                               >
                                 Revoke Session
@@ -968,6 +1026,17 @@ function SettingsContent() {
         </div>
 
       </div>
+
+      {/* Confirmation Modal */}
+      <ConfirmModal
+        isOpen={confirmModal.isOpen}
+        title={confirmModal.title}
+        description={confirmModal.description}
+        confirmText={confirmModal.confirmText}
+        variant={confirmModal.variant}
+        onConfirm={confirmModal.onConfirm}
+        onClose={() => setConfirmModal(prev => ({ ...prev, isOpen: false }))}
+      />
     </div>
   )
 }

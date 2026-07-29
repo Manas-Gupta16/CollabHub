@@ -23,6 +23,7 @@ import { Button } from "@/components/ui/button"
 
 import { UserAvatar } from "@/components/UserAvatar"
 import { ThemeToggle } from "@/components/ThemeToggle"
+import { toast } from "sonner"
 
 function DashboardLayoutInner({
   children,
@@ -122,7 +123,7 @@ function DashboardLayoutInner({
       setSearchResults(data)
     } catch (err) {
       console.error(err)
-      alert("Failed to perform search.")
+      toast.error("Failed to perform search.")
     } finally {
       setIsSearching(false)
     }
@@ -136,9 +137,10 @@ function DashboardLayoutInner({
       setIsNewChannelModalOpen(false)
       setNewChannelName("")
       setNewChannelPrivate(false)
+      toast.success("Channel created successfully!")
     },
     onError: (err: any) => {
-      alert(err.response?.data?.message || "Failed to create channel")
+      toast.error(err.response?.data?.message || "Failed to create channel")
     }
   })
 

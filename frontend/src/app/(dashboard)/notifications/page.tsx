@@ -1,10 +1,12 @@
 "use client"
 
+import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Check, Settings, Bell, AtSign, FileText, CheckCircle2, Users, X } from "lucide-react"
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 import { getNotifications, markNotificationRead, markAllNotificationsRead, acceptInvitation, rejectInvitation } from "@/lib/api"
 import { useRouter } from "next/navigation"
+import { toast } from "sonner"
 
 function relativeTime(dateStr: string) {
   const diff = Date.now() - new Date(dateStr).getTime()
@@ -21,6 +23,7 @@ function relativeTime(dateStr: string) {
 export default function NotificationsPage() {
   const queryClient = useQueryClient()
   const router = useRouter()
+  const [filter, setFilter] = useState<'ALL' | 'UNREAD' | 'INVITATION'>('ALL')
 
   const { data: notificationsData, isLoading } = useQuery({
     queryKey: ['notifications'],
@@ -42,10 +45,10 @@ export default function NotificationsPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['notifications'] })
       queryClient.invalidateQueries({ queryKey: ['workspaces'] })
-      alert("Workspace invitation accepted!")
+      toast.success("Workspace invitation accepted!")
     },
     onError: (err: any) => {
-      alert(err.response?.data?.message || "Failed to accept invitation.")
+      toast.error(err.response?.data?.message || "Failed to accept invitation.")
     }
   })
 
@@ -53,10 +56,10 @@ export default function NotificationsPage() {
     mutationFn: rejectInvitation,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['notifications'] })
-      alert("Workspace invitation declined.")
+      toast.info("Workspace invitation declined.")
     },
     onError: (err: any) => {
-      alert(err.response?.data?.message || "Failed to decline invitation.")
+      toast.error(err.response?.data?.message || "Failed to decline invitation.")
     }
   })
 

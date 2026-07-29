@@ -25,6 +25,8 @@ import {
 } from "lucide-react"
 import Link from "next/link"
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
+import { toast } from "sonner"
+import { ConfirmModal } from "@/components/ConfirmModal"
 import { useState, useEffect, useRef } from "react"
 import { UserAvatar } from "@/components/UserAvatar"
 import api, { 
@@ -138,14 +140,25 @@ export default function WorkspaceOverview() {
     enabled: !!id
   })
 
+  const [confirmModal, setConfirmModal] = useState<{
+    isOpen: boolean
+    title: string
+    description?: string
+    onConfirm: () => void
+  }>({
+    isOpen: false,
+    title: "",
+    onConfirm: () => {},
+  })
+
   const removeMemberMutation = useMutation({
     mutationFn: (userId: string) => removeMemberFromWorkspace(id, userId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['workspace', id] })
-      alert("Member removed successfully!")
+      toast.success("Member removed successfully!")
     },
     onError: (err: any) => {
-      alert(err.response?.data?.message || "Failed to remove member.")
+      toast.error(err.response?.data?.message || "Failed to remove member.")
     }
   })
 
@@ -153,9 +166,10 @@ export default function WorkspaceOverview() {
     mutationFn: ({ userId, role }: { userId: string; role: string }) => updateMemberRole(id, userId, role),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['workspace', id] })
+      toast.success("Member role updated!")
     },
     onError: (err: any) => {
-      alert(err.response?.data?.message || "Failed to update member role.")
+      toast.error(err.response?.data?.message || "Failed to update member role.")
     }
   })
 
@@ -175,6 +189,7 @@ export default function WorkspaceOverview() {
       setIsNewTaskModalOpen(false)
       setNewTaskTitle("")
       setNewTaskAssignee("")
+      toast.success("Task created!")
     }
   })
 
@@ -190,10 +205,10 @@ export default function WorkspaceOverview() {
       queryClient.invalidateQueries({ queryKey: ['workspace', id] })
       setIsInviteModalOpen(false)
       setInviteEmail("")
-      alert("Invitation sent successfully! The user will receive a notification to join this workspace.")
+      toast.success("Invitation sent successfully! The user will receive a notification.")
     },
-    onError: () => {
-      alert("Failed to invite user. They might not exist.")
+    onError: (err: any) => {
+      toast.error(err.response?.data?.message || "Failed to invite user.")
     }
   })
 
@@ -666,9 +681,15 @@ export default function WorkspaceOverview() {
                               <button
                                 onClick={(e) => {
                                   e.stopPropagation()
-                                  if (confirm(`Remove member ${userName} from workspace?`)) {
-                                    removeMemberMutation.mutate(uId);
-                                  }
+                                  setConfirmModal({
+                                    isOpen: true,
+                                    title: `Remove ${userName}?`,
+                                    description: `Are you sure you want to remove ${userName} from workspace "${workspace?.name}"? They will lose access immediately.`,
+                                    onConfirm: () => {
+                                      removeMemberMutation.mutate(uId)
+                                      setConfirmModal(prev => ({ ...prev, isOpen: false }))
+                                    }
+                                  })
                                 }}
                                 className="w-full text-left px-3 py-2 text-[12px] font-semibold text-red-600 hover:bg-red-50 dark:bg-red-950/60 flex items-center gap-2 cursor-pointer"
                               >
@@ -805,6 +826,15 @@ export default function WorkspaceOverview() {
             </div>
           </div>
         )}
+
+        {/* Reusable Confirmation Modal */}
+        <ConfirmModal
+          isOpen={confirmModal.isOpen}
+          title={confirmModal.title}
+          description={confirmModal.description}
+          onConfirm={confirmModal.onConfirm}
+          onClose={() => setConfirmModal(prev => ({ ...prev, isOpen: false }))}
+        />
 
       </div>
     </div>
