@@ -39,12 +39,12 @@ export function UserAvatar({ name, avatar, size = "w-8 h-8 text-[12px] font-bold
 
   // Generate a premium soft color gradient based on name hash
   const colors = [
-    "bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 border-indigo-100",
-    "bg-amber-50 dark:bg-amber-950/60 text-amber-700 border-amber-100",
-    "bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 border-emerald-100",
-    "bg-blue-50 dark:bg-blue-950/60 text-blue-700 border-blue-100",
-    "bg-pink-50 text-pink-700 border-pink-100",
-    "bg-violet-50 text-violet-700 border-violet-100",
+    "bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 border-indigo-200 dark:border-indigo-800/60",
+    "bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 border-amber-200 dark:border-amber-800/60",
+    "bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800/60",
+    "bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-800/60",
+    "bg-pink-50 dark:bg-pink-950/60 text-pink-700 dark:text-pink-300 border-pink-200 dark:border-pink-800/60",
+    "bg-violet-50 dark:bg-violet-950/60 text-violet-700 dark:text-violet-300 border-violet-200 dark:border-violet-800/60",
   ]
 
   let hash = 0
@@ -55,7 +55,7 @@ export function UserAvatar({ name, avatar, size = "w-8 h-8 text-[12px] font-bold
 
   if (avatarUrl && !hasError) {
     return (
-      <div className={`${size} rounded-full overflow-hidden border border-gray-200 shrink-0 bg-gray-100 dark:bg-slate-800 flex items-center justify-center shadow-sm`}>
+      <div className={`${size} rounded-full overflow-hidden border border-gray-200 dark:border-slate-700/80 shrink-0 bg-gray-100 dark:bg-slate-800 flex items-center justify-center shadow-sm`}>
         <img
           src={avatarUrl}
           className="w-full h-full object-cover"

@@ -816,7 +816,7 @@ function MessagesContent() {
       {/* Add Member Modal for Chat */}
       {isAddChannelMemberOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-xs p-4 animate-in fade-in">
-          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-6 border border-gray-100 dark:border-slate-800">
+          <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl w-full max-w-md p-6 border border-gray-100 dark:border-slate-800">
             <h2 className="text-lg font-bold text-gray-900 dark:text-gray-100 mb-2 flex items-center gap-2">
               <UserPlus className="w-5 h-5 text-amber-600" /> Add to #{queryChannel}
             </h2>
@@ -826,7 +826,7 @@ function MessagesContent() {
               <select
                 value={memberToAdd}
                 onChange={(e) => setMemberToAdd(e.target.value)}
-                className="w-full bg-white border border-gray-200 dark:border-slate-800 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500"
+                className="w-full bg-white dark:bg-slate-800 text-gray-900 dark:text-gray-100 border border-gray-200 dark:border-slate-800 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500"
               >
                 <option value="">Select a member...</option>
                 {(activeWorkspace?.members || [])
@@ -869,7 +869,7 @@ function MessagesContent() {
       {/* Add Pinned Link Modal */}
       {isAddLinkOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-xs p-4 animate-in fade-in">
-          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-6 border border-gray-100 dark:border-slate-800 space-y-4">
+          <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl w-full max-w-md p-6 border border-gray-100 dark:border-slate-800 space-y-4">
             <h2 className="text-lg font-bold text-gray-900 dark:text-gray-100 flex items-center gap-2">
               <Pin className="w-5 h-5 text-red-500" /> Pin Resource Link
             </h2>
@@ -883,7 +883,7 @@ function MessagesContent() {
                   value={linkTitle}
                   onChange={(e) => setLinkTitle(e.target.value)}
                   placeholder="e.g. Project Specs Docs"
-                  className="w-full bg-white border border-gray-200 dark:border-slate-800 rounded-xl px-3 py-2 text-sm mt-1 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  className="w-full bg-white dark:bg-slate-800 text-gray-900 dark:text-gray-100 border border-gray-200 dark:border-slate-800 rounded-xl px-3 py-2 text-sm mt-1 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                 />
               </div>
               <div>
@@ -893,7 +893,7 @@ function MessagesContent() {
                   value={linkUrl}
                   onChange={(e) => setLinkUrl(e.target.value)}
                   placeholder="https://..."
-                  className="w-full bg-white border border-gray-200 dark:border-slate-800 rounded-xl px-3 py-2 text-sm mt-1 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  className="w-full bg-white dark:bg-slate-800 text-gray-900 dark:text-gray-100 border border-gray-200 dark:border-slate-800 rounded-xl px-3 py-2 text-sm mt-1 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                 />
               </div>
             </div>
@@ -922,7 +922,7 @@ function MessagesContent() {
       {/* Add Team Goal Modal */}
       {isAddGoalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-xs p-4 animate-in fade-in">
-          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-6 border border-gray-100 dark:border-slate-800 space-y-4">
+          <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl w-full max-w-md p-6 border border-gray-100 dark:border-slate-800 space-y-4">
             <h2 className="text-lg font-bold text-gray-900 dark:text-gray-100 flex items-center gap-2">
               <CheckCircle2 className="w-5 h-5 text-emerald-500" /> New Team Goal
             </h2>
@@ -935,7 +935,7 @@ function MessagesContent() {
                 value={goalTitle}
                 onChange={(e) => setGoalTitle(e.target.value)}
                 placeholder="e.g. Complete v1.0 Release"
-                className="w-full bg-white border border-gray-200 dark:border-slate-800 rounded-xl px-3 py-2 text-sm mt-1 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                className="w-full bg-white dark:bg-slate-800 text-gray-900 dark:text-gray-100 border border-gray-200 dark:border-slate-800 rounded-xl px-3 py-2 text-sm mt-1 focus:outline-none focus:ring-2 focus:ring-indigo-500"
               />
             </div>
 

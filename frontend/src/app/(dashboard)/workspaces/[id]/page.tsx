@@ -64,7 +64,7 @@ function Dropdown({ trigger, children, align = "left" }: {
     <div className="relative" ref={ref}>
       <div onClick={(e) => { e.stopPropagation(); setOpen(!open) }}>{trigger}</div>
       {open && (
-        <div className={`absolute z-50 mt-1 bg-white border border-gray-200 dark:border-slate-800/80 rounded-xl shadow-xl py-1.5 min-w-[170px] transition-all animate-in fade-in zoom-in-95 ${align === "right" ? "right-0" : "left-0"}`}
+        <div className={`absolute z-50 mt-1 bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800/80 rounded-xl shadow-xl py-1.5 min-w-[170px] transition-all animate-in fade-in zoom-in-95 ${align === "right" ? "right-0" : "left-0"}`}
           onClick={(e) => { e.stopPropagation(); setOpen(false) }}>
           {children}
         </div>
@@ -745,7 +745,7 @@ export default function WorkspaceOverview() {
         {/* Invite Workspace Member Modal */}
         {isInviteModalOpen && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-xs p-4 animate-in fade-in">
-            <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-6 border border-gray-100 dark:border-slate-800">
+            <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl w-full max-w-md p-6 border border-gray-100 dark:border-slate-800">
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-lg font-bold text-gray-900 dark:text-gray-100 flex items-center gap-2">
                   <UserPlus className="w-5 h-5 text-indigo-600" /> Invite to Workspace
@@ -781,7 +781,7 @@ export default function WorkspaceOverview() {
         {/* New Task Modal */}
         {isNewTaskModalOpen && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-xs p-4 animate-in fade-in">
-            <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-6 border border-gray-100 dark:border-slate-800">
+            <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl w-full max-w-md p-6 border border-gray-100 dark:border-slate-800">
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-lg font-bold text-gray-900 dark:text-gray-100 flex items-center gap-2">
                   <ListTodo className="w-5 h-5 text-indigo-600" /> Create Workspace Task
@@ -805,7 +805,7 @@ export default function WorkspaceOverview() {
                     <select
                       value={newTaskAssignee}
                       onChange={(e) => setNewTaskAssignee(e.target.value)}
-                      className="w-full bg-white border border-gray-200 dark:border-slate-800 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                      className="w-full bg-white dark:bg-slate-800 text-gray-900 dark:text-gray-100 border border-gray-200 dark:border-slate-800 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
                     >
                       <option value="">Unassigned</option>
                       {(workspace?.members || []).map((m: any) => (
