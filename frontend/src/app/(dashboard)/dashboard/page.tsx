@@ -556,7 +556,7 @@ export default function Dashboard() {
                     return (
                       <div 
                         key={task._id} 
-                        className="flex items-center justify-between p-4 hover:bg-gray-50 dark:bg-slate-800/80 dark:hover:bg-slate-800 transition-colors group cursor-pointer"
+                        className="flex items-center justify-between p-4 hover:bg-gray-50 dark:hover:bg-slate-800/60 transition-colors group cursor-pointer"
                         onClick={() => updateStatusMutation.mutate({ taskId: task._id, status: isDone ? 'TODO' : 'DONE' })}
                       >
                         <div className="flex items-center gap-3.5 min-w-0 pr-4">
@@ -576,7 +576,7 @@ export default function Dashboard() {
                           <div className="flex items-center gap-2.5 min-w-0">
                             <UserAvatar name={assignee.name || 'Unassigned'} avatar={assignee.avatar} size="w-6 h-6 text-[8px]" />
                             <div className="min-w-0">
-                              <h4 className={`font-semibold text-sm truncate ${isDone ? "line-through text-gray-400 dark:text-slate-400 opacity-60" : "text-gray-900 dark:text-gray-100"}`}>
+                              <h4 className={`font-semibold text-sm truncate ${isDone ? "line-through decoration-slate-400 dark:decoration-slate-500 text-gray-400 dark:text-slate-400 opacity-60" : "text-gray-900 dark:text-gray-100"}`}>
                                 {task.title}
                               </h4>
                               <p className="text-xs text-gray-400 dark:text-slate-400 mt-0.5 truncate">

@@ -17,10 +17,10 @@ function getActivityMeta(action: string) {
   if (action.includes("updated task status") || action.includes("Updated task")) return { icon: CheckCircle2, color: "text-emerald-500", bg: "bg-emerald-50 dark:bg-emerald-950/60", label: "Status updated" }
   if (action.includes("commented")) return { icon: MessageSquare, color: "text-amber-500", bg: "bg-amber-50 dark:bg-amber-950/60", label: "Comment added" }
   if (action.includes("deleted task")) return { icon: Trash2, color: "text-red-400", bg: "bg-red-50 dark:bg-red-950/60", label: "Task deleted" }
-  if (action.includes("added member")) return { icon: UserPlus, color: "text-violet-500", bg: "bg-violet-50", label: "Member added" }
+  if (action.includes("added member")) return { icon: UserPlus, color: "text-violet-500", bg: "bg-violet-50 dark:bg-violet-950/60", label: "Member added" }
   if (action.includes("created workspace")) return { icon: FolderPlus, color: "text-indigo-500", bg: "bg-indigo-50 dark:bg-indigo-950/60", label: "Workspace created" }
-  if (action.includes("updated role")) return { icon: Users, color: "text-orange-500", bg: "bg-orange-50", label: "Role updated" }
-  if (action.includes("created channel")) return { icon: Hash, color: "text-pink-500", bg: "bg-pink-50", label: "Channel created" }
+  if (action.includes("updated role")) return { icon: Users, color: "text-orange-500", bg: "bg-orange-50 dark:bg-orange-950/60", label: "Role updated" }
+  if (action.includes("created channel")) return { icon: Hash, color: "text-pink-500", bg: "bg-pink-50 dark:bg-pink-950/60", label: "Channel created" }
   return { icon: Clock, color: "text-gray-400 dark:text-slate-500", bg: "bg-gray-50 dark:bg-slate-900", label: "Activity" }
 }
 
