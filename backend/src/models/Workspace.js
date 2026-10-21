@@ -85,6 +85,28 @@ const workspaceSchema = new mongoose.Schema(
             type: String,
             enum: ["MONTHLY", "YEARLY"],
             default: "MONTHLY"
+        },
+
+        subscriptionStatus: {
+            type: String,
+            enum: ["FREE", "ACTIVE", "EXPIRED", "CANCELLED"],
+            default: "FREE"
+        },
+
+        subscriptionExpiresAt: {
+            type: Date
+        },
+
+        subscriptionStartedAt: {
+            type: Date
+        },
+
+        lastPaymentId: {
+            type: String
+        },
+
+        lastOrderId: {
+            type: String
         }
     },
     {

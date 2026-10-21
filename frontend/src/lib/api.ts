@@ -278,4 +278,29 @@ export const deleteTeamGoal = async (workspaceId: string, goalId: string) => {
   return response.data.data;
 };
 
+export const getWorkspaceBilling = async (workspaceId: string) => {
+  const response = await api.get(`/billing/${workspaceId}/billing`);
+  return response.data.data;
+};
+
+export const getWorkspaceTransactions = async (workspaceId: string) => {
+  const response = await api.get(`/billing/${workspaceId}/transactions`);
+  return response.data.data;
+};
+
+export const createRazorpayOrder = async (data: { workspaceId: string; plan: string; billingCycle: string }) => {
+  const response = await api.post('/billing/create-order', data);
+  return response.data.data;
+};
+
+export const verifyRazorpayPayment = async (data: any) => {
+  const response = await api.post('/billing/verify-payment', data);
+  return response.data;
+};
+
+export const cancelWorkspaceSubscription = async (workspaceId: string) => {
+  const response = await api.post(`/billing/${workspaceId}/cancel`);
+  return response.data;
+};
+
 export default api;

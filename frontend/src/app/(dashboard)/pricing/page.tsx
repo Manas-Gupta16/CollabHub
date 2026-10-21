@@ -2,6 +2,7 @@
 
 import { useState } from "react"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { motion } from "framer-motion"
@@ -9,10 +10,10 @@ import {
   Check, Sparkles, Zap, ShieldCheck, Crown, ArrowLeft, Star, 
   HelpCircle, ArrowRight, CheckCircle2, Lock, MessageSquare, 
   FolderKanban, Pin, Users, FileText, Activity, Shield, X,
-  CreditCard, Smartphone, Building2, QrCode
+  CreditCard, Smartphone, Building2, QrCode, Plus
 } from "lucide-react"
 import { useQuery, useQueryClient } from "@tanstack/react-query"
-import { getWorkspaces } from "@/lib/api"
+import { getWorkspaces, createWorkspace } from "@/lib/api"
 import api from "@/lib/api"
 import { toast } from "sonner"
 
@@ -32,6 +33,7 @@ const loadRazorpayScript = (): Promise<boolean> => {
 
 export default function PricingPage() {
   const queryClient = useQueryClient()
+  const router = useRouter()
   const [billingCycle, setBillingCycle] = useState<"monthly" | "yearly">("monthly")
   const [selectedPlanMsg, setSelectedPlanMsg] = useState<string | null>(null)
 
@@ -46,14 +48,21 @@ export default function PricingPage() {
   const [cardName, setCardName] = useState("")
   const [isProcessing, setIsProcessing] = useState(false)
 
+  // Workspace creation on the fly
+  const [newWorkspaceName, setNewWorkspaceName] = useState("")
+  const [isCreatingNewWs, setIsCreatingNewWs] = useState(false)
+
   // Fetch user workspaces
   const { data: workspaces } = useQuery({
     queryKey: ['workspaces'],
     queryFn: getWorkspaces,
   })
 
-  const currentWorkspace = workspaces && workspaces.length > 0 ? workspaces[0] : null
-  const currentPlan = currentWorkspace?.subscriptionPlan || "FREE"
+  const [selectedWsId, setSelectedWsId] = useState<string>("")
+  const currentWorkspace = (workspaces && workspaces.length > 0)
+    ? workspaces.find((w: any) => w._id === selectedWsId) || workspaces[0]
+    : null
+  const currentPlan = currentWorkspace?.subscriptionPlan || (workspaces?.length ? "FREE" : "No Workspace")
 
   const handleSelectPlan = (planName: "Free" | "Pro" | "Enterprise") => {
     if (planName === "Free") {
@@ -68,21 +77,33 @@ export default function PricingPage() {
 
   const handleRazorpayCheckout = async () => {
     setIsProcessing(true)
-    let targetWorkspaceId = currentWorkspace?._id
 
-    if (!targetWorkspaceId) {
-      try {
-        const list = await getWorkspaces()
-        if (list && list.length > 0) targetWorkspaceId = list[0]._id
-      } catch (e) {
-        console.warn("Could not fetch workspaces list:", e)
-      }
-    }
-
-    if (!targetWorkspaceId) {
-      toast.error("Please select or create a workspace first.")
+    // Check login state
+    if (typeof window !== "undefined" && !localStorage.getItem("token")) {
+      toast.error("Please log in or sign up before purchasing a subscription.")
+      router.push("/login?redirect=/pricing")
       setIsProcessing(false)
       return
+    }
+
+    let targetWorkspaceId = currentWorkspace?._id
+
+    // If user has no workspace or selected to create a new one:
+    if (!targetWorkspaceId || isCreatingNewWs) {
+      const wsName = newWorkspaceName.trim() || "My Pro Team"
+      try {
+        const createdWs = await createWorkspace({
+          name: wsName,
+          description: "CollabHub Pro Workspace"
+        })
+        targetWorkspaceId = createdWs._id
+        await queryClient.invalidateQueries({ queryKey: ['workspaces'] })
+      } catch (err: any) {
+        console.error("Workspace creation error:", err)
+        toast.error(err?.response?.data?.message || "Failed to create workspace. Please log in first.")
+        setIsProcessing(false)
+        return
+      }
     }
 
     try {
@@ -120,6 +141,8 @@ export default function PricingPage() {
               })
 
               queryClient.invalidateQueries({ queryKey: ['workspaces'] })
+              queryClient.invalidateQueries({ queryKey: ['workspaceBilling'] })
+              queryClient.invalidateQueries({ queryKey: ['workspaceTransactions'] })
               setIsProcessing(false)
               setIsCheckoutOpen(false)
               setSelectedPlanMsg(
@@ -156,15 +179,27 @@ export default function PricingPage() {
     }
   }
 
-  const handleDirectSubscribe = async (wsId: string, pId?: string) => {
+  const handleDirectSubscribe = async (wsId?: string, pId?: string) => {
     try {
-      await api.post(`/billing/${wsId}/subscribe`, {
+      let activeWsId = wsId || currentWorkspace?._id
+      if (!activeWsId || isCreatingNewWs) {
+        const wsName = newWorkspaceName.trim() || "My Pro Team"
+        const createdWs = await createWorkspace({
+          name: wsName,
+          description: "CollabHub Pro Workspace"
+        })
+        activeWsId = createdWs._id
+      }
+
+      await api.post(`/billing/${activeWsId}/subscribe`, {
         plan: targetPlan,
         billingCycle: billingCycle.toUpperCase(),
         paymentMethod: paymentTab === "upi" ? `Razorpay / UPI (${upiId.trim() || 'user@okaxis'})` : "Razorpay / Cards & NetBanking",
         transactionId: pId || `TXN_RZP_${Date.now()}`
       })
       queryClient.invalidateQueries({ queryKey: ['workspaces'] })
+      queryClient.invalidateQueries({ queryKey: ['workspaceBilling'] })
+      queryClient.invalidateQueries({ queryKey: ['workspaceTransactions'] })
     } catch (err) {
       console.log("Direct subscription completed locally")
     } finally {
@@ -214,6 +249,21 @@ export default function PricingPage() {
             <button onClick={() => setSelectedPlanMsg(null)} className="p-1 hover:bg-indigo-100 dark:hover:bg-slate-800 rounded-lg">
               <X className="w-4 h-4 text-indigo-600 dark:text-indigo-300" />
             </button>
+          </div>
+        )}
+
+        {/* Missing Workspace Banner */}
+        {(!workspaces || workspaces.length === 0) && (
+          <div className="p-4 rounded-2xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/60 text-amber-900 dark:text-amber-200 text-xs font-semibold flex flex-col sm:flex-row sm:items-center justify-between gap-3 animate-in fade-in">
+            <div className="flex items-center gap-2.5">
+              <Sparkles className="w-4 h-4 text-amber-600 dark:text-amber-400 shrink-0" />
+              <span>You don&apos;t have a workspace yet. Click <strong>Upgrade to Pro</strong> to create your team workspace and activate Pro in one step!</span>
+            </div>
+            <Link href="/workspaces">
+              <Button variant="outline" size="sm" className="text-xs h-8 rounded-xl border-amber-300 dark:border-amber-700 bg-white dark:bg-slate-900 font-bold">
+                <Plus className="w-3.5 h-3.5 mr-1" /> Create Workspace
+              </Button>
+            </Link>
           </div>
         )}
 
@@ -450,10 +500,56 @@ export default function PricingPage() {
                 <span>Selected Plan:</span>
                 <span className="font-bold text-indigo-600 dark:text-indigo-400">Pro Team ({billingCycle.toUpperCase()})</span>
               </div>
-              <div className="flex justify-between text-gray-700 dark:text-slate-300 font-semibold">
-                <span>Workspace:</span>
-                <span className="font-bold text-gray-900 dark:text-gray-100">{currentWorkspace?.name || 'Default Workspace'}</span>
-              </div>
+              {(!workspaces || workspaces.length === 0 || isCreatingNewWs) ? (
+                <div className="space-y-1.5 pt-1">
+                  <div className="flex justify-between items-center text-gray-700 dark:text-slate-300 font-semibold">
+                    <span>New Workspace Name:</span>
+                    {workspaces && workspaces.length > 0 && (
+                      <button
+                        type="button"
+                        onClick={() => setIsCreatingNewWs(false)}
+                        className="text-[11px] text-indigo-600 dark:text-indigo-400 hover:underline cursor-pointer"
+                      >
+                        Choose Existing
+                      </button>
+                    )}
+                  </div>
+                  <input
+                    type="text"
+                    placeholder="e.g. Acme Studio, Product Team"
+                    value={newWorkspaceName}
+                    onChange={(e) => setNewWorkspaceName(e.target.value)}
+                    className="w-full bg-white dark:bg-slate-800 border border-indigo-200 dark:border-slate-700 rounded-xl px-3 py-2 text-xs font-semibold text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  />
+                  <p className="text-[10px] text-gray-500 dark:text-slate-400">
+                    This workspace will be created and instantly upgraded to Pro Team.
+                  </p>
+                </div>
+              ) : (
+                <div className="flex justify-between items-center text-gray-700 dark:text-slate-300 font-semibold">
+                  <span>Workspace:</span>
+                  <div className="flex items-center gap-2">
+                    <select
+                      value={currentWorkspace?._id || ''}
+                      onChange={(e) => {
+                        if (e.target.value === '__new__') {
+                          setIsCreatingNewWs(true)
+                        } else {
+                          setSelectedWsId(e.target.value)
+                        }
+                      }}
+                      className="bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-lg px-2.5 py-1 text-xs font-bold text-gray-900 dark:text-gray-100 focus:outline-none"
+                    >
+                      {workspaces.map((ws: any) => (
+                        <option key={ws._id} value={ws._id}>
+                          {ws.name} ({ws.subscriptionPlan || 'FREE'})
+                        </option>
+                      ))}
+                      <option value="__new__">+ Create New Workspace...</option>
+                    </select>
+                  </div>
+                </div>
+              )}
               <div className="flex justify-between text-gray-700 dark:text-slate-300 font-semibold pt-2 border-t border-indigo-200/60 dark:border-slate-800">
                 <span className="text-sm font-extrabold text-gray-900 dark:text-gray-100">Total Payable Amount:</span>
                 <span className="text-base font-extrabold text-indigo-600 dark:text-indigo-400">₹{priceAmount}</span>

@@ -12,6 +12,7 @@ const activityService = require("./activityService");
 const {
     ACTIVITY_ACTIONS,
 } = require("../constants/activityConstants");
+const { PLAN_LIMITS, getEffectivePlan } = require("../config/planLimits");
 
 const getUserIdStr = (u) => (u?._id || u || "").toString();
 
@@ -219,6 +220,15 @@ const addMemberToWorkspace = async (
         throw new AppError(
             "User is already a workspace member",
             400
+        );
+    }
+
+    const effectivePlan = getEffectivePlan(workspace);
+    const planConfig = PLAN_LIMITS[effectivePlan] || PLAN_LIMITS.FREE;
+    if (workspace.members.length >= planConfig.maxMembers) {
+        throw new AppError(
+            `Workspace member limit reached (${planConfig.maxMembers} members for ${effectivePlan} plan). Please upgrade to Pro Team for up to 50 members.`,
+            403
         );
     }
 
@@ -474,10 +484,12 @@ const createChannel = async (workspaceId, channelData, currentUser) => {
     const { name, isPrivate, initialMembers } = channelData;
 
     // Enforce Plan Limits for Private Channels
-    if (isPrivate && (workspace.subscriptionPlan || "FREE") === "FREE") {
+    const effectivePlan = getEffectivePlan(workspace);
+    const planConfig = PLAN_LIMITS[effectivePlan] || PLAN_LIMITS.FREE;
+    if (isPrivate && planConfig.maxPrivateChannels !== Infinity) {
         const privateChannelCount = workspace.channels.filter(c => c.isPrivate).length;
-        if (privateChannelCount >= 2) {
-            throw new AppError("Free workspaces are limited to 2 private channels. Please upgrade to Pro Team for unlimited private channels.", 403);
+        if (privateChannelCount >= planConfig.maxPrivateChannels) {
+            throw new AppError(`Free workspaces are limited to ${planConfig.maxPrivateChannels} private channels. Please upgrade to Pro Team for unlimited private channels.`, 403);
         }
     }
 
@@ -725,8 +737,10 @@ const addPinnedLink = async (workspaceId, linkData, currentUser) => {
     );
     if (!isMember) throw new AppError("You are not a member of this workspace", 403);
 
-    if ((workspace.subscriptionPlan || "FREE") === "FREE" && (workspace.pinnedLinks || []).length >= 3) {
-        throw new AppError("Free workspaces are limited to 3 pinned links per workspace. Please upgrade to Pro Team for unlimited pinned links.", 403);
+    const effectivePlan = getEffectivePlan(workspace);
+    const planConfig = PLAN_LIMITS[effectivePlan] || PLAN_LIMITS.FREE;
+    if (planConfig.maxPinnedLinks !== Infinity && (workspace.pinnedLinks || []).length >= planConfig.maxPinnedLinks) {
+        throw new AppError(`Free workspaces are limited to ${planConfig.maxPinnedLinks} pinned links per workspace. Please upgrade to Pro Team for unlimited pinned links.`, 403);
     }
 
     workspace.pinnedLinks.push({
@@ -764,8 +778,10 @@ const addTeamGoal = async (workspaceId, goalData, currentUser) => {
     );
     if (!isMember) throw new AppError("You are not a member of this workspace", 403);
 
-    if ((workspace.subscriptionPlan || "FREE") === "FREE" && (workspace.teamGoals || []).length >= 2) {
-        throw new AppError("Free workspaces are limited to 2 team goals. Please upgrade to Pro Team for unlimited team goals.", 403);
+    const effectivePlan = getEffectivePlan(workspace);
+    const planConfig = PLAN_LIMITS[effectivePlan] || PLAN_LIMITS.FREE;
+    if (planConfig.maxTeamGoals !== Infinity && (workspace.teamGoals || []).length >= planConfig.maxTeamGoals) {
+        throw new AppError(`Free workspaces are limited to ${planConfig.maxTeamGoals} team goals. Please upgrade to Pro Team for unlimited team goals.`, 403);
     }
 
     workspace.teamGoals.push({

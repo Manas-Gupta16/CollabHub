@@ -8,10 +8,15 @@ import {
   User, Bell, Lock, Layout, MonitorSmartphone, CreditCard, Settings, 
   Layers, Crown, ShieldCheck, Shield, UserX, Check, Monitor, 
   Smartphone, Laptop, Globe, LogOut, Radio, MapPin, ShieldAlert, Sun, Moon,
-  X, Sparkles, Star, CheckCircle2, ArrowRight, Zap
+  X, Sparkles, Star, CheckCircle2, ArrowRight, Zap,
+  Calendar, Receipt, AlertCircle, RefreshCw
 } from "lucide-react"
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
-import { updateProfile, getWorkspaces, getWorkspaceById, updateWorkspaceInfo, updateMemberRole, removeMemberFromWorkspace, getFileUrl } from "@/lib/api"
+import { 
+  updateProfile, getWorkspaces, getWorkspaceById, updateWorkspaceInfo, 
+  updateMemberRole, removeMemberFromWorkspace, getFileUrl,
+  getWorkspaceBilling, getWorkspaceTransactions, cancelWorkspaceSubscription
+} from "@/lib/api"
 import api from "@/lib/api"
 import { useSearchParams, useRouter } from "next/navigation"
 import { UserAvatar } from "@/components/UserAvatar"
@@ -74,6 +79,37 @@ function SettingsContent() {
     queryFn: () => getWorkspaceById(selectedWorkspaceId),
     enabled: !!selectedWorkspaceId && activeTab === 'workspace'
   })
+
+  // Workspace billing details
+  const { data: billingData, refetch: refetchBilling } = useQuery({
+    queryKey: ['workspaceBilling', currentWorkspace?._id],
+    queryFn: () => getWorkspaceBilling(currentWorkspace?._id),
+    enabled: !!currentWorkspace?._id && activeTab === 'billing'
+  })
+
+  // Workspace transactions / invoices
+  const { data: transactionsData, refetch: refetchTransactions } = useQuery({
+    queryKey: ['workspaceTransactions', currentWorkspace?._id],
+    queryFn: () => getWorkspaceTransactions(currentWorkspace?._id),
+    enabled: !!currentWorkspace?._id && activeTab === 'billing'
+  })
+
+  const [isCancellingSub, setIsCancellingSub] = useState(false)
+  const handleCancelSubscription = async () => {
+    if (!currentWorkspace?._id) return
+    if (!confirm("Are you sure you want to cancel your Pro subscription renewal? You will retain access until the end of your current billing period.")) return
+    setIsCancellingSub(true)
+    try {
+      await cancelWorkspaceSubscription(currentWorkspace._id)
+      toast.success("Subscription renewal cancelled. Access remains active until the end of the billing period.")
+      refetchBilling()
+      queryClient.invalidateQueries({ queryKey: ['workspaces'] })
+    } catch (err: any) {
+      toast.error(err?.response?.data?.message || "Failed to cancel subscription")
+    } finally {
+      setIsCancellingSub(false)
+    }
+  }
 
   const userName = user?.name || ''
   const userEmail = user?.email || ''
@@ -1010,57 +1046,232 @@ function SettingsContent() {
 
             {/* BILLING */}
             {activeTab === 'billing' && (
-              <Card className="border-gray-200 dark:border-slate-800/80 bg-white dark:bg-slate-900 shadow-sm rounded-2xl">
-                <CardContent className="p-6 md:p-8 space-y-6">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <h2 className="text-lg font-bold text-gray-900 dark:text-gray-100">Subscription & Razorpay Billing</h2>
-                      <p className="text-xs text-gray-500 dark:text-slate-400 mt-0.5">Manage your workspace subscription plan, payment methods, and invoice history.</p>
+              <div className="space-y-6">
+                <Card className="border-gray-200 dark:border-slate-800/80 bg-white dark:bg-slate-900 shadow-sm rounded-2xl">
+                  <CardContent className="p-6 md:p-8 space-y-6">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                      <div>
+                        <h2 className="text-lg font-bold text-gray-900 dark:text-gray-100 flex items-center gap-2">
+                          <span>Subscription & Billing</span>
+                          {currentWorkspace && (
+                            <span className="text-xs px-2.5 py-0.5 rounded-lg bg-gray-100 dark:bg-slate-800 text-gray-600 dark:text-slate-300 font-semibold">
+                              {currentWorkspace.name}
+                            </span>
+                          )}
+                        </h2>
+                        <p className="text-xs text-gray-500 dark:text-slate-400 mt-0.5">Manage your workspace subscription plan, payment methods, and invoice history.</p>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => { refetchBilling(); refetchTransactions(); }}
+                          className="h-8 text-xs font-semibold rounded-xl border-gray-200 dark:border-slate-800"
+                        >
+                          <RefreshCw className="w-3.5 h-3.5 mr-1.5" /> Refresh
+                        </Button>
+                        <span className="px-3 py-1 text-xs font-extrabold uppercase rounded-full bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 flex items-center gap-1.5">
+                          <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" /> Razorpay Verified
+                        </span>
+                      </div>
                     </div>
-                    <span className="px-3 py-1 text-xs font-extrabold uppercase rounded-full bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 flex items-center gap-1.5">
-                      <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" /> Razorpay Verified
-                    </span>
-                  </div>
 
-                  <div className="p-6 rounded-2xl border border-indigo-100 dark:border-slate-800 bg-indigo-50/70 dark:bg-indigo-950/30 flex flex-col md:flex-row justify-between md:items-center gap-4">
-                    <div>
-                      <span className="text-xs font-bold text-[#6366F1] uppercase tracking-wider">Active Workspace Subscription</span>
-                      <h3 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mt-1 flex items-center gap-2">
-                        {currentWorkspace?.subscriptionPlan === 'PRO' ? 'CollabHub Pro Team' : currentWorkspace?.subscriptionPlan === 'ENTERPRISE' ? 'CollabHub Enterprise' : 'CollabHub Starter Free'}
-                        {currentWorkspace?.subscriptionPlan === 'PRO' && <Crown className="w-5 h-5 text-amber-500 fill-amber-400" />}
-                      </h3>
-                      <p className="text-xs text-gray-500 dark:text-slate-400 mt-1">
-                        Billing Cycle: <strong className="text-gray-700 dark:text-slate-200">{currentWorkspace?.billingCycle || 'MONTHLY'}</strong> · {currentWorkspace?.subscriptionPlan === 'PRO' ? '₹49/month per member' : 'Free tier (Up to 5 members)'}
-                      </p>
-                    </div>
-                    <Button 
-                      onClick={() => router.push('/pricing')} 
-                      className="bg-[#6366F1] hover:bg-[#4F46E5] text-white rounded-xl text-xs font-bold px-5 py-2.5 cursor-pointer shadow-md shadow-indigo-500/20 flex items-center gap-2 shrink-0"
-                    >
-                      <Zap className="w-4 h-4 fill-white" />
-                      {currentWorkspace?.subscriptionPlan === 'PRO' ? 'Manage Subscription' : 'Upgrade via Razorpay'}
-                    </Button>
-                  </div>
+                    {/* Subscription Hero Card */}
+                    <div className="p-6 rounded-2xl border border-indigo-100 dark:border-slate-800 bg-indigo-50/70 dark:bg-indigo-950/30 flex flex-col md:flex-row justify-between md:items-center gap-6">
+                      <div className="space-y-2">
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs font-bold text-[#6366F1] uppercase tracking-wider">Active Workspace Subscription</span>
+                          {billingData?.subscriptionStatus === 'CANCELLED' && (
+                            <span className="px-2 py-0.5 text-[10px] font-bold rounded-full bg-amber-100 dark:bg-amber-950/80 text-amber-700 dark:text-amber-300 border border-amber-300 dark:border-amber-800">
+                              Cancelled (Active Grace Period)
+                            </span>
+                          )}
+                          {billingData?.isExpired && (
+                            <span className="px-2 py-0.5 text-[10px] font-bold rounded-full bg-rose-100 dark:bg-rose-950/80 text-rose-700 dark:text-rose-300 border border-rose-300 dark:border-rose-800">
+                              Subscription Expired
+                            </span>
+                          )}
+                        </div>
+                        <h3 className="text-2xl font-bold text-gray-900 dark:text-gray-100 flex items-center gap-2">
+                          {billingData?.subscriptionPlan === 'PRO' || currentWorkspace?.subscriptionPlan === 'PRO'
+                            ? 'CollabHub Pro Team'
+                            : billingData?.subscriptionPlan === 'ENTERPRISE' || currentWorkspace?.subscriptionPlan === 'ENTERPRISE'
+                            ? 'CollabHub Enterprise'
+                            : 'CollabHub Starter Free'}
+                          {(billingData?.subscriptionPlan === 'PRO' || currentWorkspace?.subscriptionPlan === 'PRO') && (
+                            <Crown className="w-5 h-5 text-amber-500 fill-amber-400" />
+                          )}
+                        </h3>
+                        <p className="text-xs text-gray-500 dark:text-slate-400">
+                          Billing Cycle: <strong className="text-gray-700 dark:text-slate-200">{billingData?.billingCycle || currentWorkspace?.billingCycle || 'MONTHLY'}</strong>
+                          {' · '}
+                          {billingData?.subscriptionPlan === 'PRO' || currentWorkspace?.subscriptionPlan === 'PRO'
+                            ? '₹49/month'
+                            : 'Free Starter Tier (Up to 5 members)'}
+                        </p>
 
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs font-semibold">
-                    <div className="p-4 rounded-xl border border-gray-100 dark:border-slate-800 bg-gray-50/50 dark:bg-slate-950">
-                      <span className="text-gray-400 dark:text-slate-500 block text-[10px] uppercase font-bold">Payment Gateway</span>
-                      <span className="text-gray-900 dark:text-gray-100 mt-1 block font-bold text-sm">Razorpay (INR ₹)</span>
-                      <span className="text-[11px] text-gray-500 dark:text-slate-400 font-normal">UPI, Cards, NetBanking</span>
+                        {/* Expiration Info */}
+                        {billingData?.subscriptionExpiresAt && (
+                          <div className="flex items-center gap-2 text-xs font-semibold text-gray-600 dark:text-slate-300 pt-1">
+                            <Calendar className="w-4 h-4 text-indigo-500" />
+                            <span>
+                              {billingData.isExpired ? 'Expired on: ' : 'Renews / Valid until: '}
+                              <strong>{new Date(billingData.subscriptionExpiresAt).toLocaleDateString()}</strong>
+                            </span>
+                            {!billingData.isExpired && billingData.daysRemaining !== undefined && (
+                              <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-indigo-100 dark:bg-indigo-900/60 text-indigo-700 dark:text-indigo-300">
+                                {billingData.daysRemaining} days remaining
+                              </span>
+                            )}
+                          </div>
+                        )}
+                      </div>
+
+                      <div className="flex flex-col sm:flex-row items-center gap-2 shrink-0">
+                        {currentWorkspace?.subscriptionPlan === 'PRO' && billingData?.subscriptionStatus !== 'CANCELLED' && (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            disabled={isCancellingSub}
+                            onClick={handleCancelSubscription}
+                            className="text-xs font-semibold text-rose-600 dark:text-rose-400 border-rose-200 dark:border-rose-900/50 hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded-xl"
+                          >
+                            {isCancellingSub ? 'Cancelling...' : 'Cancel Renewal'}
+                          </Button>
+                        )}
+                        <Button 
+                          onClick={() => router.push('/pricing')} 
+                          className="bg-[#6366F1] hover:bg-[#4F46E5] text-white rounded-xl text-xs font-bold px-5 py-2.5 cursor-pointer shadow-md shadow-indigo-500/20 flex items-center gap-2"
+                        >
+                          <Zap className="w-4 h-4 fill-white" />
+                          {currentWorkspace?.subscriptionPlan === 'PRO' ? 'Change Plan' : 'Upgrade via Razorpay'}
+                        </Button>
+                      </div>
                     </div>
-                    <div className="p-4 rounded-xl border border-gray-100 dark:border-slate-800 bg-gray-50/50 dark:bg-slate-950">
-                      <span className="text-gray-400 dark:text-slate-500 block text-[10px] uppercase font-bold">Billing Currency</span>
-                      <span className="text-gray-900 dark:text-gray-100 mt-1 block font-bold text-sm">Indian Rupee (₹)</span>
-                      <span className="text-[11px] text-gray-500 dark:text-slate-400 font-normal">Auto GST compliant</span>
+
+                    {/* Plan Limits Overview */}
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
+                      <div className="p-3.5 rounded-xl border border-gray-100 dark:border-slate-800 bg-gray-50/50 dark:bg-slate-950">
+                        <span className="text-gray-400 dark:text-slate-500 block text-[10px] uppercase font-bold">Team Members</span>
+                        <span className="text-gray-900 dark:text-gray-100 font-bold text-sm mt-0.5 block">
+                          {currentWorkspace?.members?.length || 1} / {billingData?.planConfig?.maxMembers === Infinity ? 'Unlimited' : (billingData?.planConfig?.maxMembers || 5)}
+                        </span>
+                      </div>
+                      <div className="p-3.5 rounded-xl border border-gray-100 dark:border-slate-800 bg-gray-50/50 dark:bg-slate-950">
+                        <span className="text-gray-400 dark:text-slate-500 block text-[10px] uppercase font-bold">Private Channels</span>
+                        <span className="text-gray-900 dark:text-gray-100 font-bold text-sm mt-0.5 block">
+                          {billingData?.planConfig?.maxPrivateChannels === Infinity ? 'Unlimited' : `${billingData?.planConfig?.maxPrivateChannels || 2} max`}
+                        </span>
+                      </div>
+                      <div className="p-3.5 rounded-xl border border-gray-100 dark:border-slate-800 bg-gray-50/50 dark:bg-slate-950">
+                        <span className="text-gray-400 dark:text-slate-500 block text-[10px] uppercase font-bold">Pinned Links</span>
+                        <span className="text-gray-900 dark:text-gray-100 font-bold text-sm mt-0.5 block">
+                          {billingData?.planConfig?.maxPinnedLinks === Infinity ? 'Unlimited' : `${billingData?.planConfig?.maxPinnedLinks || 3} max`}
+                        </span>
+                      </div>
+                      <div className="p-3.5 rounded-xl border border-gray-100 dark:border-slate-800 bg-gray-50/50 dark:bg-slate-950">
+                        <span className="text-gray-400 dark:text-slate-500 block text-[10px] uppercase font-bold">Max File Size</span>
+                        <span className="text-gray-900 dark:text-gray-100 font-bold text-sm mt-0.5 block">
+                          {billingData?.planConfig?.maxFileSizeMB || 10} MB
+                        </span>
+                      </div>
                     </div>
-                    <div className="p-4 rounded-xl border border-gray-100 dark:border-slate-800 bg-gray-50/50 dark:bg-slate-950">
-                      <span className="text-gray-400 dark:text-slate-500 block text-[10px] uppercase font-bold">Security & Compliance</span>
-                      <span className="text-gray-900 dark:text-gray-100 mt-1 block font-bold text-sm">256-Bit SSL Encrypted</span>
-                      <span className="text-[11px] text-emerald-600 dark:text-emerald-400 font-normal">PCI-DSS Level 1</span>
+
+                    {/* Gateway Compliance Cards */}
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs font-semibold">
+                      <div className="p-4 rounded-xl border border-gray-100 dark:border-slate-800 bg-gray-50/50 dark:bg-slate-950">
+                        <span className="text-gray-400 dark:text-slate-500 block text-[10px] uppercase font-bold">Payment Gateway</span>
+                        <span className="text-gray-900 dark:text-gray-100 mt-1 block font-bold text-sm">Razorpay (INR ₹)</span>
+                        <span className="text-[11px] text-gray-500 dark:text-slate-400 font-normal">UPI, Cards, NetBanking</span>
+                      </div>
+                      <div className="p-4 rounded-xl border border-gray-100 dark:border-slate-800 bg-gray-50/50 dark:bg-slate-950">
+                        <span className="text-gray-400 dark:text-slate-500 block text-[10px] uppercase font-bold">Billing Currency</span>
+                        <span className="text-gray-900 dark:text-gray-100 mt-1 block font-bold text-sm">Indian Rupee (₹)</span>
+                        <span className="text-[11px] text-gray-500 dark:text-slate-400 font-normal">Auto GST compliant</span>
+                      </div>
+                      <div className="p-4 rounded-xl border border-gray-100 dark:border-slate-800 bg-gray-50/50 dark:bg-slate-950">
+                        <span className="text-gray-400 dark:text-slate-500 block text-[10px] uppercase font-bold">Security & Compliance</span>
+                        <span className="text-gray-900 dark:text-gray-100 mt-1 block font-bold text-sm">256-Bit SSL Encrypted</span>
+                        <span className="text-[11px] text-emerald-600 dark:text-emerald-400 font-normal">PCI-DSS Level 1</span>
+                      </div>
                     </div>
-                  </div>
-                </CardContent>
-              </Card>
+                  </CardContent>
+                </Card>
+
+                {/* INVOICE & PAYMENT HISTORY TABLE */}
+                <Card className="border-gray-200 dark:border-slate-800/80 bg-white dark:bg-slate-900 shadow-sm rounded-2xl">
+                  <CardContent className="p-6 md:p-8 space-y-4">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <h3 className="text-base font-bold text-gray-900 dark:text-gray-100 flex items-center gap-2">
+                          <Receipt className="w-4 h-4 text-indigo-500" />
+                          <span>Invoices & Payment History</span>
+                        </h3>
+                        <p className="text-xs text-gray-500 dark:text-slate-400 mt-0.5">
+                          View and track all completed payments and receipts for this workspace.
+                        </p>
+                      </div>
+                    </div>
+
+                    {(!transactionsData || transactionsData.length === 0) ? (
+                      <div className="py-10 text-center border border-dashed border-gray-200 dark:border-slate-800 rounded-2xl">
+                        <Receipt className="w-8 h-8 text-gray-300 dark:text-slate-600 mx-auto mb-2" />
+                        <p className="text-xs font-semibold text-gray-500 dark:text-slate-400">No payment transactions recorded yet</p>
+                        <p className="text-[11px] text-gray-400 dark:text-slate-500 mt-1">
+                          When you upgrade your plan via Razorpay, your invoices and receipts will appear here.
+                        </p>
+                      </div>
+                    ) : (
+                      <div className="overflow-x-auto rounded-xl border border-gray-100 dark:border-slate-800">
+                        <table className="w-full text-left text-xs">
+                          <thead className="bg-gray-50/80 dark:bg-slate-800/50 text-gray-500 dark:text-slate-400 font-bold uppercase tracking-wider text-[10px]">
+                            <tr>
+                              <th className="p-3">Date</th>
+                              <th className="p-3">Invoice #</th>
+                              <th className="p-3">Plan & Cycle</th>
+                              <th className="p-3">Amount</th>
+                              <th className="p-3">Payment ID</th>
+                              <th className="p-3 text-right">Status</th>
+                            </tr>
+                          </thead>
+                          <tbody className="divide-y divide-gray-100 dark:divide-slate-800 font-medium">
+                            {transactionsData.map((txn: any) => (
+                              <tr key={txn._id} className="hover:bg-gray-50/50 dark:hover:bg-slate-800/30 transition-colors">
+                                <td className="p-3 text-gray-600 dark:text-slate-300">
+                                  {new Date(txn.createdAt).toLocaleDateString()}
+                                </td>
+                                <td className="p-3 font-semibold text-indigo-600 dark:text-indigo-400">
+                                  {txn.invoiceNumber || 'INV-DIRECT'}
+                                </td>
+                                <td className="p-3 text-gray-800 dark:text-slate-200">
+                                  {txn.plan} ({txn.billingCycle || 'MONTHLY'})
+                                </td>
+                                <td className="p-3 font-bold text-gray-900 dark:text-gray-100">
+                                  ₹{txn.amount}
+                                </td>
+                                <td className="p-3 font-mono text-[11px] text-gray-500 dark:text-slate-400">
+                                  {txn.razorpayPaymentId || txn.razorpayOrderId || '—'}
+                                </td>
+                                <td className="p-3 text-right">
+                                  <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${
+                                    txn.status === 'SUCCESS'
+                                      ? 'bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800'
+                                      : txn.status === 'FAILED'
+                                      ? 'bg-rose-50 dark:bg-rose-950/60 text-rose-700 dark:text-rose-300 border border-rose-200 dark:border-rose-800'
+                                      : 'bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800'
+                                  }`}>
+                                    {txn.status}
+                                  </span>
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              </div>
             )}
 
           </div>
