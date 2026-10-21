@@ -4,7 +4,7 @@ const User = require("../models/User");
 const generateToken = require("../utils/generateToken");
 const { OAuth2Client } = require("google-auth-library");
 
-const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID || "520090818270-bl41rgog0mmvu15bp3gthsaprikcugqd.apps.googleusercontent.com";
+const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID || "450208720116-pi0qonb2i0q6ra2k8s8hr0pdfbk52jqs.apps.googleusercontent.com";
 const googleClient = new OAuth2Client(GOOGLE_CLIENT_ID);
 
 const registerUser = async (userData) => {
